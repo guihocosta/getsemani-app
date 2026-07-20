@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { allocateAction, deleteOccurrenceAction } from "./actions";
@@ -10,6 +12,7 @@ type Vol = { id: string; name: string };
 
 export function OccurrenceRow(props: {
   occurrenceId: string;
+  scheduleId: string;
   title: string;
   when: string;
   slots: Slot[];
@@ -48,7 +51,10 @@ export function OccurrenceRow(props: {
             <p className="text-sm text-text">{props.title}</p>
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <Link href={`/escalas/${props.scheduleId}/editar`} className="text-text-muted hover:text-text">
+              <Pencil size={14} strokeWidth={1.8} />
+            </Link>
             <button className="text-xs text-danger" disabled={pending} onClick={() => del("SINGLE")}>
               Excluir esta
             </button>

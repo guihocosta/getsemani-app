@@ -14,3 +14,7 @@ export function fmtTime(d: Date): string {
 export function fmtDateTime(d: Date): string {
   return `${fmtDate(d)} · ${fmtTime(d)}`;
 }
+
+export function dateKey(d: Date): string {
+  return formatInTimeZone(d, APP_TZ, "yyyy-MM-dd");
+}

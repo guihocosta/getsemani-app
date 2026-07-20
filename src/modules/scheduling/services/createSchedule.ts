@@ -9,6 +9,7 @@ const Input = z.object({
   startDate: z.coerce.date(),
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   durationMin: z.number().int().positive().default(120),
+  recurrenceUntil: z.coerce.date().nullish(),
   roleIds: z.array(z.string().uuid()).min(1),
 });
 
@@ -24,6 +25,7 @@ export async function createSchedule(raw: unknown) {
       startDate: data.startDate,
       startTime: data.startTime,
       durationMin: data.durationMin,
+      recurrenceUntil: data.recurrenceUntil ?? null,
       createdBy: leader.id,
       defaultRoles: { create: data.roleIds.map((roleId) => ({ roleId })) },
     },
