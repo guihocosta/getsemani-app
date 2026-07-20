@@ -45,7 +45,7 @@ export function OccurrenceRow(props: {
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-sm text-white">{props.title}</p>
+            <p className="text-sm text-text">{props.title}</p>
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
           <div className="flex gap-3">
@@ -69,7 +69,7 @@ export function OccurrenceRow(props: {
               <li key={s.slotId} className="flex items-center justify-between gap-2">
                 <span className="text-sm text-text-muted w-24 shrink-0">{s.role}</span>
                 {s.allocatedName ? (
-                  <span className="text-sm text-white flex-1">{s.allocatedName}</span>
+                  <span className="text-sm text-text flex-1">{s.allocatedName}</span>
                 ) : (
                   <select
                     defaultValue=""

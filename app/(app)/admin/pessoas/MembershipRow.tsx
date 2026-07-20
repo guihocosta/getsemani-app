@@ -22,7 +22,7 @@ export function MembershipRow({ membershipId, ministryName, role, status }: Prop
   return (
     <li className="flex items-center justify-between gap-2 text-sm">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-white">{ministryName}</span>
+        <span className="text-text">{ministryName}</span>
         <Badge tone={status === "ACTIVE" ? "info" : "muted"} className="text-[10px]">
           {status === "ACTIVE" ? "Ativo" : "Pendente"}
         </Badge>

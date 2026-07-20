@@ -19,7 +19,7 @@ export default async function MinisteriosAdminPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-6">Ministérios</h1>
+      <h1 className="text-3xl text-text mb-6">Ministérios</h1>
 
       <CreateMinistryForm />
 
@@ -36,7 +36,7 @@ export default async function MinisteriosAdminPage() {
                       className="h-3 w-3 rounded-full shrink-0 ring-1 ring-border"
                       style={{ backgroundColor: m.color ?? "#6d28d9" }}
                     />
-                    <p className="text-lg text-white">{m.name}</p>
+                    <p className="text-lg text-text">{m.name}</p>
                   </div>
                   <span className="text-sm text-text-muted">
                     {m._count.memberships} {m._count.memberships === 1 ? "membro" : "membros"}
@@ -49,7 +49,7 @@ export default async function MinisteriosAdminPage() {
                   {m.roles.length === 0 && <li className="text-sm text-text-muted">Nenhuma função cadastrada.</li>}
                   {m.roles.map((r) => (
                     <li key={r.id} className="flex items-center justify-between gap-2">
-                      <span className="text-sm text-white flex items-center gap-2">
+                      <span className="text-sm text-text flex items-center gap-2">
                         {r.name}
                         {!r.active && (
                           <Badge tone="muted" className="text-[10px]">

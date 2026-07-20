@@ -10,7 +10,7 @@ export default async function PerfilPage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-3xl text-white">Perfil</h1>
+        <h1 className="text-3xl text-text">Perfil</h1>
       </header>
 
       <Card>

@@ -24,7 +24,7 @@ export default async function HomePage() {
     <div>
       <header className="mb-6">
         <p className="text-sm text-text-muted">Olá,</p>
-        <h1 className="text-3xl text-white">{user.name.split(" ")[0]}</h1>
+        <h1 className="text-3xl text-text">{user.name.split(" ")[0]}</h1>
       </header>
 
       <h2 className="eyebrow mb-3">Próximas escalas</h2>
@@ -41,7 +41,7 @@ export default async function HomePage() {
               <Card className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{it.ministry}</p>
-                  <p className="text-lg text-white">{it.role}</p>
+                  <p className="text-lg text-text">{it.role}</p>
                   <p className="text-sm text-text-muted">{fmtDate(it.date)}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1">

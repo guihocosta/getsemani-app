@@ -49,7 +49,7 @@ export default async function VagasPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-6">Vagas</h1>
+      <h1 className="text-3xl text-text mb-6">Vagas</h1>
 
       <h2 className="eyebrow mb-3">Escalas livres</h2>
       {freeSlots.length === 0 ? (
@@ -61,7 +61,7 @@ export default async function VagasPage() {
               <Card className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{s.occurrence.schedule.ministry.name}</p>
-                  <p className="text-lg text-white">{s.role.name}</p>
+                  <p className="text-lg text-text">{s.role.name}</p>
                   <p className="text-sm text-text-muted">{fmtDateTime(s.occurrence.date)}</p>
                 </div>
                 <SelfAllocateButton slotId={s.id} />
@@ -85,7 +85,7 @@ export default async function VagasPage() {
                     <p className="eyebrow text-primary">
                       {s.occurrence.schedule.ministry.name}
                     </p>
-                    <p className="text-lg text-white">{s.role.name}</p>
+                    <p className="text-lg text-text">{s.role.name}</p>
                     <p className="text-sm text-text-muted">{fmtDateTime(s.occurrence.date)}</p>
                   </div>
                   <ClaimSwapButton swapRequestId={sw.id} />

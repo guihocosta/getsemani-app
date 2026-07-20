@@ -32,7 +32,7 @@ export default async function SolicitacoesPage() {
   return (
     <div>
       <header className="mb-6">
-        <h1 className="text-3xl text-white">Solicitações</h1>
+        <h1 className="text-3xl text-text">Solicitações</h1>
       </header>
 
       {pending.length === 0 ? (
@@ -43,7 +43,7 @@ export default async function SolicitacoesPage() {
             <li key={m.id}>
               <Card className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg text-white">{m.user.name}</p>
+                  <p className="text-lg text-text">{m.user.name}</p>
                   <p className="text-sm text-text-muted">{m.ministry.name}</p>
                 </div>
                 <ReviewButtons membershipId={m.id} />

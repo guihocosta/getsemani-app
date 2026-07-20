@@ -25,7 +25,7 @@ export default async function EscalasPage() {
   if (led.length === 0) {
     return (
       <div>
-        <h1 className="text-3xl text-white mb-6">Escalas</h1>
+        <h1 className="text-3xl text-text mb-6">Escalas</h1>
         <EmptyState title="Você não lidera ministérios" subtitle="Peça acesso a um admin." />
       </div>
     );
@@ -55,7 +55,7 @@ export default async function EscalasPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-6">Escalas</h1>
+      <h1 className="text-3xl text-text mb-6">Escalas</h1>
 
       <Card className="mb-8">
         <h2 className="eyebrow mb-3">Nova escala recorrente</h2>

@@ -23,7 +23,7 @@ export default async function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-3">Admin</h1>
+      <h1 className="text-3xl text-text mb-3">Admin</h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
         <Link
@@ -50,7 +50,7 @@ export default async function AdminPage() {
               <Card className="flex items-center justify-between py-3">
                 <div>
                   <p className="eyebrow text-primary">{s.ministry}</p>
-                  <p className="text-white">{s.role}</p>
+                  <p className="text-text">{s.role}</p>
                 </div>
                 <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
               </Card>
@@ -64,7 +64,7 @@ export default async function AdminPage() {
         <ul className="flex flex-col gap-2">
           {load.map((p) => (
             <li key={p.userId} className="flex justify-between text-sm">
-              <span className="text-white">{p.name}</span>
+              <span className="text-text">{p.name}</span>
               <span className="font-title text-primary">{p.count}</span>
             </li>
           ))}
@@ -77,7 +77,7 @@ export default async function AdminPage() {
         <ul className="flex flex-col gap-2">
           {byMinistry.map((m) => (
             <li key={m.ministryId} className="flex justify-between text-sm">
-              <span className="text-white">{m.name}</span>
+              <span className="text-text">{m.name}</span>
               <span className={m.count === 0 ? "text-danger" : "text-primary"}>{m.count}</span>
             </li>
           ))}

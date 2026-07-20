@@ -1,40 +1,57 @@
 @import "tailwindcss";
 
-/* ===== Identidade Visual Getsemani — navy escuro, azul único ===== */
+/* ===== Identidade Visual Getsemani — claro, indigo (ref: projeto SERVIR) ===== */
 @theme {
-  /* superfícies (navy) */
-  --color-bg: #0b1830; /* fundo app (navy profundo) */
-  --color-surface: #14284a; /* cartão base */
-  --color-surface-2: #1c3d70; /* elevação / chips */
+  /* superfícies (claro) */
+  --color-bg: #f8fafc; /* slate-50 */
+  --color-surface: #ffffff; /* cartão base */
+  --color-surface-2: #f1f5f9; /* slate-100 — elevação / chips */
 
-  /* azul da marca — único accent */
-  --color-primary: #6fa3d6; /* accent/luz: textos-destaque, ativos, valores */
-  --color-primary-600: #4a7ab0;
-  --color-primary-700: #1e4785; /* navy: fundo de CTA (contraste com texto branco) */
+  /* indigo da marca — único accent */
+  --color-primary: #4f46e5; /* indigo-600 */
+  --color-primary-600: #4338ca; /* indigo-700 — hover/gradiente */
+  --color-primary-700: #3730a3; /* indigo-800 — fundo de CTA */
 
   /* texto */
-  --color-text: #f4f8ff;
-  --color-text-muted: #9db4d6;
+  --color-text: #0f172a; /* slate-900 */
+  --color-text-muted: #475569; /* slate-600 */
 
   /* semânticos */
-  --color-danger: #ef8a7d; /* perigo (excluir) — único não-azul */
-  --color-border: rgba(255, 255, 255, 0.09);
-  --color-accent-soft: rgba(111, 163, 214, 0.14); /* tint p/ badges, ícone-círculo */
+  --color-danger: #ef4444; /* red-500 */
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-accent-soft: #eef2ff; /* indigo-50 — tint p/ badges, ícone-círculo */
 
-  --font-title: "Monument Extended", system-ui, -apple-system, "SF Pro Display", sans-serif;
+  --font-title: "Gotham", system-ui, -apple-system, "SF Pro Display", sans-serif;
   --font-body: "Gotham", system-ui, -apple-system, "SF Pro Text", sans-serif;
 
   --radius-card: 20px;
   --radius-btn: 14px;
 }
 
-/* ===== Fontes da marca (public/fonts) ===== */
-@font-face {
-  font-family: "Monument Extended";
-  src: url("/fonts/MonumentExtended-Regular.otf") format("opentype");
-  font-weight: 400 700;
-  font-display: swap;
+/* ===== Tema escuro (classe .dark no <html>, alternada por ThemeToggle) ===== */
+.dark {
+  --color-bg: #020617; /* slate-950 */
+  --color-surface: #0f172a; /* slate-900 */
+  --color-surface-2: #1e293b; /* slate-800 */
+
+  --color-primary: #6366f1; /* indigo-500 */
+  --color-primary-600: #818cf8; /* indigo-400 — hover mais claro no escuro */
+  --color-primary-700: #4f46e5; /* indigo-600 */
+
+  --color-text: #f8fafc; /* slate-50 */
+  --color-text-muted: #94a3b8; /* slate-400 */
+
+  --color-danger: #f87171; /* red-400 */
+  --color-border: #1e293b; /* slate-800 */
+  --color-accent-soft: #1e1b4b; /* indigo-950 */
+
+  color-scheme: dark;
 }
+:root {
+  color-scheme: light;
+}
+
+/* ===== Fonte da marca (public/fonts) ===== */
 @font-face {
   font-family: "Gotham";
   src: url("/fonts/Gotham-Book.otf") format("opentype");
@@ -53,13 +70,16 @@
   font-weight: 700;
   font-display: swap;
 }
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Black.otf") format("opentype");
+  font-weight: 800 900;
+  font-display: swap;
+}
 
 html,
 body {
-  background:
-    radial-gradient(120% 60% at 50% -10%, #16305a 0%, transparent 60%),
-    var(--color-bg);
-  background-attachment: fixed;
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -70,7 +90,8 @@ h1,
 h2,
 h3 {
   font-family: var(--font-title);
-  letter-spacing: 0.005em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 /* rótulo pequeno uppercase (eyebrow de seção) */
@@ -79,34 +100,41 @@ h3 {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--color-text-muted);
+}
+
+/* utilitários no espírito "glass" / "shadow-premium" do SERVIR */
+@utility glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+@utility shadow-premium {
+  box-shadow:
+    0 10px 25px -5px rgba(15, 23, 42, 0.06),
+    0 8px 10px -6px rgba(15, 23, 42, 0.05);
 }
 
 /* input/select/textarea unificados */
 .field {
   width: 100%;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  border: 2px solid var(--color-border);
   padding: 0.75rem 1rem;
   font-size: 15px;
   color: var(--color-text);
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 .field::placeholder {
   color: var(--color-text-muted);
 }
 .field:focus {
   border-color: var(--color-primary);
+  background: var(--color-surface);
   box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
-/* ícone dos date/time pickers visível no tema escuro */
-input[type="date"].field::-webkit-calendar-picker-indicator,
-input[type="time"].field::-webkit-calendar-picker-indicator {
-  filter: invert(0.8);
-  cursor: pointer;
 }
 
 * {
@@ -114,6 +142,6 @@ input[type="time"].field::-webkit-calendar-picker-indicator {
 }
 
 ::selection {
-  background: var(--color-primary-600);
+  background: var(--color-primary);
   color: #fff;
 }

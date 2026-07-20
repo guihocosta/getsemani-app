@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
     <div>
       <header className="mb-6">
         <p className="text-sm text-text-muted">Bem-vindo(a),</p>
-        <h1 className="text-3xl text-white">{user.name.split(" ")[0]}</h1>
+        <h1 className="text-3xl text-text">{user.name.split(" ")[0]}</h1>
       </header>
 
       <h2 className="eyebrow mb-3">Seus dados</h2>
@@ -36,7 +36,7 @@ export default async function OnboardingPage() {
             <li key={ministry.id}>
               <Card className="flex items-center justify-between">
                 <div>
-                  <p className="text-lg text-white">{ministry.name}</p>
+                  <p className="text-lg text-text">{ministry.name}</p>
                   {ministry.description && (
                     <p className="text-sm text-text-muted">{ministry.description}</p>
                   )}

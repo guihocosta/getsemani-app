@@ -33,10 +33,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh flex items-center justify-center px-6">
       <Card className="w-full max-w-sm">
-        <h1 className="font-title text-3xl mb-1 tracking-wide text-white">
-          GETSE<span className="text-primary">MANI</span>
-        </h1>
-        <p className="text-sm text-text-muted mb-6">Escalas dos voluntários</p>
+        <h1 className="text-3xl tracking-tight text-text mb-1">Bem-vindo(a)</h1>
+        <p className="eyebrow mb-6">Escalas dos voluntários</p>
 
         {sent ? (
           <p className="text-sm text-text">

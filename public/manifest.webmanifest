@@ -4,8 +4,8 @@
   "description": "Escalas dos voluntários da Igreja Getsemani",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f1e38",
-  "theme_color": "#0f1e38",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
   "lang": "pt-BR",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },

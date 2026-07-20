@@ -17,7 +17,7 @@ export default async function PessoasAdminPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-6">Pessoas</h1>
+      <h1 className="text-3xl text-text mb-6">Pessoas</h1>
 
       {users.length === 0 ? (
         <EmptyState title="Nenhuma pessoa cadastrada" />
@@ -28,7 +28,7 @@ export default async function PessoasAdminPage() {
               <Card>
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
-                    <p className="text-white">{u.name}</p>
+                    <p className="text-text">{u.name}</p>
                     <p className="text-xs text-text-muted">{u.email}</p>
                   </div>
                   <AdminToggleButton userId={u.id} isAdmin={u.isAdmin} />

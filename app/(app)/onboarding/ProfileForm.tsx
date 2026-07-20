@@ -26,7 +26,7 @@ export function ProfileForm({ name, phone }: { name: string; phone: string }) {
       <label className="flex flex-col gap-1">
         <span className="text-sm text-text-muted">Nome</span>
         <input
-          className="rounded-[12px] bg-surface-2/70 border border-border px-3 py-2 text-white"
+          className="rounded-[12px] bg-surface-2/70 border border-border px-3 py-2 text-text"
           value={nameValue}
           onChange={(e) => setNameValue(e.target.value)}
         />
@@ -34,7 +34,7 @@ export function ProfileForm({ name, phone }: { name: string; phone: string }) {
       <label className="flex flex-col gap-1">
         <span className="text-sm text-text-muted">Telefone (opcional)</span>
         <input
-          className="rounded-[12px] bg-surface-2/70 border border-border px-3 py-2 text-white"
+          className="rounded-[12px] bg-surface-2/70 border border-border px-3 py-2 text-text"
           value={phoneValue}
           onChange={(e) => setPhoneValue(e.target.value)}
         />

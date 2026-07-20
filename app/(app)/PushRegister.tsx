@@ -69,8 +69,8 @@ export function PushRegister() {
       <div className="mb-4 rounded-[14px] bg-accent-soft ring-1 ring-primary/20 px-4 py-3">
         <span className="text-sm text-text-muted">
           Pra receber lembretes, adicione o app à Tela de Início: toque em{" "}
-          <span className="text-white">Compartilhar</span> e depois em{" "}
-          <span className="text-white">Adicionar à Tela de Início</span>.
+          <span className="text-text font-semibold">Compartilhar</span> e depois em{" "}
+          <span className="text-text font-semibold">Adicionar à Tela de Início</span>.
         </span>
       </div>
     );

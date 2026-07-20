@@ -16,7 +16,7 @@ export default async function IndisponibilidadePage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-2">Indisponibilidade</h1>
+      <h1 className="text-3xl text-text mb-2">Indisponibilidade</h1>
       <p className="text-sm text-text-muted mb-6">Marque os dias/horários que não pode servir neste mês.</p>
 
       <Card className="mb-6">
@@ -37,7 +37,7 @@ export default async function IndisponibilidadePage() {
         {rows.map((r) => (
           <li key={r.id}>
             <Card className="flex items-center justify-between py-3">
-              <span className="text-sm text-white">
+              <span className="text-sm text-text">
                 {r.date ? formatInTimeZone(r.date, APP_TZ, "dd/MM") : "Mês todo"}
                 {r.startTime ? ` · ${r.startTime}–${r.endTime}` : " · dia inteiro"}
               </span>
