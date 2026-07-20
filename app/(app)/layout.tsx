@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSessionUser } from "@/modules/identity/services/authz";
+import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { AppShell } from "@/ui/AppShell";
 import { PushRegister } from "./PushRegister";
 
@@ -7,8 +7,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
+  const isLeader = await isLeaderOfAny(user.id);
+
   return (
-    <AppShell>
+    <AppShell isAdmin={user.isAdmin} isLeader={isLeader}>
       <PushRegister />
       {children}
     </AppShell>

@@ -51,3 +51,21 @@ export function IconCalendar(p: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function IconGear(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3v2.2M12 18.8V21M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M3 12h2.2M18.8 12H21M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+    </svg>
+  );
+}
+
+export function IconBell(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...p}>
+      <path d="M6 10a6 6 0 0 1 12 0c0 3.2 1 4.6 1.7 5.4.4.4.1 1.1-.5 1.1H4.8c-.6 0-.9-.7-.5-1.1C5 14.6 6 13.2 6 10Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}

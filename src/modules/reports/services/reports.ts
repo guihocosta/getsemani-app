@@ -43,7 +43,7 @@ export async function loadByPerson(from: Date, to: Date) {
 export async function volunteersByMinistry() {
   const grouped = await prisma.membership.groupBy({
     by: ["ministryId"],
-    where: { role: "VOLUNTEER" },
+    where: { role: "VOLUNTEER", status: "ACTIVE" },
     _count: { _all: true },
   });
   const ministries = await prisma.ministry.findMany({ select: { id: true, name: true } });

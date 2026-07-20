@@ -16,6 +16,11 @@ enum MembershipRole {
   VOLUNTEER
 }
 
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+}
+
 enum OccurrenceStatus {
   ACTIVE
   CANCELLED
@@ -76,17 +81,19 @@ model Ministry {
 }
 
 model Membership {
-  id         String         @id @default(uuid()) @db.Uuid
-  userId     String         @db.Uuid
-  ministryId String         @db.Uuid
+  id         String            @id @default(uuid()) @db.Uuid
+  userId     String            @db.Uuid
+  ministryId String            @db.Uuid
   role       MembershipRole
-  createdAt  DateTime       @default(now())
+  status     MembershipStatus  @default(ACTIVE)
+  createdAt  DateTime          @default(now())
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
 
   @@unique([userId, ministryId, role])
   @@index([ministryId, role])
+  @@index([userId, status])
 }
 
 model Role {

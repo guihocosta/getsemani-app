@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/services/authz";
 import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports/services/reports";
@@ -22,7 +23,22 @@ export default async function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-white mb-6">Admin</h1>
+      <h1 className="text-3xl text-white mb-3">Admin</h1>
+
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Link
+          href="/admin/ministerios"
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-accent-soft text-primary ring-1 ring-primary/25 hover:brightness-110"
+        >
+          Ministérios
+        </Link>
+        <Link
+          href="/admin/pessoas"
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-accent-soft text-primary ring-1 ring-primary/25 hover:brightness-110"
+        >
+          Pessoas
+        </Link>
+      </div>
 
       <h2 className="eyebrow mb-3">Vagas sem ninguém ({open.length})</h2>
       {open.length === 0 ? (

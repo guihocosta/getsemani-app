@@ -34,7 +34,7 @@ export async function isLeaderOf(userId: string, ministryId: string): Promise<bo
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (user?.isAdmin) return true;
   const m = await prisma.membership.findFirst({
-    where: { userId, ministryId, role: "LEADER" },
+    where: { userId, ministryId, role: "LEADER", status: "ACTIVE" },
   });
   return !!m;
 }
@@ -43,4 +43,12 @@ export async function requireLeaderOf(ministryId: string): Promise<User> {
   const user = await requireUser();
   if (!(await isLeaderOf(user.id, ministryId))) throw new Error("FORBIDDEN");
   return user;
+}
+
+// Verdadeiro se o usuario lidera pelo menos um ministerio (usado pra exibir nav de Solicitações).
+export async function isLeaderOfAny(userId: string): Promise<boolean> {
+  const m = await prisma.membership.findFirst({
+    where: { userId, role: "LEADER", status: "ACTIVE" },
+  });
+  return !!m;
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode, ComponentType, SVGProps } from "react";
 import { cn } from "./cn";
-import { IconHome, IconHand, IconCalendarOff, IconCalendar } from "./icons";
+import { IconHome, IconHand, IconCalendarOff, IconCalendar, IconGear, IconBell } from "./icons";
 
 const nav: { href: string; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
   { href: "/", label: "Início", Icon: IconHome },
@@ -13,15 +13,51 @@ const nav: { href: string; label: string; Icon: ComponentType<SVGProps<SVGSVGEle
   { href: "/escalas", label: "Escalas", Icon: IconCalendar },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  isAdmin = false,
+  isLeader = false,
+}: {
+  children: ReactNode;
+  isAdmin?: boolean;
+  isLeader?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <div className="min-h-dvh mx-auto max-w-md flex flex-col">
-      <header className="px-5 pt-6 pb-2">
+      <header className="px-5 pt-6 pb-2 flex items-center justify-between">
         <span className="font-title text-lg tracking-wide text-white">
           GETSE<span className="text-primary">MANI</span>
         </span>
+        <div className="flex items-center gap-3">
+          {(isAdmin || isLeader) && (
+            <Link
+              href="/solicitacoes"
+              aria-label="Solicitações"
+              className={cn(
+                "transition-colors",
+                pathname.startsWith("/solicitacoes")
+                  ? "text-primary"
+                  : "text-text-muted hover:text-white",
+              )}
+            >
+              <IconBell width={20} height={20} />
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              href="/admin"
+              aria-label="Gestão"
+              className={cn(
+                "transition-colors",
+                pathname.startsWith("/admin") ? "text-primary" : "text-text-muted hover:text-white",
+              )}
+            >
+              <IconGear width={20} height={20} />
+            </Link>
+          )}
+        </div>
       </header>
 
       <main className="flex-1 pb-28 px-4 pt-2">{children}</main>

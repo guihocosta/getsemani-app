@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { requireUser } from "@/modules/identity/services/authz";
+import { prisma } from "@/lib/prisma";
 import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
@@ -10,6 +12,12 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const user = await requireUser();
+
+  const activeMembership = await prisma.membership.findFirst({
+    where: { userId: user.id, status: "ACTIVE" },
+  });
+  if (!activeMembership) redirect("/onboarding");
+
   const items = await getMySchedule(user.id);
 
   return (
