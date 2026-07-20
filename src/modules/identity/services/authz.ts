@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { User } from "@prisma/client";
@@ -17,9 +18,12 @@ export const getSessionUser = cache(async (): Promise<User | null> => {
   return prisma.user.findUnique({ where: { id: session.user.id } });
 });
 
+// Sessao ausente/expirada aqui e sempre inesperada (o layout ja redireciona antes de
+// renderizar a pagina) — mas se acontecer (race de cookie, cold start), redireciona
+// pro login em vez de estourar um erro 500 sem tratamento.
 export async function requireUser(): Promise<User> {
   const user = await getSessionUser();
-  if (!user) throw new Error("UNAUTHENTICATED");
+  if (!user) redirect("/login");
   return user;
 }
 
