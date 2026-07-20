@@ -1,0 +1,232 @@
+// App de Escalas (MVP) — schema `public`. Auth (auth.users) gerido pela Supabase.
+// User.id == auth.users.id (mesmo UUID).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum MembershipRole {
+  LEADER
+  VOLUNTEER
+}
+
+enum OccurrenceStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum CancelScope {
+  SINGLE
+  FROM_HERE
+}
+
+enum AllocationSource {
+  LEADER
+  SELF
+  SWAP
+}
+
+enum SwapStatus {
+  OPEN
+  CLAIMED
+  CANCELLED
+}
+
+enum NotificationType {
+  ASSIGNMENT
+  REMINDER
+  SWAP
+}
+
+model User {
+  id        String   @id @db.Uuid // == auth.users.id
+  name      String
+  email     String   @unique
+  phone     String?
+  avatarUrl String?
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships       Membership[]
+  allocations       Allocation[]
+  unavailabilities  Unavailability[]
+  pushSubscriptions PushSubscription[]
+  notifications     Notification[]
+  swapRequests      SwapRequest[]      @relation("SwapRequestedBy")
+  swapClaims        SwapRequest[]      @relation("SwapClaimedBy")
+}
+
+model Ministry {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  color       String?
+  createdAt   DateTime @default(now())
+
+  roles       Role[]
+  memberships Membership[]
+  schedules   Schedule[]
+}
+
+model Membership {
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String         @db.Uuid
+  ministryId String         @db.Uuid
+  role       MembershipRole
+  createdAt  DateTime       @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ministryId, role])
+  @@index([ministryId, role])
+}
+
+model Role {
+  id         String   @id @default(uuid()) @db.Uuid
+  ministryId String   @db.Uuid
+  name       String
+  active     Boolean  @default(true)
+
+  ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  slots    Slot[]
+
+  @@index([ministryId])
+}
+
+model Schedule {
+  id              String    @id @default(uuid()) @db.Uuid
+  ministryId      String    @db.Uuid
+  title           String
+  recurrenceRule  String // RRULE, ex: FREQ=WEEKLY;BYDAY=SU
+  startDate       DateTime  @db.Date
+  startTime       String // "HH:mm" local (APP_TIMEZONE)
+  durationMin     Int       @default(120)
+  recurrenceUntil DateTime? @db.Date // null = sem data fim
+  createdBy       String    @db.Uuid
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ministry     Ministry     @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  occurrences  Occurrence[]
+  defaultRoles ScheduleRole[]
+
+  @@index([ministryId])
+}
+
+// Funcoes esperadas por ocorrencia de uma escala
+model ScheduleRole {
+  id         String @id @default(uuid()) @db.Uuid
+  scheduleId String @db.Uuid
+  roleId     String @db.Uuid
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, roleId])
+}
+
+model Occurrence {
+  id            String           @id @default(uuid()) @db.Uuid
+  scheduleId    String           @db.Uuid
+  date          DateTime // instante concreto (UTC)
+  status        OccurrenceStatus @default(ACTIVE)
+  cancelledScope CancelScope?
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  slots    Slot[]
+
+  @@unique([scheduleId, date])
+  @@index([date])
+}
+
+model Slot {
+  id           String @id @default(uuid()) @db.Uuid
+  occurrenceId String @db.Uuid
+  roleId       String @db.Uuid
+
+  occurrence Occurrence  @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  role       Role        @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  allocation Allocation?
+
+  @@unique([occurrenceId, roleId])
+  @@index([occurrenceId])
+}
+
+model Allocation {
+  id                     String           @id @default(uuid()) @db.Uuid
+  slotId                 String           @unique @db.Uuid // 1 pessoa por vaga (FR-008)
+  userId                 String           @db.Uuid
+  source                 AllocationSource
+  overrideUnavailability Boolean          @default(false)
+  createdAt              DateTime         @default(now())
+
+  slot        Slot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  swapRequest SwapRequest?
+
+  @@index([userId, createdAt])
+}
+
+model SwapRequest {
+  id           String     @id @default(uuid()) @db.Uuid
+  allocationId String     @unique @db.Uuid
+  requestedBy  String     @db.Uuid
+  status       SwapStatus @default(OPEN)
+  claimedBy    String?    @db.Uuid
+  createdAt    DateTime   @default(now())
+  resolvedAt   DateTime?
+
+  allocation Allocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+  requester  User       @relation("SwapRequestedBy", fields: [requestedBy], references: [id])
+  claimer    User?      @relation("SwapClaimedBy", fields: [claimedBy], references: [id])
+
+  @@index([status])
+}
+
+model Unavailability {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  year      Int
+  month     Int
+  date      DateTime? @db.Date // dia especifico; null = mes todo
+  startTime String? // "HH:mm"; null+endTime null = dia inteiro
+  endTime   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, year, month])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @db.Uuid
+  type         NotificationType
+  occurrenceId String?          @db.Uuid
+  dedupeKey    String           @unique
+  sentAt       DateTime?
+  createdAt    DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

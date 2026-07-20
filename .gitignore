@@ -1,0 +1,31 @@
+# deps
+/node_modules
+/.pnp
+.pnp.js
+
+# next
+/.next/
+/out/
+next-env.d.ts
+
+# env
+.env
+.env.local
+.env*.local
+
+# build/test
+/coverage
+/playwright-report
+/test-results
+/prisma/*.db
+
+# prisma generated client (regenerated on build)
+# keep migrations tracked
+
+# misc
+.DS_Store
+*.log
+.vercel
+.idea
+.vscode/*
+!.vscode/extensions.json
