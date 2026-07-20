@@ -7,6 +7,7 @@ import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";
 import { fmtDate, fmtTime } from "@/lib/time";
 import { RequestSwapButton } from "./RequestSwapButton";
+import { InstallPopup } from "./InstallPopup";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <InstallPopup />
       <header className="mb-6">
         <p className="text-sm text-text-muted">Olá,</p>
         <h1 className="text-3xl text-text">{user.name.split(" ")[0]}</h1>
