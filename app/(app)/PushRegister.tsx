@@ -10,11 +10,28 @@ function urlBase64ToUint8Array(base64: string) {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 }
 
+type PushState = "idle" | "granted" | "denied" | "unsupported" | "ios-need-install";
+
+// iOS so aceita Web Push num PWA instalado (Tela de Inicio), nunca numa aba do Safari.
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
+}
+function isStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
 // Registra SW e assina Web Push. Degrada graciosamente quando sem suporte/permissao (FR-017).
 export function PushRegister() {
-  const [state, setState] = useState<"idle" | "granted" | "denied" | "unsupported">("idle");
+  const [state, setState] = useState<PushState>("idle");
 
   useEffect(() => {
+    if (isIOS() && !isStandalone()) {
+      setState("ios-need-install");
+      return;
+    }
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       setState("unsupported");
       return;
@@ -46,6 +63,18 @@ export function PushRegister() {
   }
 
   if (state === "granted" || state === "unsupported") return null;
+
+  if (state === "ios-need-install") {
+    return (
+      <div className="mb-4 rounded-[14px] bg-accent-soft ring-1 ring-primary/20 px-4 py-3">
+        <span className="text-sm text-text-muted">
+          Pra receber lembretes, adicione o app à Tela de Início: toque em{" "}
+          <span className="text-white">Compartilhar</span> e depois em{" "}
+          <span className="text-white">Adicionar à Tela de Início</span>.
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4 rounded-[14px] bg-accent-soft ring-1 ring-primary/20 px-4 py-3 flex items-center justify-between">
