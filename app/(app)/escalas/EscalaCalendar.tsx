@@ -100,7 +100,8 @@ export function EscalaCalendar({
     const [ny, nm] = norm as [number, number];
     const k = monthKey(ny, nm);
 
-    window.history.replaceState(null, "", `/escalas?mes=${k}`);
+    // Preserva o state do App Router (null aqui quebra a navegacao da nav bar).
+    window.history.replaceState(window.history.state, "", `/escalas?mes=${k}`);
 
     if (cache.has(k)) {
       setYear(ny);
