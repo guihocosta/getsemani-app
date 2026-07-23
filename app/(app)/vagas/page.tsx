@@ -27,6 +27,7 @@ export default async function VagasPage() {
     },
     include: { role: true, occurrence: { include: { schedule: { include: { ministry: true } } } } },
     orderBy: { occurrence: { date: "asc" } },
+    take: 50,
   });
 
   // trocas abertas nos meus ministerios (que nao sao minhas)
@@ -45,6 +46,7 @@ export default async function VagasPage() {
         },
       },
     },
+    take: 50,
   });
 
   return (

@@ -11,15 +11,15 @@ export async function openSlots(from = new Date()) {
       role: true,
       occurrence: { include: { schedule: { include: { ministry: true } } } },
     },
+    orderBy: { occurrence: { date: "asc" } },
+    take: 200,
   });
-  return slots
-    .map((s) => ({
-      slotId: s.id,
-      date: s.occurrence.date,
-      ministry: s.occurrence.schedule.ministry.name,
-      role: s.role.name,
-    }))
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  return slots.map((s) => ({
+    slotId: s.id,
+    date: s.occurrence.date,
+    ministry: s.occurrence.schedule.ministry.name,
+    role: s.role.name,
+  }));
 }
 
 // FR-020: ranking de carga por pessoa num periodo.

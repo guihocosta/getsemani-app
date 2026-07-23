@@ -1,14 +1,19 @@
-import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { EmptyState } from "@/ui/EmptyState";
-import { fmtDate, fmtTime, dateKey, APP_TZ } from "@/lib/time";
+import { dateKey } from "@/lib/time";
+import { ledMinistryIds, listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
 import { EscalaCalendar } from "./EscalaCalendar";
 
 export const dynamic = "force-dynamic";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
+}
+
+function shiftMonth(year: number, month: number, delta: number): [number, number] {
+  const total = year * 12 + (month - 1) + delta;
+  return [Math.floor(total / 12), (total % 12) + 1];
 }
 
 export default async function EscalasPage({
@@ -25,16 +30,9 @@ export default async function EscalasPage({
   const [year, month] =
     mes && /^\d{4}-\d{2}$/.test(mes) ? mes.split("-").map(Number) : [defYear, defMonth];
 
-  const led = user.isAdmin
-    ? await prisma.ministry.findMany({ include: { roles: true } })
-    : (
-        await prisma.membership.findMany({
-          where: { userId: user.id, role: "LEADER" },
-          include: { ministry: { include: { roles: true } } },
-        })
-      ).map((m) => m.ministry);
+  const ministryIds = await ledMinistryIds(user.id, user.isAdmin);
 
-  if (led.length === 0) {
+  if (ministryIds.length === 0) {
     return (
       <div>
         <h1 className="text-3xl text-text mb-6">Escalas</h1>
@@ -43,41 +41,20 @@ export default async function EscalasPage({
     );
   }
 
-  const ministryIds = led.map((m) => m.id);
-  const monthStart = fromZonedTime(`${year}-${pad(month)}-01T00:00:00`, APP_TZ);
-  const nextMonthDate = month === 12 ? [year + 1, 1] : [year, month + 1];
-  const monthEnd = fromZonedTime(`${nextMonthDate[0]}-${pad(nextMonthDate[1])}-01T00:00:00`, APP_TZ);
-
-  const occurrences = await prisma.occurrence.findMany({
-    where: {
-      status: "ACTIVE",
-      date: { gte: monthStart, lt: monthEnd },
-      schedule: { ministryId: { in: ministryIds } },
-    },
-    include: {
-      schedule: { include: { ministry: true } },
-      slots: { include: { role: true, allocation: { include: { user: true } } } },
-    },
-    orderBy: { date: "asc" },
-  });
+  // Pre-carrega mes anterior/atual/seguinte pra trocar de mes ser instantaneo no
+  // client (cache local) na maioria dos casos; meses fora disso usam a action.
+  const [prevYear, prevMonth] = shiftMonth(year, month, -1);
+  const [nextYear, nextMonth] = shiftMonth(year, month, 1);
+  const [prevItems, currentItems, nextItems] = await Promise.all([
+    listMonthOccurrences(ministryIds, prevYear, prevMonth),
+    listMonthOccurrences(ministryIds, year, month),
+    listMonthOccurrences(ministryIds, nextYear, nextMonth),
+  ]);
 
   const volunteers = await prisma.membership.findMany({
     where: { ministryId: { in: ministryIds }, role: "VOLUNTEER" },
     include: { user: true },
   });
-
-  const items = occurrences.map((o) => ({
-    occurrenceId: o.id,
-    scheduleId: o.scheduleId,
-    dayKey: dateKey(o.date),
-    title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
-    when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
-    slots: o.slots.map((s) => ({
-      slotId: s.id,
-      role: s.role.name,
-      allocatedName: s.allocation?.user.name ?? null,
-    })),
-  }));
 
   return (
     <div>
@@ -85,7 +62,11 @@ export default async function EscalasPage({
         year={year}
         month={month}
         todayKey={todayKey}
-        occurrences={items}
+        initialMonths={{
+          [`${prevYear}-${pad(prevMonth)}`]: prevItems,
+          [`${year}-${pad(month)}`]: currentItems,
+          [`${nextYear}-${pad(nextMonth)}`]: nextItems,
+        }}
         volunteers={volunteers.map((v) => ({ id: v.user.id, name: v.user.name }))}
       />
     </div>

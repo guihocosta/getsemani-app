@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
+import { useConfirm } from "@/ui/ConfirmDialog";
 import { allocateAction, deleteOccurrenceAction } from "./actions";
 
 type Slot = { slotId: string; role: string; allocatedName: string | null };
@@ -17,9 +18,11 @@ export function OccurrenceRow(props: {
   when: string;
   slots: Slot[];
   volunteers: Vol[];
+  onChanged: () => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
 
   function allocate(slotId: string, userId: string, override = false) {
     if (!userId) return;
@@ -35,16 +38,37 @@ export function OccurrenceRow(props: {
         }
       } else {
         setNote(null);
+        props.onChanged();
       }
     });
   }
 
-  function del(scope: "SINGLE" | "FROM_HERE") {
-    start(() => deleteOccurrenceAction(props.occurrenceId, scope));
+  async function del(scope: "SINGLE" | "FROM_HERE") {
+    const ok = await confirm(
+      scope === "SINGLE"
+        ? {
+            title: "Excluir esta escala?",
+            description: `Remove só a ocorrência de "${props.title}" em ${props.when}. Não afeta as próximas.`,
+            confirmLabel: "Excluir",
+            tone: "danger",
+          }
+        : {
+            title: "Excluir daqui em diante?",
+            description: `Cancela "${props.title}" a partir de ${props.when} e todas as ocorrências futuras da série. Não afeta datas passadas.`,
+            confirmLabel: "Excluir todas",
+            tone: "danger",
+          },
+    );
+    if (!ok) return;
+    start(async () => {
+      await deleteOccurrenceAction(props.occurrenceId, scope);
+      props.onChanged();
+    });
   }
 
   return (
     <li>
+      {dialog}
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { buildRRule, type Frequency } from "@/modules/scheduling/domain/buildRRule";
-import { createScheduleAction, updateScheduleAction } from "./actions";
+import { createScheduleAction, updateScheduleAction, type ScheduleFormState } from "./actions";
 
 type Ministry = { id: string; name: string; roles: { id: string; name: string }[] };
 
@@ -19,6 +19,8 @@ type EditingSchedule = {
   roleIds: string[];
 };
 
+const INITIAL_STATE: ScheduleFormState = { ok: true };
+
 export function ScheduleForm({
   ministries,
   editing,
@@ -27,13 +29,20 @@ export function ScheduleForm({
   editing?: EditingSchedule;
 }) {
   const isEdit = !!editing;
+  const [state, formAction, pending] = useActionState(
+    isEdit ? updateScheduleAction : createScheduleAction,
+    INITIAL_STATE,
+  );
+
   const [ministryId, setMinistryId] = useState(editing?.ministryId ?? ministries[0]?.id ?? "");
   const [startDate, setStartDate] = useState(editing?.startDate ?? "");
   const [repeat, setRepeat] = useState(!isEdit);
   const [freq, setFreq] = useState<Frequency>("WEEKLY");
-  const [endMode, setEndMode] = useState<"date" | "count">("count");
+  const [endMode, setEndMode] = useState<"never" | "date" | "count">("never");
   const [endDate, setEndDate] = useState("");
   const [endCount, setEndCount] = useState(8);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(editing?.roleIds ?? []);
+  const [roleError, setRoleError] = useState(false);
 
   const ministry = ministries.find((m) => m.id === ministryId);
   const weekday = startDate ? new Date(`${startDate}T00:00:00Z`).getUTCDay() : 0;
@@ -50,9 +59,23 @@ export function ScheduleForm({
       ? endDate
       : "";
 
+  function toggleRole(roleId: string) {
+    setRoleError(false);
+    setSelectedRoles((prev) =>
+      prev.includes(roleId) ? prev.filter((id) => id !== roleId) : [...prev, roleId],
+    );
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    if (selectedRoles.length === 0) {
+      e.preventDefault();
+      setRoleError(true);
+    }
+  }
+
   return (
     <Card>
-      <form action={isEdit ? updateScheduleAction : createScheduleAction} className="flex flex-col gap-3">
+      <form action={formAction} onSubmit={handleSubmit} className="flex flex-col gap-3">
         {isEdit && <input type="hidden" name="scheduleId" value={editing!.id} />}
         <input type="hidden" name="recurrenceRule" value={recurrenceRule} />
         <input type="hidden" name="recurrenceUntil" value={recurrenceUntil} />
@@ -114,18 +137,35 @@ export function ScheduleForm({
         <div>
           <p className="eyebrow mb-2">Funções</p>
           <div className="flex flex-wrap gap-2">
-            {ministry?.roles.map((r) => (
-              <label key={r.id} className="text-xs flex items-center gap-1 text-text-muted">
-                <input
-                  type="checkbox"
-                  name="roleIds"
-                  value={r.id}
-                  defaultChecked={editing?.roleIds.includes(r.id)}
-                />
-                {r.name}
-              </label>
-            ))}
+            {ministry?.roles.map((r) => {
+              const active = selectedRoles.includes(r.id);
+              return (
+                <label key={r.id}>
+                  <input
+                    type="checkbox"
+                    name="roleIds"
+                    value={r.id}
+                    checked={active}
+                    onChange={() => toggleRole(r.id)}
+                    className="sr-only peer"
+                  />
+                  <span
+                    className={
+                      "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ring-1 " +
+                      (active
+                        ? "bg-primary text-white ring-primary"
+                        : "bg-surface-2 text-text-muted ring-border hover:text-text")
+                    }
+                  >
+                    {r.name}
+                  </span>
+                </label>
+              );
+            })}
           </div>
+          {roleError && (
+            <p className="text-xs text-danger mt-2">Escolha pelo menos uma função.</p>
+          )}
         </div>
 
         {isEdit ? (
@@ -165,12 +205,13 @@ export function ScheduleForm({
                     <select
                       className="field w-32"
                       value={endMode}
-                      onChange={(e) => setEndMode(e.target.value as "date" | "count")}
+                      onChange={(e) => setEndMode(e.target.value as "never" | "date" | "count")}
                     >
+                      <option value="never">Nunca</option>
                       <option value="count">Nº de vezes</option>
                       <option value="date">Data</option>
                     </select>
-                    {endMode === "count" ? (
+                    {endMode === "count" && (
                       <input
                         type="number"
                         min={1}
@@ -178,7 +219,8 @@ export function ScheduleForm({
                         value={endCount}
                         onChange={(e) => setEndCount(Number(e.target.value))}
                       />
-                    ) : (
+                    )}
+                    {endMode === "date" && (
                       <input
                         type="date"
                         className="field flex-1"
@@ -187,13 +229,22 @@ export function ScheduleForm({
                       />
                     )}
                   </div>
+                  {endMode === "never" && (
+                    <p className="text-xs text-text-muted mt-1">
+                      A escala se repete indefinidamente; o app gera as próximas datas automaticamente.
+                    </p>
+                  )}
                 </div>
               </>
             )}
           </div>
         )}
 
-        <Button type="submit">{isEdit ? "Salvar alterações" : "Criar escala"}</Button>
+        {!state.ok && state.error && <p className="text-sm text-danger">{state.error}</p>}
+
+        <Button type="submit" disabled={pending}>
+          {pending ? "Salvando…" : isEdit ? "Salvar alterações" : "Criar escala"}
+        </Button>
       </form>
     </Card>
   );
