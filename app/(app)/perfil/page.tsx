@@ -8,6 +8,7 @@ import { ProfileForm } from "./ProfileForm";
 import { InstallSection } from "./InstallSection";
 import { NavRow } from "@/ui/NavRow";
 import { PushRegister } from "../PushRegister";
+import { MinistryRequestButton } from "../onboarding/MinistryRequestButton";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,12 @@ export default async function PerfilPage() {
     where: { userId: user.id },
     include: { ministry: true },
     orderBy: { ministry: { name: "asc" } },
+  });
+
+  const memberMinistryIds = new Set(memberships.map((m) => m.ministryId));
+  const otherMinistries = await prisma.ministry.findMany({
+    where: { id: { notIn: [...memberMinistryIds] } },
+    orderBy: { name: "asc" },
   });
 
   return (
@@ -58,6 +65,27 @@ export default async function PerfilPage() {
           </ul>
         )}
       </Card>
+
+      {otherMinistries.length > 0 && (
+        <>
+          <h2 className="eyebrow mb-3">Outros ministérios</h2>
+          <ul className="flex flex-col gap-3 mb-6">
+            {otherMinistries.map((ministry) => (
+              <li key={ministry.id}>
+                <Card className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-text">{ministry.name}</p>
+                    {ministry.description && (
+                      <p className="text-sm text-text-muted">{ministry.description}</p>
+                    )}
+                  </div>
+                  <MinistryRequestButton ministryId={ministry.id} status={null} />
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <h2 className="eyebrow mb-3">Notificações</h2>
       <div className="mb-6">
