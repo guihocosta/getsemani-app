@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { Card } from "@/ui/Card";
+import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";
 import { fmtDateTime } from "@/lib/time";
 import { SelfAllocateButton, ClaimSwapButton } from "./buttons";
@@ -49,52 +51,62 @@ export default async function VagasPage() {
     take: 50,
   });
 
+  type Item = {
+    key: string;
+    kind: "free" | "swap";
+    date: Date;
+    ministry: string;
+    role: string;
+    action: ReactNode;
+  };
+
+  const items: Item[] = [
+    ...freeSlots.map((s) => ({
+      key: `free-${s.id}`,
+      kind: "free" as const,
+      date: s.occurrence.date,
+      ministry: s.occurrence.schedule.ministry.name,
+      role: s.role.name,
+      action: <SelfAllocateButton slotId={s.id} />,
+    })),
+    ...swaps.map((sw) => {
+      const s = sw.allocation.slot;
+      return {
+        key: `swap-${sw.id}`,
+        kind: "swap" as const,
+        date: s.occurrence.date,
+        ministry: s.occurrence.schedule.ministry.name,
+        role: s.role.name,
+        action: <ClaimSwapButton swapRequestId={sw.id} />,
+      };
+    }),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime());
+
   return (
     <div>
       <h1 className="text-3xl text-text mb-6">Vagas</h1>
 
-      <h2 className="eyebrow mb-3">Escalas livres</h2>
-      {freeSlots.length === 0 ? (
-        <EmptyState title="Sem vagas livres" subtitle="Tudo preenchido nos seus ministérios." />
+      {items.length === 0 ? (
+        <EmptyState title="Nenhuma vaga ou troca aberta" subtitle="Tudo preenchido nos seus ministérios." />
       ) : (
-        <ul className="flex flex-col gap-3 mb-8">
-          {freeSlots.map((s) => (
-            <li key={s.id}>
-              <Card className="flex items-center justify-between">
+        <ul className="flex flex-col gap-3">
+          {items.map((it) => (
+            <li key={it.key}>
+              <Card className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="eyebrow text-primary">{s.occurrence.schedule.ministry.name}</p>
-                  <p className="text-lg text-text">{s.role.name}</p>
-                  <p className="text-sm text-text-muted">{fmtDateTime(s.occurrence.date)}</p>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="eyebrow text-primary">{it.ministry}</p>
+                    <Badge tone={it.kind === "free" ? "info" : "muted"} className="text-[9px]">
+                      {it.kind === "free" ? "vaga" : "troca"}
+                    </Badge>
+                  </div>
+                  <p className="text-lg text-text">{it.role}</p>
+                  <p className="text-sm text-text-muted">{fmtDateTime(it.date)}</p>
                 </div>
-                <SelfAllocateButton slotId={s.id} />
+                {it.action}
               </Card>
             </li>
           ))}
-        </ul>
-      )}
-
-      <h2 className="eyebrow mb-3">Trocas abertas</h2>
-      {swaps.length === 0 ? (
-        <EmptyState title="Nenhuma troca aberta" />
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {swaps.map((sw) => {
-            const s = sw.allocation.slot;
-            return (
-              <li key={sw.id}>
-                <Card className="flex items-center justify-between">
-                  <div>
-                    <p className="eyebrow text-primary">
-                      {s.occurrence.schedule.ministry.name}
-                    </p>
-                    <p className="text-lg text-text">{s.role.name}</p>
-                    <p className="text-sm text-text-muted">{fmtDateTime(s.occurrence.date)}</p>
-                  </div>
-                  <ClaimSwapButton swapRequestId={sw.id} />
-                </Card>
-              </li>
-            );
-          })}
         </ul>
       )}
     </div>
