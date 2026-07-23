@@ -34,8 +34,11 @@ export async function requireAdmin(): Promise<User> {
 }
 
 // Verdadeiro se o usuario e admin ou lider do ministerio.
+// Reusa o user da sessao (getSessionUser e cache()) quando o id bate, evitando
+// um findUnique redundante no caminho quente (requireLeaderOf sempre passa o proprio id).
 export async function isLeaderOf(userId: string, ministryId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const sessionUser = await getSessionUser();
+  const user = sessionUser?.id === userId ? sessionUser : await prisma.user.findUnique({ where: { id: userId } });
   if (user?.isAdmin) return true;
   const m = await prisma.membership.findFirst({
     where: { userId, ministryId, role: "LEADER", status: "ACTIVE" },
@@ -50,9 +53,10 @@ export async function requireLeaderOf(ministryId: string): Promise<User> {
 }
 
 // Verdadeiro se o usuario lidera pelo menos um ministerio (usado pra exibir nav de Solicitações).
-export async function isLeaderOfAny(userId: string): Promise<boolean> {
+// cache() dedup: layout e paginas (ex: /admin) compartilham UMA resolucao por render.
+export const isLeaderOfAny = cache(async (userId: string): Promise<boolean> => {
   const m = await prisma.membership.findFirst({
     where: { userId, role: "LEADER", status: "ACTIVE" },
   });
   return !!m;
-}
+});

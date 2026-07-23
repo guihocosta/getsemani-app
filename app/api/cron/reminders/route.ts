@@ -31,23 +31,24 @@ export async function GET(request: Request) {
     },
   });
 
-  let sent = 0;
-  for (const a of allocs) {
-    const occ = a.slot.occurrence;
-    const isPending = a.status === "PENDING";
-    const res = await notifyUser({
-      userId: a.userId,
-      type: "REMINDER",
-      dedupeKey: `reminder:${a.id}:${occ.id}`,
-      title: isPending
-        ? `Confirme sua escala: ${a.slot.occurrence.schedule.ministry.name}`
-        : `Lembrete: ${a.slot.occurrence.schedule.ministry.name}`,
-      body: `${a.slot.role.name} · ${fmtDateTime(occ.date)}`,
-      url: "/",
-      occurrenceId: occ.id,
-    });
-    if (res === "sent") sent++;
-  }
+  const results = await Promise.all(
+    allocs.map((a) => {
+      const occ = a.slot.occurrence;
+      const isPending = a.status === "PENDING";
+      return notifyUser({
+        userId: a.userId,
+        type: "REMINDER",
+        dedupeKey: `reminder:${a.id}:${occ.id}`,
+        title: isPending
+          ? `Confirme sua escala: ${a.slot.occurrence.schedule.ministry.name}`
+          : `Lembrete: ${a.slot.occurrence.schedule.ministry.name}`,
+        body: `${a.slot.role.name} · ${fmtDateTime(occ.date)}`,
+        url: "/",
+        occurrenceId: occ.id,
+      });
+    }),
+  );
+  const sent = results.filter((r) => r === "sent").length;
 
   return NextResponse.json({ ok: true, sent, scanned: allocs.length });
 }
