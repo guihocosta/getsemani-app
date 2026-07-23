@@ -5,8 +5,8 @@ import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";
-import { fmtDate, fmtTime } from "@/lib/time";
-import { RequestSwapButton } from "./RequestSwapButton";
+import { fmtDate, fmtTime, dateKey } from "@/lib/time";
+import { AllocationActions } from "./AllocationActions";
 import { InstallPopup } from "./InstallPopup";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +20,7 @@ export default async function HomePage() {
   if (!activeMembership) redirect("/onboarding");
 
   const items = await getMySchedule(user.id);
+  const todayKey = dateKey(new Date());
 
   return (
     <div>
@@ -42,14 +43,21 @@ export default async function HomePage() {
               <p className="eyebrow text-primary">{items[0].ministry}</p>
               <p className="text-xl text-text">{items[0].role}</p>
               <p className="text-sm text-text-muted">{fmtDate(items[0].date)}</p>
+              {items[0].status === "PENDING" && (
+                <Badge tone="info" className="mt-1">
+                  aguardando confirmação
+                </Badge>
+              )}
             </div>
             <div className="flex flex-col items-end gap-1">
               <p className="font-title text-3xl text-primary">{fmtTime(items[0].date)}</p>
-              {items[0].hasSwapOpen ? (
-                <Badge tone="info">troca pedida</Badge>
-              ) : (
-                <RequestSwapButton allocationId={items[0].allocationId} />
-              )}
+              <AllocationActions
+                allocationId={items[0].allocationId}
+                status={items[0].status}
+                isToday={dateKey(items[0].date) === todayKey}
+                checkedIn={!!items[0].checkedInAt}
+                hasSwapOpen={items[0].hasSwapOpen}
+              />
             </div>
           </Card>
 
@@ -64,14 +72,21 @@ export default async function HomePage() {
                         <p className="eyebrow text-primary">{it.ministry}</p>
                         <p className="text-lg text-text">{it.role}</p>
                         <p className="text-sm text-text-muted">{fmtDate(it.date)}</p>
+                        {it.status === "PENDING" && (
+                          <Badge tone="info" className="mt-1">
+                            aguardando confirmação
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <p className="font-title text-2xl text-primary">{fmtTime(it.date)}</p>
-                        {it.hasSwapOpen ? (
-                          <Badge tone="info">troca pedida</Badge>
-                        ) : (
-                          <RequestSwapButton allocationId={it.allocationId} />
-                        )}
+                        <AllocationActions
+                          allocationId={it.allocationId}
+                          status={it.status}
+                          isToday={dateKey(it.date) === todayKey}
+                          checkedIn={!!it.checkedInAt}
+                          hasSwapOpen={it.hasSwapOpen}
+                        />
                       </div>
                     </Card>
                   </li>

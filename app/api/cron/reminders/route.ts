@@ -34,11 +34,14 @@ export async function GET(request: Request) {
   let sent = 0;
   for (const a of allocs) {
     const occ = a.slot.occurrence;
+    const isPending = a.status === "PENDING";
     const res = await notifyUser({
       userId: a.userId,
       type: "REMINDER",
       dedupeKey: `reminder:${a.id}:${occ.id}`,
-      title: `Lembrete: ${a.slot.occurrence.schedule.ministry.name}`,
+      title: isPending
+        ? `Confirme sua escala: ${a.slot.occurrence.schedule.ministry.name}`
+        : `Lembrete: ${a.slot.occurrence.schedule.ministry.name}`,
       body: `${a.slot.role.name} · ${fmtDateTime(occ.date)}`,
       url: "/",
       occurrenceId: occ.id,

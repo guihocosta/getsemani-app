@@ -39,6 +39,7 @@ export async function allocateVolunteer(params: {
         userId: params.userId,
         source: "LEADER",
         overrideUnavailability: conflict && !!params.override,
+        status: "PENDING",
       },
     });
 

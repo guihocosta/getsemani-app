@@ -41,7 +41,13 @@ export async function selfAllocate(params: { slotId: string; acknowledge?: boole
 
   try {
     const alloc = await prisma.allocation.create({
-      data: { slotId: params.slotId, userId: user.id, source: "SELF" },
+      data: {
+        slotId: params.slotId,
+        userId: user.id,
+        source: "SELF",
+        status: "CONFIRMED",
+        respondedAt: new Date(),
+      },
     });
     return { allocation: alloc };
   } catch (e: unknown) {

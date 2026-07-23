@@ -47,10 +47,19 @@ export async function claimSwap(params: { swapRequestId: string }) {
     });
     if (!member) throw new Error("NOT_ELIGIBLE");
 
-    // reatribui a allocation existente (mesmo slotId, evita cascade que apagaria o swap)
+    // reatribui a allocation existente (mesmo slotId, evita cascade que apagaria o swap).
+    // Zera checkedInAt: quem assumiu a troca ainda nao fez check-in, mesmo que
+    // quem saiu tivesse feito.
     const updated = await tx.allocation.update({
       where: { id: swap.allocationId },
-      data: { userId: user.id, source: "SWAP", overrideUnavailability: false },
+      data: {
+        userId: user.id,
+        source: "SWAP",
+        overrideUnavailability: false,
+        status: "CONFIRMED",
+        respondedAt: new Date(),
+        checkedInAt: null,
+      },
     });
     await tx.swapRequest.update({
       where: { id: swap.id },
