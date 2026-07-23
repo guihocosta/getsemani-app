@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/ui/Button";
+import { Card } from "@/ui/Card";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -32,7 +33,12 @@ export function PushRegister() {
       setState("ios-need-install");
       return;
     }
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      typeof Notification === "undefined" ||
+      !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    ) {
       setState("unsupported");
       return;
     }
@@ -62,30 +68,40 @@ export function PushRegister() {
     setState("granted");
   }
 
-  if (state === "granted" || state === "unsupported") return null;
+  if (state === "granted") {
+    return (
+      <Card className="flex items-center justify-between">
+        <p className="text-sm text-text">Notificações</p>
+        <span className="text-xs text-text-muted">Ativadas</span>
+      </Card>
+    );
+  }
+
+  if (state === "unsupported" || state === "idle") return null;
 
   if (state === "ios-need-install") {
     return (
-      <div className="mb-4 rounded-[14px] bg-accent-soft ring-1 ring-primary/20 px-4 py-3">
-        <span className="text-sm text-text-muted">
+      <Card>
+        <p className="text-sm text-text mb-1">Notificações</p>
+        <p className="text-xs text-text-muted">
           Pra receber lembretes, adicione o app à Tela de Início: toque em{" "}
           <span className="text-text font-semibold">Compartilhar</span> e depois em{" "}
           <span className="text-text font-semibold">Adicionar à Tela de Início</span>.
-        </span>
-      </div>
+        </p>
+      </Card>
     );
   }
 
   return (
-    <div className="mb-4 rounded-[14px] bg-accent-soft ring-1 ring-primary/20 px-4 py-3 flex items-center justify-between">
-      <span className="text-sm text-text-muted">
+    <Card className="flex items-center justify-between gap-3">
+      <span className="text-sm text-text">
         {state === "denied" ? "Notificações bloqueadas" : "Ativar lembretes das escalas"}
       </span>
       {state !== "denied" && (
-        <Button variant="secondary" className="py-2 px-3 text-sm" onClick={enable}>
+        <Button variant="secondary" className="py-2 px-3 text-sm shrink-0" onClick={enable}>
           Ativar
         </Button>
       )}
-    </div>
+    </Card>
   );
 }

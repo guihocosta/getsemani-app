@@ -3,7 +3,7 @@
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 
-export default function AppError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function AppError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6">
       <Card className="max-w-sm">
@@ -11,6 +11,7 @@ export default function AppError({ reset }: { error: Error & { digest?: string }
         <p className="text-sm text-text-muted mb-4">
           Não conseguimos carregar essa tela agora. Tente novamente.
         </p>
+        {error.digest && <p className="text-xs text-text-muted/60 mb-4">Código: {error.digest}</p>}
         <Button onClick={reset} className="w-full justify-center">
           Tentar de novo
         </Button>

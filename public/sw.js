@@ -1,12 +1,18 @@
-// Service Worker — Web Push + cache de leitura (App de Escalas Getsemani)
-const CACHE = "getsemani-v1";
+// Service Worker — Web Push (App de Escalas Getsemani)
+const CACHE = "getsemani-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+// Limpa caches de versoes antigas (evita servir HTML velho apontando pra
+// chunks /_next/static que nao existem mais apos um deploy -> client-side exception).
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+    ).then(() => self.clients.claim()),
+  );
 });
 
 // Push (FR-014/015): exibe notificacao
@@ -36,17 +42,5 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// Cache leitura simples (network-first para navegacao)
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET" || req.mode !== "navigate") return;
-  event.respondWith(
-    fetch(req)
-      .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-        return res;
-      })
-      .catch(() => caches.match(req).then((r) => r || caches.match("/"))),
-  );
-});
+// Sem cache de navegacao: paginas sao force-dynamic e autenticadas,
+// cachear HTML entre deploys/sessoes causava tela de erro e vazamento de dados.
