@@ -6,17 +6,25 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/ui/EmptyState";
 import { OccurrenceRow } from "./OccurrenceRow";
 import { loadMonthAction } from "./actions";
+import type { AllocationStatus } from "@prisma/client";
 
-type Slot = { slotId: string; role: string; allocatedName: string | null };
+type Slot = {
+  slotId: string;
+  role: string;
+  allocatedName: string | null;
+  allocationId: string | null;
+  allocatedStatus: AllocationStatus | null;
+  checkedIn: boolean;
+};
 type Item = {
   occurrenceId: string;
   scheduleId: string;
+  ministryId: string;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
   slots: Slot[];
 };
-type Vol = { id: string; name: string };
 
 const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTH_LABELS = [
@@ -44,13 +52,13 @@ export function EscalaCalendar({
   month: initialMonth,
   todayKey,
   initialMonths,
-  volunteers,
+  manageableMinistryIds,
 }: {
   year: number;
   month: number; // 1-12
   todayKey: string;
   initialMonths: Record<string, Item[]>;
-  volunteers: Vol[];
+  manageableMinistryIds: string[];
 }) {
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
@@ -130,18 +138,21 @@ export function EscalaCalendar({
   }, [year, month]);
 
   const dayItems = byDay.get(selected) ?? [];
+  const canManageAny = manageableMinistryIds.length > 0;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl text-text">Escalas</h1>
-        <Link
-          href="/escalas/nova"
-          className="flex items-center gap-1 text-sm font-semibold text-primary"
-        >
-          <Plus size={18} strokeWidth={2} />
-          Nova
-        </Link>
+        {canManageAny && (
+          <Link
+            href="/escalas/nova"
+            className="flex items-center gap-1 text-sm font-semibold text-primary"
+          >
+            <Plus size={18} strokeWidth={2} />
+            Nova
+          </Link>
+        )}
       </div>
 
       <div className="flex items-center justify-between mb-4">
@@ -205,7 +216,10 @@ export function EscalaCalendar({
       </h2>
 
       {dayItems.length === 0 ? (
-        <EmptyState title="Nenhuma escala neste dia" subtitle="Toque em Nova para criar uma." />
+        <EmptyState
+          title="Nenhuma escala neste dia"
+          subtitle={canManageAny ? "Toque em Nova para criar uma." : undefined}
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {dayItems.map((o) => (
@@ -216,7 +230,8 @@ export function EscalaCalendar({
               title={o.title}
               when={o.when}
               slots={o.slots}
-              volunteers={volunteers}
+              canManage={manageableMinistryIds.includes(o.ministryId)}
+              isToday={o.dayKey === todayKey}
               onChanged={refreshCurrentMonth}
             />
           ))}

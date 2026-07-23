@@ -7,8 +7,11 @@ import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer } from "@/modules/scheduling/services/allocateVolunteer";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
-import { requireUser } from "@/modules/identity/services/authz";
-import { ledMinistryIds, listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
+import { visibleMinistryIds, listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import { prisma } from "@/lib/prisma";
+import { loadByPerson } from "@/modules/reports/services/reports";
+import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -97,7 +100,49 @@ export async function deleteOccurrenceAction(occurrenceId: string, scope: "SINGL
 // Troca de mes no calendario sem navegacao de pagina inteira (ver EscalaCalendar).
 export async function loadMonthAction(year: number, month: number) {
   const user = await requireUser();
-  const ministryIds = await ledMinistryIds(user.id, user.isAdmin);
+  const ministryIds = await visibleMinistryIds(user.id, user.isAdmin);
   if (ministryIds.length === 0) return [];
   return listMonthOccurrences(ministryIds, year, month);
+}
+
+export type AllocationCandidate = {
+  userId: string;
+  name: string;
+  count30d: number;
+  unavailable: boolean;
+};
+
+// Candidatos pra uma vaga: carga nos ultimos 30 dias no MESMO ministerio e se
+// esta indisponivel na data da ocorrencia — pra alocar com informacao em vez
+// de as cegas. Calculado sob demanda (so quando o seletor abre), pra nao
+// pesar o payload mensal do calendario.
+export async function getAllocationCandidatesAction(slotId: string): Promise<AllocationCandidate[]> {
+  const slot = await prisma.slot.findUniqueOrThrow({
+    where: { id: slotId },
+    include: { occurrence: { include: { schedule: true } } },
+  });
+  await requireLeaderOf(slot.occurrence.schedule.ministryId);
+
+  const ministryId = slot.occurrence.schedule.ministryId;
+  const memberships = await prisma.membership.findMany({
+    where: { ministryId, role: "VOLUNTEER", status: "ACTIVE" },
+    include: { user: true },
+  });
+  const userIds = memberships.map((m) => m.userId);
+
+  const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [load, unavailable] = await Promise.all([
+    loadByPerson(from, new Date(), [ministryId]),
+    usersUnavailableAt(userIds, slot.occurrence.date),
+  ]);
+  const countOf = new Map(load.map((l) => [l.userId, l.count]));
+
+  return memberships
+    .map((m) => ({
+      userId: m.userId,
+      name: m.user.name,
+      count30d: countOf.get(m.userId) ?? 0,
+      unavailable: unavailable.has(m.userId),
+    }))
+    .sort((a, b) => a.count30d - b.count30d);
 }

@@ -1,6 +1,7 @@
 import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtTime, dateKey, APP_TZ } from "@/lib/time";
+import type { AllocationStatus } from "@prisma/client";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -9,10 +10,18 @@ function pad(n: number): string {
 export type MonthOccurrenceItem = {
   occurrenceId: string;
   scheduleId: string;
+  ministryId: string;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
-  slots: { slotId: string; role: string; allocatedName: string | null }[];
+  slots: {
+    slotId: string;
+    role: string;
+    allocatedName: string | null;
+    allocationId: string | null;
+    allocatedStatus: AllocationStatus | null;
+    checkedIn: boolean;
+  }[];
 };
 
 // Ocorrencias ativas de um mes, para os ministerios informados.
@@ -43,6 +52,7 @@ export async function listMonthOccurrences(
   return occurrences.map((o) => ({
     occurrenceId: o.id,
     scheduleId: o.scheduleId,
+    ministryId: o.schedule.ministryId,
     dayKey: dateKey(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
@@ -50,19 +60,35 @@ export async function listMonthOccurrences(
       slotId: s.id,
       role: s.role.name,
       allocatedName: s.allocation?.user.name ?? null,
+      allocationId: s.allocation?.id ?? null,
+      allocatedStatus: s.allocation?.status ?? null,
+      checkedIn: !!s.allocation?.checkedInAt,
     })),
   }));
 }
 
-// Resolve os ministerios que o usuario lidera (ou todos, se admin) — usado pra
-// autorizar tanto a page inicial quanto a action de troca de mes no calendario.
+// Ministerios que o usuario PODE GERENCIAR (lider ou admin) — controla quem
+// ve os botoes de criar/editar/excluir/alocar no calendario de Escalas.
 export async function ledMinistryIds(userId: string, isAdmin: boolean): Promise<string[]> {
   if (isAdmin) {
     return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
   }
   const memberships = await prisma.membership.findMany({
-    where: { userId, role: "LEADER" },
+    where: { userId, role: "LEADER", status: "ACTIVE" },
     select: { ministryId: true },
   });
   return memberships.map((m) => m.ministryId);
+}
+
+// Ministerios que o usuario PODE VER no calendario de Escalas (qualquer membership
+// ativa, lider ou voluntario) — admin ve todos. Mais amplo que ledMinistryIds.
+export async function visibleMinistryIds(userId: string, isAdmin: boolean): Promise<string[]> {
+  if (isAdmin) {
+    return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
+  }
+  const memberships = await prisma.membership.findMany({
+    where: { userId, status: "ACTIVE" },
+    select: { ministryId: true },
+  });
+  return [...new Set(memberships.map((m) => m.ministryId))];
 }

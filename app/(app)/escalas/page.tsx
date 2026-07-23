@@ -1,8 +1,11 @@
-import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { EmptyState } from "@/ui/EmptyState";
 import { dateKey } from "@/lib/time";
-import { ledMinistryIds, listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import {
+  ledMinistryIds,
+  visibleMinistryIds,
+  listMonthOccurrences,
+} from "@/modules/scheduling/services/listMonthOccurrences";
 import { EscalaCalendar } from "./EscalaCalendar";
 
 export const dynamic = "force-dynamic";
@@ -30,13 +33,19 @@ export default async function EscalasPage({
   const [year, month] =
     mes && /^\d{4}-\d{2}$/.test(mes) ? mes.split("-").map(Number) : [defYear, defMonth];
 
-  const ministryIds = await ledMinistryIds(user.id, user.isAdmin);
+  const [viewMinistryIds, manageMinistryIds] = await Promise.all([
+    visibleMinistryIds(user.id, user.isAdmin),
+    ledMinistryIds(user.id, user.isAdmin),
+  ]);
 
-  if (ministryIds.length === 0) {
+  if (viewMinistryIds.length === 0) {
     return (
       <div>
         <h1 className="text-3xl text-text mb-6">Escalas</h1>
-        <EmptyState title="Você não lidera ministérios" subtitle="Peça acesso a um admin." />
+        <EmptyState
+          title="Você ainda não participa de nenhum ministério"
+          subtitle="Peça acesso a um admin."
+        />
       </div>
     );
   }
@@ -46,15 +55,10 @@ export default async function EscalasPage({
   const [prevYear, prevMonth] = shiftMonth(year, month, -1);
   const [nextYear, nextMonth] = shiftMonth(year, month, 1);
   const [prevItems, currentItems, nextItems] = await Promise.all([
-    listMonthOccurrences(ministryIds, prevYear, prevMonth),
-    listMonthOccurrences(ministryIds, year, month),
-    listMonthOccurrences(ministryIds, nextYear, nextMonth),
+    listMonthOccurrences(viewMinistryIds, prevYear, prevMonth),
+    listMonthOccurrences(viewMinistryIds, year, month),
+    listMonthOccurrences(viewMinistryIds, nextYear, nextMonth),
   ]);
-
-  const volunteers = await prisma.membership.findMany({
-    where: { ministryId: { in: ministryIds }, role: "VOLUNTEER" },
-    include: { user: true },
-  });
 
   return (
     <div>
@@ -67,7 +71,7 @@ export default async function EscalasPage({
           [`${year}-${pad(month)}`]: currentItems,
           [`${nextYear}-${pad(nextMonth)}`]: nextItems,
         }}
-        volunteers={volunteers.map((v) => ({ id: v.user.id, name: v.user.name }))}
+        manageableMinistryIds={manageMinistryIds}
       />
     </div>
   );

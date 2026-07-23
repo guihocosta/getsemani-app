@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { Users2, Bell, ClipboardList } from "lucide-react";
-import { getSessionUser } from "@/modules/identity/services/authz";
+import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
+import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports/services/reports";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
@@ -13,36 +14,49 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  if (!user.isAdmin) redirect("/");
+
+  const isLeader = await isLeaderOfAny(user.id);
+  if (!user.isAdmin && !isLeader) redirect("/");
+
+  // Admin ve relatorios globais; lider ve so os ministerios que lidera.
+  const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
 
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 864e5);
-  const [open, load, byMinistry, pendingCount, ministryCount, personCount] = await Promise.all([
-    openSlots(now),
-    loadByPerson(new Date(now.getTime() - 30 * 864e5), in30),
-    volunteersByMinistry(),
-    prisma.membership.count({ where: { status: "PENDING" } }),
-    prisma.ministry.count(),
-    prisma.user.count(),
+  const [open, load, byMinistry, pendingCount] = await Promise.all([
+    openSlots(now, scopeIds),
+    loadByPerson(new Date(now.getTime() - 30 * 864e5), in30, scopeIds),
+    volunteersByMinistry(scopeIds),
+    prisma.membership.count({
+      where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
+    }),
   ]);
+
+  const [ministryCount, personCount] = user.isAdmin
+    ? await Promise.all([prisma.ministry.count(), prisma.user.count()])
+    : [0, 0];
 
   return (
     <div>
       <h1 className="text-3xl text-text mb-6">Gestão</h1>
 
       <Card className="mb-8 divide-y divide-border">
-        <NavRow
-          href="/admin/ministerios"
-          label="Ministérios"
-          subtitle={`${ministryCount} ${ministryCount === 1 ? "cadastrado" : "cadastrados"}`}
-          Icon={ClipboardList}
-        />
-        <NavRow
-          href="/admin/pessoas"
-          label="Pessoas"
-          subtitle={`${personCount} ${personCount === 1 ? "pessoa" : "pessoas"}`}
-          Icon={Users2}
-        />
+        {user.isAdmin && (
+          <>
+            <NavRow
+              href="/admin/ministerios"
+              label="Ministérios"
+              subtitle={`${ministryCount} ${ministryCount === 1 ? "cadastrado" : "cadastrados"}`}
+              Icon={ClipboardList}
+            />
+            <NavRow
+              href="/admin/pessoas"
+              label="Pessoas"
+              subtitle={`${personCount} ${personCount === 1 ? "pessoa" : "pessoas"}`}
+              Icon={Users2}
+            />
+          </>
+        )}
         <NavRow
           href="/solicitacoes"
           label="Solicitações"

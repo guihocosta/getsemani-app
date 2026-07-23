@@ -5,19 +5,31 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import type { ReactNode, ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
-import { Home, HandHelping, CalendarOff, Calendar, User } from "lucide-react";
+import { Home, HandHelping, Calendar, Settings, User } from "lucide-react";
 import { cn } from "./cn";
 
-const nav: { href: string; label: string; Icon: ComponentType<LucideProps> }[] = [
+type NavItem = { href: string; label: string; Icon: ComponentType<LucideProps> };
+
+const BASE_NAV: NavItem[] = [
   { href: "/", label: "Início", Icon: Home },
   { href: "/vagas", label: "Vagas", Icon: HandHelping },
-  { href: "/indisponibilidade", label: "Agenda", Icon: CalendarOff },
   { href: "/escalas", label: "Escalas", Icon: Calendar },
-  { href: "/perfil", label: "Perfil", Icon: User },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+const MANAGE_NAV: NavItem = { href: "/admin", label: "Gestão", Icon: Settings };
+const PROFILE_NAV: NavItem = { href: "/perfil", label: "Perfil", Icon: User };
+
+export function AppShell({
+  children,
+  isAdmin = false,
+  isLeader = false,
+}: {
+  children: ReactNode;
+  isAdmin?: boolean;
+  isLeader?: boolean;
+}) {
   const pathname = usePathname();
+  const nav = [...BASE_NAV, ...(isAdmin || isLeader ? [MANAGE_NAV] : []), PROFILE_NAV];
 
   return (
     <div className="min-h-dvh mx-auto max-w-md flex flex-col px-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
@@ -33,7 +45,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 px-6 mx-auto max-w-md">
-        <ul className="grid grid-cols-5 bg-surface/70 backdrop-blur-3xl rounded-[2rem] ring-1 ring-border/60 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)]">
+        <ul
+          className={cn(
+            "grid bg-surface/70 backdrop-blur-3xl rounded-[2rem] ring-1 ring-border/60 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)]",
+            nav.length === 5 ? "grid-cols-5" : "grid-cols-4",
+          )}
+        >
           {nav.map(({ href, label, Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (

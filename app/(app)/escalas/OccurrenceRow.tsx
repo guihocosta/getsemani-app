@@ -2,14 +2,22 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, CheckCircle2 } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
 import { allocateAction, deleteOccurrenceAction } from "./actions";
+import { AllocatePicker } from "./AllocatePicker";
+import type { AllocationStatus } from "@prisma/client";
 
-type Slot = { slotId: string; role: string; allocatedName: string | null };
-type Vol = { id: string; name: string };
+type Slot = {
+  slotId: string;
+  role: string;
+  allocatedName: string | null;
+  allocationId: string | null;
+  allocatedStatus: AllocationStatus | null;
+  checkedIn: boolean;
+};
 
 export function OccurrenceRow(props: {
   occurrenceId: string;
@@ -17,7 +25,8 @@ export function OccurrenceRow(props: {
   title: string;
   when: string;
   slots: Slot[];
-  volunteers: Vol[];
+  canManage: boolean;
+  isToday: boolean;
   onChanged: () => void;
 }) {
   const [pending, start] = useTransition();
@@ -75,21 +84,23 @@ export function OccurrenceRow(props: {
             <p className="text-sm text-text">{props.title}</p>
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href={`/escalas/${props.scheduleId}/editar`} className="text-text-muted hover:text-text">
-              <Pencil size={14} strokeWidth={1.8} />
-            </Link>
-            <button className="text-xs text-danger" disabled={pending} onClick={() => del("SINGLE")}>
-              Excluir esta
-            </button>
-            <button
-              className="text-xs text-danger"
-              disabled={pending}
-              onClick={() => del("FROM_HERE")}
-            >
-              Daqui em diante
-            </button>
-          </div>
+          {props.canManage && (
+            <div className="flex items-center gap-3">
+              <Link href={`/escalas/${props.scheduleId}/editar`} className="text-text-muted hover:text-text">
+                <Pencil size={14} strokeWidth={1.8} />
+              </Link>
+              <button className="text-xs text-danger" disabled={pending} onClick={() => del("SINGLE")}>
+                Excluir esta
+              </button>
+              <button
+                className="text-xs text-danger"
+                disabled={pending}
+                onClick={() => del("FROM_HERE")}
+              >
+                Daqui em diante
+              </button>
+            </div>
+          )}
         </div>
 
         <ul className="flex flex-col gap-2">
@@ -99,21 +110,25 @@ export function OccurrenceRow(props: {
               <li key={s.slotId} className="flex items-center justify-between gap-2">
                 <span className="text-sm text-text-muted w-24 shrink-0">{s.role}</span>
                 {s.allocatedName ? (
-                  <span className="text-sm text-text flex-1">{s.allocatedName}</span>
-                ) : (
-                  <select
-                    defaultValue=""
+                  <span className="text-sm text-text flex-1 flex items-center gap-1.5 flex-wrap">
+                    {s.allocatedName}
+                    {s.allocatedStatus === "PENDING" && (
+                      <Badge tone="info" className="text-[10px]">
+                        aguardando confirmação
+                      </Badge>
+                    )}
+                    {props.isToday && s.checkedIn && (
+                      <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
+                    )}
+                  </span>
+                ) : props.canManage ? (
+                  <AllocatePicker
+                    slotId={s.slotId}
                     disabled={pending}
-                    onChange={(e) => allocate(s.slotId, e.target.value)}
-                    className="field flex-1 !py-1.5 text-sm"
-                  >
-                    <option value="">Alocar…</option>
-                    {props.volunteers.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
+                    onPick={(userId) => allocate(s.slotId, userId)}
+                  />
+                ) : (
+                  <span className="text-sm text-text-muted flex-1">— vaga aberta</span>
                 )}
                 {noteFor && (
                   <Badge tone="info" className="text-xs">
