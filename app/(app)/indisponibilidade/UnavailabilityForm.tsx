@@ -11,6 +11,7 @@ function todayISO() {
 export function UnavailabilityForm() {
   const [pending, start] = useTransition();
   const [allDay, setAllDay] = useState(true);
+  const [startDate, setStartDate] = useState(todayISO());
   const [error, setError] = useState<string | null>(null);
 
   function submit(formData: FormData) {
@@ -18,18 +19,42 @@ export function UnavailabilityForm() {
     start(async () => {
       try {
         await addUnavailabilityAction(formData);
-      } catch {
-        setError("Erro ao salvar. Tente de novo.");
+      } catch (e) {
+        setError(
+          (e as Error).message === "INVALID_RANGE"
+            ? "Período inválido (máximo 60 dias, fim não pode ser antes do início)."
+            : "Erro ao salvar. Tente de novo.",
+        );
       }
     });
   }
 
   return (
     <form action={submit} className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1">
-        <span className="text-xs text-text-muted">Dia</span>
-        <input type="date" name="date" required defaultValue={todayISO()} min={todayISO()} className="field" />
-      </label>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <label className="flex flex-col gap-1 flex-1">
+          <span className="text-xs text-text-muted">De</span>
+          <input
+            type="date"
+            name="startDate"
+            required
+            defaultValue={startDate}
+            min={todayISO()}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="field"
+          />
+        </label>
+        <label className="flex flex-col gap-1 flex-1">
+          <span className="text-xs text-text-muted">Até</span>
+          <input
+            type="date"
+            name="endDate"
+            defaultValue={startDate}
+            min={startDate}
+            className="field"
+          />
+        </label>
+      </div>
 
       <label className="flex items-center gap-2 text-sm text-text-muted">
         <input

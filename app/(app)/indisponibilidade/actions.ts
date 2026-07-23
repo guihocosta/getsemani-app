@@ -6,11 +6,13 @@ import { addUnavailability, removeUnavailability } from "@/modules/availability/
 
 export async function addUnavailabilityAction(formData: FormData) {
   const user = await requireUser();
-  const date = String(formData.get("date"));
+  const startDate = String(formData.get("startDate"));
+  const endDateRaw = String(formData.get("endDate") ?? "");
   const allDay = formData.get("allDay") === "on";
   await addUnavailability({
     userId: user.id,
-    date,
+    startDate,
+    endDate: endDateRaw || startDate,
     allDay,
     startTime: (formData.get("startTime") as string) || undefined,
     endTime: (formData.get("endTime") as string) || undefined,
@@ -18,8 +20,8 @@ export async function addUnavailabilityAction(formData: FormData) {
   revalidatePath("/indisponibilidade");
 }
 
-export async function removeUnavailabilityAction(id: string) {
+export async function removeUnavailabilityAction(ids: string[]) {
   const user = await requireUser();
-  await removeUnavailability(id, user.id);
+  await removeUnavailability(ids, user.id);
   revalidatePath("/indisponibilidade");
 }
