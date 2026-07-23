@@ -13,10 +13,11 @@ export function CreateMinistryForm() {
   function submit(formData: FormData) {
     const name = String(formData.get("name") ?? "");
     const color = String(formData.get("color") ?? "");
+    const description = String(formData.get("description") ?? "");
     setError(null);
     start(async () => {
       try {
-        await createMinistryAction({ name, color: color || undefined });
+        await createMinistryAction({ name, color: color || undefined, description: description || undefined });
         formRef.current?.reset();
       } catch (e) {
         setError((e as Error).message === "INVALID_NAME" ? "Nome inválido (mín. 2 caracteres)" : "Erro ao criar ministério");
@@ -27,20 +28,28 @@ export function CreateMinistryForm() {
   return (
     <Card className="mb-8">
       <p className="eyebrow mb-3">Novo ministério</p>
-      <form ref={formRef} action={submit} className="flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[10rem]">
-          <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-name">
-            Nome
-          </label>
-          <input id="ministry-name" name="name" required minLength={2} className="field w-full" placeholder="Ex: Louvor" />
+      <form ref={formRef} action={submit} className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[10rem]">
+            <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-name">
+              Nome
+            </label>
+            <input id="ministry-name" name="name" required minLength={2} className="field w-full" placeholder="Ex: Louvor" />
+          </div>
+          <div>
+            <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-color">
+              Cor
+            </label>
+            <input id="ministry-color" name="color" type="color" defaultValue="#6d28d9" className="field h-[42px] w-16 p-1" />
+          </div>
         </div>
         <div>
-          <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-color">
-            Cor
+          <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-description">
+            Descrição (opcional)
           </label>
-          <input id="ministry-color" name="color" type="color" defaultValue="#6d28d9" className="field h-[42px] w-16 p-1" />
+          <input id="ministry-description" name="description" className="field w-full" placeholder="Ex: Equipe de música dos cultos" />
         </div>
-        <Button type="submit" disabled={pending} className="py-2.5 px-4 text-sm">
+        <Button type="submit" disabled={pending} className="py-2.5 px-4 text-sm self-start">
           Criar
         </Button>
       </form>

@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Users2, Bell, ClipboardList } from "lucide-react";
 import { getSessionUser } from "@/modules/identity/services/authz";
+import { prisma } from "@/lib/prisma";
 import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports/services/reports";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
+import { NavRow } from "@/ui/NavRow";
 import { fmtDateTime } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
@@ -15,37 +17,48 @@ export default async function AdminPage() {
 
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 864e5);
-  const [open, load, byMinistry] = await Promise.all([
+  const [open, load, byMinistry, pendingCount, ministryCount, personCount] = await Promise.all([
     openSlots(now),
     loadByPerson(new Date(now.getTime() - 30 * 864e5), in30),
     volunteersByMinistry(),
+    prisma.membership.count({ where: { status: "PENDING" } }),
+    prisma.ministry.count(),
+    prisma.user.count(),
   ]);
 
   return (
     <div>
-      <h1 className="text-3xl text-text mb-3">Admin</h1>
+      <h1 className="text-3xl text-text mb-6">Gestão</h1>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Link
+      <Card className="mb-8 divide-y divide-border">
+        <NavRow
           href="/admin/ministerios"
-          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-accent-soft text-primary ring-1 ring-primary/25 hover:brightness-110"
-        >
-          Ministérios
-        </Link>
-        <Link
+          label="Ministérios"
+          subtitle={`${ministryCount} ${ministryCount === 1 ? "cadastrado" : "cadastrados"}`}
+          Icon={ClipboardList}
+        />
+        <NavRow
           href="/admin/pessoas"
-          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-accent-soft text-primary ring-1 ring-primary/25 hover:brightness-110"
-        >
-          Pessoas
-        </Link>
-      </div>
+          label="Pessoas"
+          subtitle={`${personCount} ${personCount === 1 ? "pessoa" : "pessoas"}`}
+          Icon={Users2}
+        />
+        <NavRow
+          href="/solicitacoes"
+          label="Solicitações"
+          subtitle={pendingCount > 0 ? `${pendingCount} pendente(s)` : "Nenhum pedido pendente"}
+          Icon={Bell}
+        />
+      </Card>
 
-      <h2 className="eyebrow mb-3">Vagas sem ninguém ({open.length})</h2>
+      <h2 className="eyebrow mb-3">Resumo</h2>
+
+      <h3 className="text-sm text-text-muted mb-2">Vagas sem ninguém ({open.length})</h3>
       {open.length === 0 ? (
         <EmptyState title="Tudo alocado 🎉" />
       ) : (
         <ul className="flex flex-col gap-2 mb-8">
-          {open.slice(0, 30).map((s) => (
+          {open.slice(0, 5).map((s) => (
             <li key={s.slotId}>
               <Card className="flex items-center justify-between py-3">
                 <div>
@@ -56,13 +69,16 @@ export default async function AdminPage() {
               </Card>
             </li>
           ))}
+          {open.length > 5 && (
+            <p className="text-xs text-text-muted text-center">e mais {open.length - 5}…</p>
+          )}
         </ul>
       )}
 
-      <h2 className="eyebrow mb-3">Carga por pessoa</h2>
+      <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>
       <Card className="mb-8">
         <ul className="flex flex-col gap-2">
-          {load.map((p) => (
+          {load.slice(0, 5).map((p) => (
             <li key={p.userId} className="flex justify-between text-sm">
               <span className="text-text">{p.name}</span>
               <span className="font-title text-primary">{p.count}</span>
@@ -72,7 +88,7 @@ export default async function AdminPage() {
         </ul>
       </Card>
 
-      <h2 className="eyebrow mb-3">Voluntários por ministério</h2>
+      <h3 className="text-sm text-text-muted mb-2">Voluntários por ministério</h3>
       <Card>
         <ul className="flex flex-col gap-2">
           {byMinistry.map((m) => (
