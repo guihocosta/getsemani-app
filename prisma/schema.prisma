@@ -37,6 +37,11 @@ enum AllocationSource {
   SWAP
 }
 
+enum AllocationStatus {
+  PENDING
+  CONFIRMED
+}
+
 enum SwapStatus {
   OPEN
   CLAIMED
@@ -172,6 +177,9 @@ model Allocation {
   userId                 String           @db.Uuid
   source                 AllocationSource
   overrideUnavailability Boolean          @default(false)
+  status                 AllocationStatus @default(PENDING)
+  respondedAt            DateTime?
+  checkedInAt            DateTime?
   createdAt              DateTime         @default(now())
 
   slot        Slot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
