@@ -109,7 +109,7 @@ export function ScheduleForm({
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
             <p className="eyebrow mb-1">Data base</p>
             <input
@@ -201,9 +201,9 @@ export function ScheduleForm({
 
                 <div>
                   <p className="eyebrow mb-1">Terminar em</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <select
-                      className="field w-32"
+                      className="field sm:w-32"
                       value={endMode}
                       onChange={(e) => setEndMode(e.target.value as "never" | "date" | "count")}
                     >
