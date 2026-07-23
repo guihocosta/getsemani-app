@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, CheckCircle2 } from "lucide-react";
+import { Download, CheckCircle2, Share, SquarePlus } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
@@ -27,10 +27,20 @@ export function InstallSection() {
       </div>
 
       {isIOS ? (
-        <p className="text-xs text-text-muted">
-          Toque em <span className="text-text font-semibold">Compartilhar</span> e depois em{" "}
-          <span className="text-text font-semibold">Adicionar à Tela de Início</span>.
-        </p>
+        <ol className="flex flex-col gap-2">
+          <li className="flex items-center gap-2 text-sm text-text-muted">
+            <span className="h-6 w-6 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
+              <Share size={13} strokeWidth={2} />
+            </span>
+            Toque em <span className="text-text font-semibold">Compartilhar</span> na barra do navegador
+          </li>
+          <li className="flex items-center gap-2 text-sm text-text-muted">
+            <span className="h-6 w-6 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
+              <SquarePlus size={13} strokeWidth={2} />
+            </span>
+            Escolha <span className="text-text font-semibold">Adicionar à Tela de Início</span>
+          </li>
+        </ol>
       ) : canPrompt ? (
         <Button variant="secondary" className="w-full py-2.5 text-sm" onClick={() => promptInstall()}>
           Instalar

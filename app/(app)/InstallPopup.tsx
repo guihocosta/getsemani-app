@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, X } from "lucide-react";
+import { Download, X, Share, SquarePlus } from "lucide-react";
 import { Button } from "@/ui/Button";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 
@@ -59,11 +59,28 @@ export function InstallPopup() {
             </div>
 
             <p className="text-lg text-text mb-1">Instale o app na Tela de Início</p>
-            <p className="text-sm text-text-muted mb-5">
+            <p className="text-sm text-text-muted mb-4">
               {isIOS
-                ? "Acesso rápido às escalas, sem abrir o navegador. Toque em Compartilhar e depois em Adicionar à Tela de Início."
+                ? "Acesso rápido às escalas, sem abrir o navegador."
                 : "Acesso rápido às escalas e notificações de lembrete, sem abrir o navegador."}
             </p>
+
+            {isIOS && (
+              <ol className="flex flex-col gap-2 mb-5">
+                <li className="flex items-center gap-2 text-sm text-text-muted">
+                  <span className="h-6 w-6 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
+                    <Share size={13} strokeWidth={2} />
+                  </span>
+                  Toque em <span className="text-text font-semibold">Compartilhar</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm text-text-muted">
+                  <span className="h-6 w-6 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
+                    <SquarePlus size={13} strokeWidth={2} />
+                  </span>
+                  Depois <span className="text-text font-semibold">Adicionar à Tela de Início</span>
+                </li>
+              </ol>
+            )}
 
             {isIOS ? (
               <Button variant="secondary" className="w-full" onClick={dismiss}>
