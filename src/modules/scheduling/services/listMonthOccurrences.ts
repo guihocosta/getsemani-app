@@ -17,6 +17,7 @@ export type MonthOccurrenceItem = {
   slots: {
     slotId: string;
     role: string;
+    allocatedUserId: string | null;
     allocatedName: string | null;
     allocationId: string | null;
     allocatedStatus: AllocationStatus | null;
@@ -59,6 +60,7 @@ export async function listMonthOccurrences(
     slots: o.slots.map((s) => ({
       slotId: s.id,
       role: s.role.name,
+      allocatedUserId: s.allocation?.userId ?? null,
       allocatedName: s.allocation?.user.name ?? null,
       allocationId: s.allocation?.id ?? null,
       allocatedStatus: s.allocation?.status ?? null,

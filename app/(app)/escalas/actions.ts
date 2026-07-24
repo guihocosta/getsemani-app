@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSchedule } from "@/modules/scheduling/services/createSchedule";
 import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
-import { allocateVolunteer } from "@/modules/scheduling/services/allocateVolunteer";
+import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
 import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
@@ -92,6 +92,24 @@ export async function allocateAction(
   try {
     await allocateVolunteer({ slotId, userId, override });
     revalidatePath("/escalas");
+    return { ok: true };
+  } catch (e) {
+    const msg = (e as Error)?.message;
+    const code: AllocateCode =
+      msg === "UNAVAILABILITY_BLOCKED" || msg === "SLOT_TAKEN" ? msg : "UNKNOWN";
+    return { ok: false, code };
+  }
+}
+
+export async function reassignAllocationAction(
+  slotId: string,
+  userId: string,
+  override = false,
+): Promise<{ ok: true } | { ok: false; code: AllocateCode }> {
+  try {
+    await reassignAllocation({ slotId, userId, override });
+    revalidatePath("/escalas");
+    revalidatePath("/");
     return { ok: true };
   } catch (e) {
     const msg = (e as Error)?.message;
