@@ -22,15 +22,17 @@ export async function selfAllocate(params: { slotId: string; acknowledge?: boole
     },
   });
 
-  // elegibilidade: membro do ministerio
-  const member = await prisma.membership.findFirst({
-    where: {
-      userId: user.id,
-      ministryId: slot.occurrence.schedule.ministryId,
-      status: "ACTIVE",
-    },
-  });
-  if (!member) throw new NotEligible();
+  // elegibilidade: membro ativo do ministerio (admin sempre elegivel)
+  if (!user.isAdmin) {
+    const member = await prisma.membership.findFirst({
+      where: {
+        userId: user.id,
+        ministryId: slot.occurrence.schedule.ministryId,
+        status: "ACTIVE",
+      },
+    });
+    if (!member) throw new NotEligible();
+  }
 
   if (slot.allocation) throw new SlotTaken();
 

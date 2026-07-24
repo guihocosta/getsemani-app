@@ -6,6 +6,11 @@ import { Badge } from "@/ui/Badge";
 import { requestMembershipAction } from "./actions";
 import type { MembershipStatus } from "@prisma/client";
 
+const MENSAGENS = {
+  ALREADY_REQUESTED: "Já pedido",
+  UNKNOWN: "Não deu para pedir agora",
+} as const;
+
 export function MinistryRequestButton({
   ministryId,
   status,
@@ -32,12 +37,12 @@ export function MinistryRequestButton({
         disabled={pending}
         onClick={() =>
           start(async () => {
-            try {
-              await requestMembershipAction(ministryId);
-              setLocalStatus("PENDING");
-            } catch (e) {
-              setMsg((e as Error).message === "ALREADY_REQUESTED" ? "Já pedido" : "Erro");
+            const res = await requestMembershipAction(ministryId);
+            if (!res.ok) {
+              setMsg(MENSAGENS[res.code]);
+              return;
             }
+            setLocalStatus(res.status);
           })
         }
       >

@@ -2,23 +2,34 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/ui/Button";
-import { selfAllocateAction, claimSwapAction } from "./actions";
+import { selfAllocateAction, claimSwapAction, type ActionCode } from "./actions";
+
+const MENSAGENS: Record<ActionCode, string> = {
+  SLOT_TAKEN: "Vaga já preenchida",
+  NOT_ELIGIBLE: "Você não é membro ativo desse ministério",
+  NOT_OWNER: "Essa escala não é sua",
+  UNKNOWN: "Não deu para completar agora. Tente de novo.",
+};
 
 export function SelfAllocateButton({ slotId }: { slotId: string }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   function go(ack: boolean) {
     start(async () => {
-      try {
-        const res = await selfAllocateAction(slotId, ack);
-        if ("warnedUnavailability" in res && res.warnedUnavailability) {
-          setMsg("Você marcou indisponibilidade nesse horário. Confirmar mesmo assim?");
-        } else {
-          setMsg(null);
-        }
-      } catch (e) {
-        setMsg((e as Error).message === "SLOT_TAKEN" ? "Vaga já preenchida" : "Erro");
+      const res = await selfAllocateAction(slotId, ack);
+      if (!res.ok) {
+        setMsg(MENSAGENS[res.code]);
+        setConfirming(false);
+        return;
+      }
+      if (res.warnedUnavailability) {
+        setMsg("Você marcou indisponibilidade nesse horário. Confirmar mesmo assim?");
+        setConfirming(true);
+      } else {
+        setMsg(null);
+        setConfirming(false);
       }
     });
   }
@@ -31,7 +42,7 @@ export function SelfAllocateButton({ slotId }: { slotId: string }) {
       {msg && (
         <div className="mt-1 text-xs text-primary max-w-[9rem]">
           {msg}
-          {msg.includes("mesmo assim") && (
+          {confirming && (
             <button className="block underline underline-offset-2 mt-1" onClick={() => go(true)}>
               Confirmar
             </button>
@@ -53,11 +64,8 @@ export function ClaimSwapButton({ swapRequestId }: { swapRequestId: string }) {
         disabled={pending}
         onClick={() =>
           start(async () => {
-            try {
-              await claimSwapAction(swapRequestId);
-            } catch (e) {
-              setMsg((e as Error).message === "SLOT_TAKEN" ? "Já assumida" : "Erro");
-            }
+            const res = await claimSwapAction(swapRequestId);
+            if (!res.ok) setMsg(MENSAGENS[res.code]);
           })
         }
       >

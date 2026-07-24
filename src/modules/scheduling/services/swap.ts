@@ -42,10 +42,12 @@ export async function claimSwap(params: { swapRequestId: string }) {
     if (swap.requestedBy === user.id) throw new NotOwner();
 
     const ministryId = swap.allocation.slot.occurrence.schedule.ministryId;
-    const member = await tx.membership.findFirst({
-      where: { userId: user.id, ministryId, status: "ACTIVE" },
-    });
-    if (!member) throw new Error("NOT_ELIGIBLE");
+    if (!user.isAdmin) {
+      const member = await tx.membership.findFirst({
+        where: { userId: user.id, ministryId, status: "ACTIVE" },
+      });
+      if (!member) throw new Error("NOT_ELIGIBLE");
+    }
 
     // reatribui a allocation existente (mesmo slotId, evita cascade que apagaria o swap).
     // Zera checkedInAt: quem assumiu a troca ainda nao fez check-in, mesmo que
