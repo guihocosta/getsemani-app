@@ -22,7 +22,7 @@ export function ProfileForm({ name, phone }: { name: string; phone: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div data-no-swipe className="flex flex-col gap-3">
       <label className="flex flex-col gap-1">
         <span className="text-sm text-text-muted">Nome</span>
         <input

@@ -39,6 +39,7 @@ export function useConfirm() {
     <AnimatePresence>
       {state.open && (
         <motion.div
+          data-no-swipe
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

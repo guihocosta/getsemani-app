@@ -75,7 +75,7 @@ export function ScheduleForm({
 
   return (
     <Card>
-      <form action={formAction} onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form data-no-swipe action={formAction} onSubmit={handleSubmit} className="flex flex-col gap-3">
         {isEdit && <input type="hidden" name="scheduleId" value={editing!.id} />}
         <input type="hidden" name="recurrenceRule" value={recurrenceRule} />
         <input type="hidden" name="recurrenceUntil" value={recurrenceUntil} />

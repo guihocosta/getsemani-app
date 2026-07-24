@@ -30,7 +30,7 @@ export function UnavailabilityForm() {
   }
 
   return (
-    <form action={submit} className="flex flex-col gap-3">
+    <form data-no-swipe action={submit} className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
         <label className="flex flex-col gap-1 flex-1">
           <span className="text-xs text-text-muted">De</span>

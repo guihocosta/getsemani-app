@@ -22,7 +22,7 @@ export function AddRoleForm({ ministryId }: { ministryId: string }) {
   }
 
   return (
-    <form ref={formRef} action={submit} className="flex items-center gap-2 mt-2">
+    <form data-no-swipe ref={formRef} action={submit} className="flex items-center gap-2 mt-2">
       <input
         name="name"
         required

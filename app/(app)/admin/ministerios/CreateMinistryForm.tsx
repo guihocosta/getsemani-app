@@ -28,7 +28,7 @@ export function CreateMinistryForm() {
   return (
     <Card className="mb-8">
       <p className="eyebrow mb-3">Novo ministério</p>
-      <form ref={formRef} action={submit} className="flex flex-col gap-3">
+      <form data-no-swipe ref={formRef} action={submit} className="flex flex-col gap-3">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1 min-w-[10rem]">
             <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-name">

@@ -38,7 +38,7 @@ export function EditMinistryForm({ ministryId, name, color, description, onDone 
   }
 
   return (
-    <form ref={formRef} action={submit} className="flex flex-col gap-3 border-t border-border pt-3 mt-3">
+    <form data-no-swipe ref={formRef} action={submit} className="flex flex-col gap-3 border-t border-border pt-3 mt-3">
       <div className="flex gap-3">
         <div className="flex-1">
           <label className="text-xs text-text-muted block mb-1">Nome</label>
