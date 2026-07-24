@@ -28,14 +28,20 @@ export async function notifyUser(params: {
       },
     }));
 
+  // Falha de push (VAPID invalido, rede, etc) nunca deve derrubar o fluxo de
+  // dominio que disparou a notificacao — so loga e segue.
   const subs = await prisma.pushSubscription.findMany({ where: { userId: params.userId } });
   await Promise.all(
     subs.map(async (s) => {
-      const ok = await sendPush(
-        { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-        { title: params.title, body: params.body, url: params.url },
-      );
-      if (!ok) await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => {});
+      try {
+        const ok = await sendPush(
+          { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+          { title: params.title, body: params.body, url: params.url },
+        );
+        if (!ok) await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => {});
+      } catch (err) {
+        console.error("push falhou", err);
+      }
     }),
   );
 

@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
+import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/ui/AppShell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -8,8 +10,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const isLeader = await isLeaderOfAny(user.id);
 
+  let pendingCount = 0;
+  if (user.isAdmin || isLeader) {
+    const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
+    pendingCount = await prisma.membership.count({
+      where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
+    });
+  }
+
   return (
-    <AppShell isAdmin={user.isAdmin} isLeader={isLeader}>
+    <AppShell isAdmin={user.isAdmin} isLeader={isLeader} pendingCount={pendingCount}>
       {children}
     </AppShell>
   );

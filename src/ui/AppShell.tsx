@@ -7,6 +7,7 @@ import type { ReactNode, ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
 import { Home, HandHelping, Calendar, Settings, User } from "lucide-react";
 import { cn } from "./cn";
+import { SwipeNav } from "./SwipeNav";
 
 type NavItem = { href: string; label: string; Icon: ComponentType<LucideProps> };
 
@@ -23,10 +24,12 @@ export function AppShell({
   children,
   isAdmin = false,
   isLeader = false,
+  pendingCount = 0,
 }: {
   children: ReactNode;
   isAdmin?: boolean;
   isLeader?: boolean;
+  pendingCount?: number;
 }) {
   const pathname = usePathname();
   const nav = [...BASE_NAV, ...(isAdmin || isLeader ? [MANAGE_NAV] : []), PROFILE_NAV];
@@ -34,14 +37,16 @@ export function AppShell({
   return (
     <div className="min-h-dvh mx-auto max-w-md flex flex-col px-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <main className="flex-1 pb-32 px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-        >
-          {children}
-        </motion.div>
+        <SwipeNav tabs={nav.map((n) => n.href)}>
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          >
+            {children}
+          </motion.div>
+        </SwipeNav>
       </main>
 
       <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 px-6 mx-auto max-w-md">
@@ -53,6 +58,7 @@ export function AppShell({
         >
           {nav.map(({ href, label, Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            const showPendingDot = href === "/admin" && pendingCount > 0;
             return (
               <li key={href} className="relative">
                 <Link
@@ -69,7 +75,12 @@ export function AppShell({
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <Icon size={20} strokeWidth={1.8} />
+                  <span className="relative">
+                    <Icon size={20} strokeWidth={1.8} />
+                    {showPendingDot && (
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-danger" />
+                    )}
+                  </span>
                   {label}
                   {active && (
                     <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(79,70,229,0.5)]" />

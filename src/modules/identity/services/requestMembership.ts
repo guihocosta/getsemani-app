@@ -25,24 +25,32 @@ export async function requestMembership(params: { ministryId: string }) {
     where: { id: params.ministryId },
   });
 
+  // Admin pedindo pra si mesmo nao precisa de aprovacao (ja pode tudo).
   const membership = await prisma.membership.create({
     data: {
       userId: user.id,
       ministryId: params.ministryId,
       role: "VOLUNTEER",
-      status: "PENDING",
+      status: user.isAdmin ? "ACTIVE" : "PENDING",
     },
   });
+  if (user.isAdmin) return membership;
 
   const leaders = await prisma.membership.findMany({
     where: { ministryId: params.ministryId, role: "LEADER", status: "ACTIVE" },
   });
 
-  for (const leader of leaders) {
+  // Sem lider ativo, ninguem seria avisado — cai pros admins revisarem.
+  const recipients =
+    leaders.length > 0
+      ? leaders.map((l) => l.userId)
+      : (await prisma.user.findMany({ where: { isAdmin: true }, select: { id: true } })).map((u) => u.id);
+
+  for (const userId of recipients) {
     await notifyUser({
-      userId: leader.userId,
+      userId,
       type: "ASSIGNMENT",
-      dedupeKey: `membership-request:${membership.id}:${leader.userId}`,
+      dedupeKey: `membership-request:${membership.id}:${userId}`,
       title: "Novo pedido de entrada",
       body: `${user.name} pediu para participar do ministério ${ministry.name}`,
       url: "/solicitacoes",
