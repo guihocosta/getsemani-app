@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/ui/Badge";
-import { getAllocationCandidatesAction, type AllocationCandidate } from "./actions";
+import type { AllocationCandidate } from "./actions";
 
 export function AllocatePicker(props: {
-  slotId: string;
   disabled?: boolean;
+  candidates: AllocationCandidate[] | null;
+  loading: boolean;
+  failed: boolean;
+  onOpen: () => void;
+  onRetry: () => void;
   onPick: (userId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
-  const [loading, start] = useTransition();
 
   function toggle() {
     if (open) {
@@ -20,11 +22,7 @@ export function AllocatePicker(props: {
       return;
     }
     setOpen(true);
-    if (!candidates) {
-      start(async () => {
-        setCandidates(await getAllocationCandidatesAction(props.slotId));
-      });
-    }
+    props.onOpen();
   }
 
   return (
@@ -41,12 +39,21 @@ export function AllocatePicker(props: {
 
       {open && (
         <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-xl bg-surface ring-1 ring-border shadow-lg">
-          {loading && <p className="px-3 py-2 text-xs text-text-muted">Carregando…</p>}
-          {!loading && candidates?.length === 0 && (
+          {props.loading && <p className="px-3 py-2 text-xs text-text-muted">Carregando…</p>}
+          {props.failed && (
+            <div className="px-3 py-2 text-xs text-text-muted">
+              Não deu pra carregar.{" "}
+              <button className="underline underline-offset-2 text-primary" onClick={props.onRetry}>
+                Tentar de novo
+              </button>
+            </div>
+          )}
+          {!props.loading && !props.failed && props.candidates?.length === 0 && (
             <p className="px-3 py-2 text-xs text-text-muted">Nenhum voluntário neste ministério.</p>
           )}
-          {!loading &&
-            candidates?.map((c) => (
+          {!props.loading &&
+            !props.failed &&
+            props.candidates?.map((c) => (
               <button
                 key={c.userId}
                 type="button"

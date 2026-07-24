@@ -6,7 +6,7 @@ import { Pencil, CheckCircle2 } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
-import { allocateAction, deleteOccurrenceAction } from "./actions";
+import { allocateAction, deleteOccurrenceAction, getOccurrenceCandidatesAction, type AllocationCandidate } from "./actions";
 import { AllocatePicker } from "./AllocatePicker";
 import type { AllocationStatus } from "@prisma/client";
 
@@ -33,17 +33,35 @@ export function OccurrenceRow(props: {
   const [note, setNote] = useState<string | null>(null);
   const { confirm, dialog } = useConfirm();
 
+  // Candidatos sao os mesmos pra todas as vagas desta ocorrencia (mesmo
+  // ministerio + data) — busca uma vez so, na primeira vez que algum seletor
+  // abre, e reusa pras demais vagas em vez de refazer a query por vaga.
+  const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [candidatesFailed, setCandidatesFailed] = useState(false);
+
+  function ensureCandidates() {
+    if (candidates || candidatesLoading) return;
+    setCandidatesFailed(false);
+    setCandidatesLoading(true);
+    getOccurrenceCandidatesAction(props.occurrenceId).then((res) => {
+      setCandidatesLoading(false);
+      if (res.ok) setCandidates(res.candidates);
+      else setCandidatesFailed(true);
+    });
+  }
+
   function allocate(slotId: string, userId: string, override = false) {
     if (!userId) return;
     start(async () => {
       const res = await allocateAction(slotId, userId, override);
       if (!res.ok) {
-        if (res.error === "UNAVAILABILITY_BLOCKED") {
+        if (res.code === "UNAVAILABILITY_BLOCKED") {
           setNote(`${slotId}|Indisponível. Alocar mesmo assim?|${userId}`);
-        } else if (res.error === "SLOT_TAKEN") {
+        } else if (res.code === "SLOT_TAKEN") {
           setNote(`${slotId}|Vaga já preenchida|`);
         } else {
-          setNote(`${slotId}|Erro|`);
+          setNote(`${slotId}|Não deu pra alocar agora|`);
         }
       } else {
         setNote(null);
@@ -123,8 +141,12 @@ export function OccurrenceRow(props: {
                   </span>
                 ) : props.canManage ? (
                   <AllocatePicker
-                    slotId={s.slotId}
                     disabled={pending}
+                    candidates={candidates}
+                    loading={candidatesLoading}
+                    failed={candidatesFailed}
+                    onOpen={ensureCandidates}
+                    onRetry={ensureCandidates}
                     onPick={(userId) => allocate(s.slotId, userId)}
                   />
                 ) : (

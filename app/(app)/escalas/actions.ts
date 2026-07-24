@@ -82,13 +82,22 @@ export async function updateScheduleAction(
   redirect("/escalas");
 }
 
-export async function allocateAction(slotId: string, userId: string, override = false) {
+export type AllocateCode = "UNAVAILABILITY_BLOCKED" | "SLOT_TAKEN" | "UNKNOWN";
+
+export async function allocateAction(
+  slotId: string,
+  userId: string,
+  override = false,
+): Promise<{ ok: true } | { ok: false; code: AllocateCode }> {
   try {
     await allocateVolunteer({ slotId, userId, override });
     revalidatePath("/escalas");
-    return { ok: true as const };
+    return { ok: true };
   } catch (e) {
-    return { ok: false as const, error: (e as Error).message };
+    const msg = (e as Error)?.message;
+    const code: AllocateCode =
+      msg === "UNAVAILABILITY_BLOCKED" || msg === "SLOT_TAKEN" ? msg : "UNKNOWN";
+    return { ok: false, code };
   }
 }
 
@@ -112,37 +121,47 @@ export type AllocationCandidate = {
   unavailable: boolean;
 };
 
-// Candidatos pra uma vaga: carga nos ultimos 30 dias no MESMO ministerio e se
-// esta indisponivel na data da ocorrencia — pra alocar com informacao em vez
-// de as cegas. Calculado sob demanda (so quando o seletor abre), pra nao
-// pesar o payload mensal do calendario.
-export async function getAllocationCandidatesAction(slotId: string): Promise<AllocationCandidate[]> {
-  const slot = await prisma.slot.findUniqueOrThrow({
-    where: { id: slotId },
-    include: { occurrence: { include: { schedule: true } } },
-  });
-  await requireLeaderOf(slot.occurrence.schedule.ministryId);
+// Candidatos pra uma ocorrencia: carga nos ultimos 30 dias no MESMO ministerio e
+// se esta indisponivel na data da ocorrencia — pra alocar com informacao em vez
+// de as cegas. Uma busca so por ocorrencia (nao por vaga): todas as vagas da
+// mesma ocorrencia compartilham ministerio + data, entao a lista e identica —
+// evita repetir 5 queries a cada seletor aberto, o que deixava a tela lenta
+// com varias vagas na mesma ocorrencia.
+export async function getOccurrenceCandidatesAction(
+  occurrenceId: string,
+): Promise<{ ok: true; candidates: AllocationCandidate[] } | { ok: false }> {
+  try {
+    const occurrence = await prisma.occurrence.findUniqueOrThrow({
+      where: { id: occurrenceId },
+      include: { schedule: true },
+    });
+    await requireLeaderOf(occurrence.schedule.ministryId);
 
-  const ministryId = slot.occurrence.schedule.ministryId;
-  const memberships = await prisma.membership.findMany({
-    where: { ministryId, role: "VOLUNTEER", status: "ACTIVE" },
-    include: { user: true },
-  });
-  const userIds = memberships.map((m) => m.userId);
+    const ministryId = occurrence.schedule.ministryId;
+    const memberships = await prisma.membership.findMany({
+      where: { ministryId, role: "VOLUNTEER", status: "ACTIVE" },
+      include: { user: true },
+    });
+    const userIds = memberships.map((m) => m.userId);
 
-  const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const [load, unavailable] = await Promise.all([
-    loadByPerson(from, new Date(), [ministryId]),
-    usersUnavailableAt(userIds, slot.occurrence.date),
-  ]);
-  const countOf = new Map(load.map((l) => [l.userId, l.count]));
+    const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [load, unavailable] = await Promise.all([
+      loadByPerson(from, new Date(), [ministryId]),
+      usersUnavailableAt(userIds, occurrence.date),
+    ]);
+    const countOf = new Map(load.map((l) => [l.userId, l.count]));
 
-  return memberships
-    .map((m) => ({
-      userId: m.userId,
-      name: m.user.name,
-      count30d: countOf.get(m.userId) ?? 0,
-      unavailable: unavailable.has(m.userId),
-    }))
-    .sort((a, b) => a.count30d - b.count30d);
+    const candidates = memberships
+      .map((m) => ({
+        userId: m.userId,
+        name: m.user.name,
+        count30d: countOf.get(m.userId) ?? 0,
+        unavailable: unavailable.has(m.userId),
+      }))
+      .sort((a, b) => a.count30d - b.count30d);
+
+    return { ok: true, candidates };
+  } catch {
+    return { ok: false };
+  }
 }
