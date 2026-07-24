@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { Card } from "@/ui/Card";
@@ -9,21 +11,27 @@ import { SelfAllocateButton, ClaimSwapButton } from "./buttons";
 
 export const dynamic = "force-dynamic";
 
+const WINDOW_DAYS = 14;
+
 export default async function VagasPage() {
   const user = await requireUser();
   const now = new Date();
+  const windowEnd = addDays(now, WINDOW_DAYS);
 
   const ministryIds = (
-    await prisma.membership.findMany({ where: { userId: user.id }, select: { ministryId: true } })
+    await prisma.membership.findMany({
+      where: { userId: user.id, status: "ACTIVE" },
+      select: { ministryId: true },
+    })
   ).map((m) => m.ministryId);
 
-  // vagas livres nos meus ministerios
+  // vagas livres nos meus ministerios, so nos proximos WINDOW_DAYS dias
   const freeSlots = await prisma.slot.findMany({
     where: {
       allocation: null,
       occurrence: {
         status: "ACTIVE",
-        date: { gte: now },
+        date: { gte: now, lte: windowEnd },
         schedule: { ministryId: { in: ministryIds } },
       },
     },
@@ -32,12 +40,19 @@ export default async function VagasPage() {
     take: 50,
   });
 
-  // trocas abertas nos meus ministerios (que nao sao minhas)
+  // trocas abertas nos meus ministerios (que nao sao minhas), so nos proximos WINDOW_DAYS dias
   const swaps = await prisma.swapRequest.findMany({
     where: {
       status: "OPEN",
       requestedBy: { not: user.id },
-      allocation: { slot: { occurrence: { schedule: { ministryId: { in: ministryIds } } } } },
+      allocation: {
+        slot: {
+          occurrence: {
+            date: { gte: now, lte: windowEnd },
+            schedule: { ministryId: { in: ministryIds } },
+          },
+        },
+      },
     },
     include: {
       allocation: {
@@ -84,7 +99,10 @@ export default async function VagasPage() {
 
   return (
     <div>
-      <h1 className="text-3xl text-text mb-6">Vagas</h1>
+      <header className="mb-6">
+        <h1 className="text-3xl text-text">Vagas</h1>
+        <p className="text-sm text-text-muted mt-0.5">Próximos {WINDOW_DAYS} dias</p>
+      </header>
 
       {items.length === 0 ? (
         <EmptyState title="Nenhuma vaga ou troca aberta" subtitle="Tudo preenchido nos seus ministérios." />
@@ -109,6 +127,13 @@ export default async function VagasPage() {
           ))}
         </ul>
       )}
+
+      <p className="text-center text-xs text-text-muted mt-6">
+        Panorama completo em{" "}
+        <Link href="/escalas" className="text-primary underline underline-offset-2">
+          Escalas
+        </Link>
+      </p>
     </div>
   );
 }
