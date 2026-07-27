@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/ui/Button";
 import { approveMembershipAction, rejectMembershipAction } from "./actions";
+import { MENSAGENS } from "@/lib/actionError";
 
 export function ReviewButtons({ membershipId }: { membershipId: string }) {
   const [pending, start] = useTransition();
@@ -19,12 +20,9 @@ export function ReviewButtons({ membershipId }: { membershipId: string }) {
           disabled={pending}
           onClick={() =>
             start(async () => {
-              try {
-                await approveMembershipAction(membershipId);
-                setDone(true);
-              } catch {
-                setMsg("Erro ao aprovar");
-              }
+              const res = await approveMembershipAction(membershipId);
+              if (res.ok) setDone(true);
+              else setMsg(`${MENSAGENS[res.code]} · cód. ${res.ref}`);
             })
           }
         >
@@ -36,12 +34,9 @@ export function ReviewButtons({ membershipId }: { membershipId: string }) {
           disabled={pending}
           onClick={() =>
             start(async () => {
-              try {
-                await rejectMembershipAction(membershipId);
-                setDone(true);
-              } catch {
-                setMsg("Erro ao recusar");
-              }
+              const res = await rejectMembershipAction(membershipId);
+              if (res.ok) setDone(true);
+              else setMsg(`${MENSAGENS[res.code]} · cód. ${res.ref}`);
             })
           }
         >
