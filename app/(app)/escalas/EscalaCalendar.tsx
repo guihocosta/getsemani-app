@@ -6,26 +6,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/ui/EmptyState";
 import { OccurrenceRow } from "./OccurrenceRow";
 import { loadMonthAction } from "./actions";
-import type { AllocationStatus } from "@prisma/client";
-
-type Slot = {
-  slotId: string;
-  role: string;
-  allocatedUserId: string | null;
-  allocatedName: string | null;
-  allocationId: string | null;
-  allocatedStatus: AllocationStatus | null;
-  checkedIn: boolean;
-};
-type Item = {
-  occurrenceId: string;
-  scheduleId: string;
-  ministryId: string;
-  dayKey: string; // yyyy-MM-dd
-  title: string;
-  when: string;
-  slots: Slot[];
-};
+import { patchOccurrenceSlot, type Item, type SlotPatch } from "./occurrenceCache";
 
 const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTH_LABELS = [
@@ -79,6 +60,16 @@ export function EscalaCalendar({
   async function refreshCurrentMonth() {
     const items = await loadMonthAction(year, month);
     setCache((prev) => new Map(prev).set(key, items));
+  }
+
+  // Atualiza 1 vaga no cache local sem re-buscar o mes — usado apos
+  // allocate/reassign, que ja devolvem o resultado da propria Server Action.
+  function patchSlot(occurrenceId: string, slotId: string, patch: SlotPatch) {
+    setCache((prev) => {
+      const items = prev.get(key);
+      if (!items) return prev;
+      return new Map(prev).set(key, patchOccurrenceSlot(items, occurrenceId, slotId, patch));
+    });
   }
 
   // Pre-busca meses vizinhos que ainda nao estao em cache, pra trocar de mes
@@ -235,6 +226,7 @@ export function EscalaCalendar({
               canManage={manageableMinistryIds.includes(o.ministryId)}
               isToday={o.dayKey === todayKey}
               onChanged={refreshCurrentMonth}
+              onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
             />
           ))}
         </ul>
