@@ -15,17 +15,7 @@ import {
 } from "./actions";
 import { AllocatePicker } from "./AllocatePicker";
 import { MENSAGENS } from "@/lib/actionError";
-import type { AllocationStatus } from "@prisma/client";
-
-type Slot = {
-  slotId: string;
-  role: string;
-  allocatedUserId: string | null;
-  allocatedName: string | null;
-  allocationId: string | null;
-  allocatedStatus: AllocationStatus | null;
-  checkedIn: boolean;
-};
+import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
 
@@ -46,6 +36,7 @@ export function OccurrenceRow(props: {
   canManage: boolean;
   isToday: boolean;
   onChanged: () => void;
+  onAllocated: (slotId: string, patch: SlotPatch) => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
@@ -88,11 +79,18 @@ export function OccurrenceRow(props: {
         } else {
           setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode });
         }
-      } else {
-        setNote(null);
-        setReassigningSlotId(null);
-        props.onChanged();
+        return;
       }
+      const name = candidates?.find((c) => c.userId === userId)?.name ?? "Alguém";
+      props.onAllocated(slotId, {
+        allocatedUserId: userId,
+        allocatedName: name,
+        allocationId: res.allocation.id,
+        allocatedStatus: res.allocation.status,
+        checkedIn: false,
+      });
+      setNote(null);
+      setReassigningSlotId(null);
     });
   }
 
