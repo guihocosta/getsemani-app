@@ -3,19 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { selfAllocate } from "@/modules/scheduling/services/selfAllocate";
 import { requestSwap, claimSwap } from "@/modules/scheduling/services/swap";
+import { handleActionError, type ActionCode } from "@/lib/actionError";
 
-export type ActionCode = "SLOT_TAKEN" | "NOT_ELIGIBLE" | "NOT_OWNER" | "UNKNOWN";
-
-function codeFor(e: unknown): ActionCode {
-  const msg = (e as Error)?.message;
-  if (msg === "SLOT_TAKEN" || msg === "NOT_ELIGIBLE" || msg === "NOT_OWNER") return msg;
-  return "UNKNOWN";
-}
+export type { ActionCode };
 
 export async function selfAllocateAction(
   slotId: string,
   acknowledge = false,
-): Promise<{ ok: true; warnedUnavailability?: true } | { ok: false; code: ActionCode }> {
+): Promise<{ ok: true; warnedUnavailability?: true } | { ok: false; code: ActionCode; ref: string }> {
   try {
     const res = await selfAllocate({ slotId, acknowledge });
     revalidatePath("/vagas");
@@ -25,32 +20,32 @@ export async function selfAllocateAction(
     }
     return { ok: true };
   } catch (e) {
-    return { ok: false, code: codeFor(e) };
+    return handleActionError("vagas.selfAllocate", e, { slotId });
   }
 }
 
 export async function requestSwapAction(
   allocationId: string,
-): Promise<{ ok: true } | { ok: false; code: ActionCode }> {
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
   try {
     await requestSwap({ allocationId });
     revalidatePath("/");
     revalidatePath("/vagas");
     return { ok: true };
   } catch (e) {
-    return { ok: false, code: codeFor(e) };
+    return handleActionError("vagas.requestSwap", e, { allocationId });
   }
 }
 
 export async function claimSwapAction(
   swapRequestId: string,
-): Promise<{ ok: true } | { ok: false; code: ActionCode }> {
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
   try {
     await claimSwap({ swapRequestId });
     revalidatePath("/vagas");
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
-    return { ok: false, code: codeFor(e) };
+    return handleActionError("vagas.claimSwap", e, { swapRequestId });
   }
 }

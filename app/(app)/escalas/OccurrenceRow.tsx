@@ -14,6 +14,7 @@ import {
   type AllocationCandidate,
 } from "./actions";
 import { AllocatePicker } from "./AllocatePicker";
+import { MENSAGENS } from "@/lib/actionError";
 import type { AllocationStatus } from "@prisma/client";
 
 type Slot = {
@@ -28,6 +29,14 @@ type Slot = {
 
 type NoteMode = "assign" | "reassign";
 
+type Note = {
+  slotId: string;
+  message: string;
+  ref?: string;
+  retryUserId?: string;
+  mode: NoteMode;
+};
+
 export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
@@ -39,7 +48,7 @@ export function OccurrenceRow(props: {
   onChanged: () => void;
 }) {
   const [pending, start] = useTransition();
-  const [note, setNote] = useState<string | null>(null);
+  const [note, setNote] = useState<Note | null>(null);
   const [reassigningSlotId, setReassigningSlotId] = useState<string | null>(null);
   const { confirm, dialog } = useConfirm();
 
@@ -49,16 +58,23 @@ export function OccurrenceRow(props: {
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
+  const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
 
   function ensureCandidates() {
     if (candidates || candidatesLoading) return;
     setCandidatesFailed(false);
+    setCandidatesRef(null);
     setCandidatesLoading(true);
-    getOccurrenceCandidatesAction(props.occurrenceId).then((res) => {
-      setCandidatesLoading(false);
-      if (res.ok) setCandidates(res.candidates);
-      else setCandidatesFailed(true);
-    });
+    getOccurrenceCandidatesAction(props.occurrenceId)
+      .then((res) => {
+        if (res.ok) setCandidates(res.candidates);
+        else {
+          setCandidatesFailed(true);
+          setCandidatesRef(res.ref);
+        }
+      })
+      .catch(() => setCandidatesFailed(true))
+      .finally(() => setCandidatesLoading(false));
   }
 
   function runAllocation(mode: NoteMode, slotId: string, userId: string, override = false) {
@@ -68,11 +84,9 @@ export function OccurrenceRow(props: {
       const res = await action(slotId, userId, override);
       if (!res.ok) {
         if (res.code === "UNAVAILABILITY_BLOCKED") {
-          setNote(`${slotId}|Indisponível. Alocar mesmo assim?|${userId}|${mode}`);
-        } else if (res.code === "SLOT_TAKEN") {
-          setNote(`${slotId}|Vaga já preenchida||${mode}`);
+          setNote({ slotId, message: `${MENSAGENS.UNAVAILABILITY_BLOCKED} Alocar mesmo assim?`, retryUserId: userId, mode });
         } else {
-          setNote(`${slotId}|Não deu pra alocar agora||${mode}`);
+          setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode });
         }
       } else {
         setNote(null);
@@ -150,7 +164,7 @@ export function OccurrenceRow(props: {
 
         <ul className="flex flex-col gap-2">
           {props.slots.map((s) => {
-            const noteFor = note?.startsWith(s.slotId + "|") ? note.split("|") : null;
+            const noteFor = note?.slotId === s.slotId ? note : null;
             return (
               <li key={s.slotId} className="flex items-center justify-between gap-2">
                 <span className="text-sm text-text-muted w-24 shrink-0">{s.role}</span>
@@ -163,6 +177,7 @@ export function OccurrenceRow(props: {
                       candidates={candidates}
                       loading={candidatesLoading}
                       failed={candidatesFailed}
+                      failedRef={candidatesRef}
                       onOpen={ensureCandidates}
                       onRetry={ensureCandidates}
                       onPick={(userId) => reassign(s.slotId, s.allocatedName, userId)}
@@ -215,13 +230,11 @@ export function OccurrenceRow(props: {
                 )}
                 {noteFor && (
                   <Badge tone="info" className="text-xs">
-                    {noteFor[1]}
-                    {noteFor[2] && (
+                    {noteFor.message}
+                    {noteFor.retryUserId && (
                       <button
                         className="underline underline-offset-2 ml-1"
-                        onClick={() =>
-                          runAllocation((noteFor[3] as NoteMode) || "assign", s.slotId, noteFor[2], true)
-                        }
+                        onClick={() => runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)}
                       >
                         Sim
                       </button>

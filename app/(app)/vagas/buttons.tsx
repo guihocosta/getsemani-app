@@ -2,14 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/ui/Button";
-import { selfAllocateAction, claimSwapAction, type ActionCode } from "./actions";
+import { selfAllocateAction, claimSwapAction } from "./actions";
+import { MENSAGENS } from "@/lib/actionError";
 
-const MENSAGENS: Record<ActionCode, string> = {
-  SLOT_TAKEN: "Vaga já preenchida",
-  NOT_ELIGIBLE: "Você não é membro ativo desse ministério",
-  NOT_OWNER: "Essa escala não é sua",
-  UNKNOWN: "Não deu para completar agora. Tente de novo.",
-};
+function withRef(msg: string, ref: string) {
+  return `${msg} · cód. ${ref}`;
+}
 
 export function SelfAllocateButton({ slotId }: { slotId: string }) {
   const [pending, start] = useTransition();
@@ -20,7 +18,7 @@ export function SelfAllocateButton({ slotId }: { slotId: string }) {
     start(async () => {
       const res = await selfAllocateAction(slotId, ack);
       if (!res.ok) {
-        setMsg(MENSAGENS[res.code]);
+        setMsg(withRef(MENSAGENS[res.code], res.ref));
         setConfirming(false);
         return;
       }
@@ -65,7 +63,7 @@ export function ClaimSwapButton({ swapRequestId }: { swapRequestId: string }) {
         onClick={() =>
           start(async () => {
             const res = await claimSwapAction(swapRequestId);
-            if (!res.ok) setMsg(MENSAGENS[res.code]);
+            if (!res.ok) setMsg(withRef(MENSAGENS[res.code], res.ref));
           })
         }
       >

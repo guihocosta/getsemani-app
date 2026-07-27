@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createSchedule } from "@/modules/scheduling/services/createSchedule";
 import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
+import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
 import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
@@ -12,14 +13,9 @@ import { visibleMinistryIds, listMonthOccurrences } from "@/modules/scheduling/s
 import { prisma } from "@/lib/prisma";
 import { loadByPerson } from "@/modules/reports/services/reports";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
+import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
-
-// redirect() funciona lancando uma excecao especial — precisamos deixa-la passar,
-// so tratamos como erro de fato o que nao for esse sinal do Next.
-function isRedirectError(e: unknown): boolean {
-  return typeof e === "object" && e !== null && "digest" in e && String((e as { digest?: unknown }).digest).startsWith("NEXT_REDIRECT");
-}
 
 function friendlyError(e: unknown): string {
   const msg = (e as Error)?.message ?? "";
@@ -82,22 +78,17 @@ export async function updateScheduleAction(
   redirect("/escalas");
 }
 
-export type AllocateCode = "UNAVAILABILITY_BLOCKED" | "SLOT_TAKEN" | "UNKNOWN";
-
 export async function allocateAction(
   slotId: string,
   userId: string,
   override = false,
-): Promise<{ ok: true } | { ok: false; code: AllocateCode }> {
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
   try {
     await allocateVolunteer({ slotId, userId, override });
     revalidatePath("/escalas");
     return { ok: true };
   } catch (e) {
-    const msg = (e as Error)?.message;
-    const code: AllocateCode =
-      msg === "UNAVAILABILITY_BLOCKED" || msg === "SLOT_TAKEN" ? msg : "UNKNOWN";
-    return { ok: false, code };
+    return handleActionError("escalas.allocate", e, { slotId, userId });
   }
 }
 
@@ -105,17 +96,14 @@ export async function reassignAllocationAction(
   slotId: string,
   userId: string,
   override = false,
-): Promise<{ ok: true } | { ok: false; code: AllocateCode }> {
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
   try {
     await reassignAllocation({ slotId, userId, override });
     revalidatePath("/escalas");
     revalidatePath("/");
     return { ok: true };
   } catch (e) {
-    const msg = (e as Error)?.message;
-    const code: AllocateCode =
-      msg === "UNAVAILABILITY_BLOCKED" || msg === "SLOT_TAKEN" ? msg : "UNKNOWN";
-    return { ok: false, code };
+    return handleActionError("escalas.reassign", e, { slotId, userId });
   }
 }
 
@@ -132,22 +120,18 @@ export async function loadMonthAction(year: number, month: number) {
   return listMonthOccurrences(ministryIds, year, month);
 }
 
-export type AllocationCandidate = {
-  userId: string;
-  name: string;
-  count30d: number;
-  unavailable: boolean;
-};
+export type { AllocationCandidate };
 
-// Candidatos pra uma ocorrencia: carga nos ultimos 30 dias no MESMO ministerio e
-// se esta indisponivel na data da ocorrencia — pra alocar com informacao em vez
-// de as cegas. Uma busca so por ocorrencia (nao por vaga): todas as vagas da
-// mesma ocorrencia compartilham ministerio + data, entao a lista e identica —
-// evita repetir 5 queries a cada seletor aberto, o que deixava a tela lenta
-// com varias vagas na mesma ocorrencia.
+// Candidatos pra uma ocorrencia: qualquer membro ativo do ministerio (lider ou
+// voluntario — quem lidera tambem pode ser alocado), com carga nos ultimos 30
+// dias no MESMO ministerio e se esta indisponivel na data da ocorrencia — pra
+// alocar com informacao em vez de as cegas. Uma busca so por ocorrencia (nao
+// por vaga): todas as vagas da mesma ocorrencia compartilham ministerio + data,
+// entao a lista e identica — evita repetir 5 queries a cada seletor aberto, o
+// que deixava a tela lenta com varias vagas na mesma ocorrencia.
 export async function getOccurrenceCandidatesAction(
   occurrenceId: string,
-): Promise<{ ok: true; candidates: AllocationCandidate[] } | { ok: false }> {
+): Promise<{ ok: true; candidates: AllocationCandidate[] } | { ok: false; code: ActionCode; ref: string }> {
   try {
     const occurrence = await prisma.occurrence.findUniqueOrThrow({
       where: { id: occurrenceId },
@@ -157,29 +141,26 @@ export async function getOccurrenceCandidatesAction(
 
     const ministryId = occurrence.schedule.ministryId;
     const memberships = await prisma.membership.findMany({
-      where: { ministryId, role: "VOLUNTEER", status: "ACTIVE" },
+      where: { ministryId, status: "ACTIVE" },
       include: { user: true },
     });
-    const userIds = memberships.map((m) => m.userId);
+    const userIds = [...new Set(memberships.map((m) => m.userId))];
 
     const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const [load, unavailable] = await Promise.all([
       loadByPerson(from, new Date(), [ministryId]),
       usersUnavailableAt(userIds, occurrence.date),
     ]);
-    const countOf = new Map(load.map((l) => [l.userId, l.count]));
+    const countByUser = new Map(load.map((l) => [l.userId, l.count]));
 
-    const candidates = memberships
-      .map((m) => ({
-        userId: m.userId,
-        name: m.user.name,
-        count30d: countOf.get(m.userId) ?? 0,
-        unavailable: unavailable.has(m.userId),
-      }))
-      .sort((a, b) => a.count30d - b.count30d);
+    const candidates = buildCandidateList({
+      memberships,
+      countByUser,
+      unavailableUserIds: unavailable,
+    });
 
     return { ok: true, candidates };
-  } catch {
-    return { ok: false };
+  } catch (e) {
+    return handleActionError("escalas.candidates", e, { occurrenceId });
   }
 }

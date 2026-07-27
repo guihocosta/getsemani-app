@@ -12,6 +12,7 @@ export function AllocatePicker(props: {
   candidates: AllocationCandidate[] | null;
   loading: boolean;
   failed: boolean;
+  failedRef?: string | null;
   onOpen: () => void;
   onRetry: () => void;
   onPick: (userId: string) => void;
@@ -37,7 +38,7 @@ export function AllocatePicker(props: {
       {props.loading && <p className="px-3 py-2 text-xs text-text-muted">Carregando…</p>}
       {props.failed && (
         <div className="px-3 py-2 text-xs text-text-muted">
-          Não deu pra carregar.{" "}
+          Não deu pra carregar{props.failedRef && ` · cód. ${props.failedRef}`}.{" "}
           <button className="underline underline-offset-2 text-primary" onClick={props.onRetry}>
             Tentar de novo
           </button>
@@ -73,11 +74,15 @@ export function AllocatePicker(props: {
   );
 
   if (props.autoOpen) {
-    return <div className="relative flex-1">{list}</div>;
+    return (
+      <div className="relative flex-1" data-no-swipe>
+        {list}
+      </div>
+    );
   }
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1" data-no-swipe>
       <button
         type="button"
         disabled={props.disabled}
