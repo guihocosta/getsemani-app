@@ -25,4 +25,8 @@ describe("shouldRefreshSession", () => {
   it("fora do buffer (expira em 1h, buffer 300s) -> false", () => {
     expect(shouldRefreshSession(1_000 + 3_600, 1_000, 300)).toBe(false);
   });
+
+  it("expiresAt invalido (NaN) -> true", () => {
+    expect(shouldRefreshSession(NaN, 1_000, 300)).toBe(true);
+  });
 });

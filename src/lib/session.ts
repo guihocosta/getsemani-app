@@ -5,6 +5,6 @@ export function shouldRefreshSession(
   nowSeconds: number,
   bufferSeconds: number,
 ): boolean {
-  if (expiresAt == null) return true;
+  if (typeof expiresAt !== "number" || !Number.isFinite(expiresAt)) return true;
   return expiresAt - nowSeconds <= bufferSeconds;
 }

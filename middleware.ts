@@ -7,9 +7,10 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
 const REFRESH_BUFFER_SECONDS = 300;
 
 // Refresh da sessao Supabase a cada request (mantem cookie valido).
-// getSession() e local (sem rede); so chamamos getUser() (rede, valida+renova
-// o JWT) quando o token esta perto de expirar — reduz o overhead fixo que
-// bate em toda request, mesmo paginas sem query no banco.
+// getSession() e local (sem rede); so chamamos getUser() (rede, valida o JWT
+// via rede — revogacao, etc. — a renovacao em si ja acontece dentro do
+// getSession()) quando o token esta perto de expirar — reduz o overhead fixo
+// que bate em toda request, mesmo paginas sem query no banco.
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
