@@ -16,8 +16,9 @@ export function resolveSessionState(params: { hasSession: boolean; hasProfile: b
 
 // Usuario da sessao (perfil de dominio) ou null.
 // cache() dedup: layout + pagina compartilham UMA resolucao por render.
-// getSession() le o cookie local (sem rede); o middleware ja chamou getUser()
-// (valida + renova o JWT) a cada request, entao aqui confiamos no cookie.
+// getSession() le o cookie local (sem rede); o middleware so chama getUser()
+// (valida+renova o JWT via rede) quando falta menos de REFRESH_BUFFER_SECONDS
+// pra expirar (ver middleware.ts) — aqui confiamos no cookie dentro dessa janela.
 // O perfil normalmente e criado no callback de auth, nao no caminho quente —
 // mas se a sessao existe e o perfil nao, reparamos aqui em vez de entrar em loop.
 export const getSessionUser = cache(async (): Promise<User | null> => {

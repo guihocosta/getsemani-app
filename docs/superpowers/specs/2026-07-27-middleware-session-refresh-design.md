@@ -51,6 +51,32 @@ JWT é revalidado contra o Supabase Auth — sempre dentro da janela de vida do
 próprio token, nunca além dela. Nenhuma rota de autorização (`requireUser`,
 `requireAdmin`, `requireLeaderOf`) muda de comportamento.
 
+Vale registrar o trade-off explícito de revogação: no código antigo, uma sessão
+Supabase Auth revogada (logout em outro dispositivo, usuário apagado do Supabase
+Auth) era limpa do cookie já na próxima request, porque `getUser()` rodava
+sempre. Agora isso só acontece quando `shouldRefreshSession` dispara uma
+chamada real de `getUser()` — ou seja, a revogação pode levar até
+`REFRESH_BUFFER_SECONDS` a menos que o tempo de vida restante do JWT pra se
+propagar (até ~55min com o TTL padrão de 1h do Supabase). É um trade-off
+consciente: o próprio `getSessionUser` já faz um `prisma.user.findUnique` que
+corta na hora um usuário apagado da base de domínio da app, e mudanças de
+papel/permissão (isAdmin, liderança) já são lidas do Prisma a cada render,
+independente disso — então o atraso fica restrito ao caso estreito de "sessão
+Supabase Auth revogada mas linha `User` de domínio intacta". Se esse atraso for
+inaceitável pra alguma rota específica (ex.: `/admin`), a correção é uma
+chamada explícita de `getUser()` no layout dessa rota, não reduzir o buffer
+global.
+
+Outro ponto: o `getSession()` do `@supabase/auth-js` já renova o token
+internamente sempre que ele está dentro da própria margem de ~90s de expiração,
+independente desta mudança — então o buffer de 300s aqui não controla
+**quando o token é renovado**, só **quando o middleware adicionalmente valida
+ele contra o servidor** (pra pegar revogação mais cedo). Também vale notar: se
+o TTL do JWT de algum projeto Supabase for configurado abaixo de ~5 minutos,
+`shouldRefreshSession` fica permanentemente `true` e o código degrada com
+segurança pra chamar `getUser()` em toda request (o comportamento antigo) —
+não precisa de tratamento especial, isso é intencional.
+
 ## Teste
 
 `tests/unit/session.test.ts`, mesmo padrão de `sessionResolution.test.ts`:
