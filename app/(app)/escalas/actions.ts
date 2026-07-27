@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { AllocationStatus } from "@prisma/client";
 import { createSchedule } from "@/modules/scheduling/services/createSchedule";
 import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
@@ -82,11 +83,14 @@ export async function allocateAction(
   slotId: string,
   userId: string,
   override = false,
-): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+): Promise<
+  | { ok: true; allocation: { id: string; status: AllocationStatus } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
   try {
-    await allocateVolunteer({ slotId, userId, override });
+    const allocation = await allocateVolunteer({ slotId, userId, override });
     revalidatePath("/escalas");
-    return { ok: true };
+    return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.allocate", e, { slotId, userId });
   }
@@ -96,12 +100,15 @@ export async function reassignAllocationAction(
   slotId: string,
   userId: string,
   override = false,
-): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+): Promise<
+  | { ok: true; allocation: { id: string; status: AllocationStatus } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
   try {
-    await reassignAllocation({ slotId, userId, override });
+    const allocation = await reassignAllocation({ slotId, userId, override });
     revalidatePath("/escalas");
     revalidatePath("/");
-    return { ok: true };
+    return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.reassign", e, { slotId, userId });
   }
