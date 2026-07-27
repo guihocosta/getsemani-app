@@ -35,8 +35,8 @@ export function AppShell({
   const nav = [...BASE_NAV, ...(isAdmin || isLeader ? [MANAGE_NAV] : []), PROFILE_NAV];
 
   return (
-    <div className="min-h-dvh mx-auto max-w-md flex flex-col px-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
-      <main className="flex-1 pb-32 px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
+    <div className="min-h-dvh mx-auto max-w-md flex flex-col pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+      <main className="flex-1 pb-[calc(8rem+env(safe-area-inset-bottom))] px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
         <SwipeNav tabs={nav.map((n) => n.href)}>
           <motion.div
             key={pathname}
@@ -49,7 +49,11 @@ export function AppShell({
         </SwipeNav>
       </main>
 
-      <nav className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 px-6 mx-auto max-w-md">
+      {/* Esmaece o conteudo que rola atras da nav em vez de deixa-lo nitido no
+          vao abaixo do pill. from-bg acompanha o tema (claro/escuro) sozinho. */}
+      <div className="fixed bottom-0 inset-x-0 z-10 h-36 pointer-events-none bg-gradient-to-t from-bg via-bg/85 to-transparent" />
+
+      <nav className="fixed z-20 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 px-6 mx-auto max-w-md">
         <ul
           className={cn(
             "grid bg-surface/70 backdrop-blur-3xl rounded-[2rem] ring-1 ring-border/60 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.25)]",
