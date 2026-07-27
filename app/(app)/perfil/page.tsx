@@ -6,6 +6,7 @@ import { Badge } from "@/ui/Badge";
 import { ThemeToggle } from "@/ui/ThemeToggle";
 import { ProfileForm } from "./ProfileForm";
 import { InstallSection } from "./InstallSection";
+import { SignOutButton } from "./SignOutButton";
 import { NavRow } from "@/ui/NavRow";
 import { PushRegister } from "../PushRegister";
 import { MinistryRequestButton } from "../onboarding/MinistryRequestButton";
@@ -104,9 +105,11 @@ export default async function PerfilPage() {
       </Card>
 
       <h2 className="eyebrow mb-3">Instalar</h2>
-      <div>
+      <div className="mb-6">
         <InstallSection />
       </div>
+
+      <SignOutButton />
     </div>
   );
 }

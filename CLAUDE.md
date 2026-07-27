@@ -54,7 +54,7 @@ Aliases: `@/*` → `src/*`, `@app/*` → `app/*` (espelhados em `tsconfig.json` 
 ### Auth e autorização
 
 - Supabase Auth é a fonte de verdade da sessão; `middleware.ts` renova o cookie a cada request (matcher exclui `api/cron` e assets).
-- `User.id === auth.users.id` (mesmo UUID). O perfil de domínio é criado no callback (`app/(auth)/callback/route.ts` → `ensureProfile`), nunca no caminho quente.
+- `User.id === auth.users.id` (mesmo UUID). O perfil de domínio é criado no callback (`app/(auth)/callback/route.ts` → `ensureProfile`); `getSessionUser` (`authz.ts`) não chama `ensureProfile` no caminho normal — só como reparo, se a sessão do Supabase for válida mas a linha `User` estiver ausente (`resolveSessionState` → `"reparar"`), evitando o loop de redirect pro `/login`.
 - Todo gate passa por `src/modules/identity/services/authz.ts`: `getSessionUser` (embrulhado em `cache()` — layout e página compartilham uma resolução por render), `requireUser`, `requireAdmin`, `requireLeaderOf(ministryId)`, `isLeaderOfAny`. Falha de permissão = `throw new Error("FORBIDDEN")`, traduzido para pt-BR na action.
 - Serviços de leitura em lote (ex.: `listMonthOccurrences`) **não** checam permissão: o chamador resolve antes quais ministérios o usuário pode ver (`visibleMinistryIds`) ou gerenciar (`ledMinistryIds`).
 

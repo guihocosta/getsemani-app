@@ -2,20 +2,35 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { ensureProfile } from "@/modules/identity/services/ensureProfile";
 import type { User } from "@prisma/client";
+
+// "anonimo": sem sessao (usuario deslogado). "ok": sessao com perfil, caminho normal.
+// "reparar": sessao Supabase valida mas falta a linha User no Prisma — estado raro
+// (callback falhou antes do ensureProfile, ou P2002 de email nao tratado antigamente).
+// Os dois primeiros costumavam colapsar no mesmo null e causavam loop de redirect pro /login.
+export function resolveSessionState(params: { hasSession: boolean; hasProfile: boolean }): "anonimo" | "reparar" | "ok" {
+  if (!params.hasSession) return "anonimo";
+  return params.hasProfile ? "ok" : "reparar";
+}
 
 // Usuario da sessao (perfil de dominio) ou null.
 // cache() dedup: layout + pagina compartilham UMA resolucao por render.
 // getSession() le o cookie local (sem rede); o middleware ja chamou getUser()
 // (valida + renova o JWT) a cada request, entao aqui confiamos no cookie.
-// Sem upsert: o perfil e criado no callback de auth, nao no caminho quente.
+// O perfil normalmente e criado no callback de auth, nao no caminho quente —
+// mas se a sessao existe e o perfil nao, reparamos aqui em vez de entrar em loop.
 export const getSessionUser = cache(async (): Promise<User | null> => {
   const supabase = await createSupabaseServer();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session?.user) return null;
-  return prisma.user.findUnique({ where: { id: session.user.id } });
+
+  const profile = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const state = resolveSessionState({ hasSession: true, hasProfile: !!profile });
+  if (state === "ok") return profile;
+  return ensureProfile(session.user);
 });
 
 // Sessao ausente/expirada aqui e sempre inesperada (o layout ja redireciona antes de
