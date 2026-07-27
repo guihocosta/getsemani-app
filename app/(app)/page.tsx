@@ -50,7 +50,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
               <div>
                 {items[0].status === "PENDING" && (
-                  <Badge tone="info" className="normal-case tracking-normal">
+                  <Badge tone="info" className="normal-case! tracking-normal!">
                     Aguardando confirmação
                   </Badge>
                 )}
@@ -83,7 +83,7 @@ export default async function HomePage() {
                       <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
                         <div>
                           {it.status === "PENDING" && (
-                            <Badge tone="info" className="normal-case tracking-normal">
+                            <Badge tone="info" className="normal-case! tracking-normal!">
                               Aguardando confirmação
                             </Badge>
                           )}
