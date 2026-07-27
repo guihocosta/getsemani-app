@@ -40,24 +40,22 @@ export function AllocationActions(props: {
 
   if (props.status === "PENDING") {
     return (
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center gap-2">
         {dialog}
-        <div className="flex gap-2">
-          <button
-            className="text-xs text-danger disabled:opacity-40"
-            disabled={pending}
-            onClick={decline}
-          >
-            Não posso
-          </button>
-          <Button
-            className="py-1.5 px-3 text-xs"
-            disabled={pending}
-            onClick={() => start(() => confirmAllocationAction(props.allocationId))}
-          >
-            Confirmar
-          </Button>
-        </div>
+        <button
+          className="text-xs text-danger disabled:opacity-40"
+          disabled={pending}
+          onClick={decline}
+        >
+          Não posso
+        </button>
+        <Button
+          className="py-1.5 px-3 text-xs"
+          disabled={pending}
+          onClick={() => start(() => confirmAllocationAction(props.allocationId))}
+        >
+          Confirmar
+        </Button>
       </div>
     );
   }
