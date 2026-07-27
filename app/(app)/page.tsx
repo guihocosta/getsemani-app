@@ -38,19 +38,23 @@ export default async function HomePage() {
       ) : (
         <>
           <h2 className="eyebrow mb-3">Próxima escala</h2>
-          <Card className="mb-8 flex items-center justify-between bg-primary/5 ring-1 ring-primary/20">
-            <div>
-              <p className="eyebrow text-primary">{items[0].ministry}</p>
-              <p className="text-xl text-text">{items[0].role}</p>
-              <p className="text-sm text-text-muted">{fmtDate(items[0].date)}</p>
-              {items[0].status === "PENDING" && (
-                <Badge tone="info" className="mt-1">
-                  aguardando confirmação
-                </Badge>
-              )}
-            </div>
-            <div className="flex flex-col items-end gap-1">
+          <Card className="mb-8 flex flex-col bg-primary/5 ring-1 ring-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="eyebrow text-primary">{items[0].ministry}</p>
+                <p className="text-xl text-text">{items[0].role}</p>
+                <p className="text-sm text-text-muted">{fmtDate(items[0].date)}</p>
+              </div>
               <p className="font-title text-3xl text-primary">{fmtTime(items[0].date)}</p>
+            </div>
+            <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
+              <div>
+                {items[0].status === "PENDING" && (
+                  <Badge tone="info" className="normal-case tracking-normal">
+                    Aguardando confirmação
+                  </Badge>
+                )}
+              </div>
               <AllocationActions
                 allocationId={items[0].allocationId}
                 status={items[0].status}
@@ -67,19 +71,23 @@ export default async function HomePage() {
               <ul className="flex flex-col gap-3">
                 {items.slice(1).map((it) => (
                   <li key={it.allocationId}>
-                    <Card className="flex items-center justify-between">
-                      <div>
-                        <p className="eyebrow text-primary">{it.ministry}</p>
-                        <p className="text-lg text-text">{it.role}</p>
-                        <p className="text-sm text-text-muted">{fmtDate(it.date)}</p>
-                        {it.status === "PENDING" && (
-                          <Badge tone="info" className="mt-1">
-                            aguardando confirmação
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
+                    <Card className="flex flex-col">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="eyebrow text-primary">{it.ministry}</p>
+                          <p className="text-lg text-text">{it.role}</p>
+                          <p className="text-sm text-text-muted">{fmtDate(it.date)}</p>
+                        </div>
                         <p className="font-title text-2xl text-primary">{fmtTime(it.date)}</p>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
+                        <div>
+                          {it.status === "PENDING" && (
+                            <Badge tone="info" className="normal-case tracking-normal">
+                              Aguardando confirmação
+                            </Badge>
+                          )}
+                        </div>
                         <AllocationActions
                           allocationId={it.allocationId}
                           status={it.status}
