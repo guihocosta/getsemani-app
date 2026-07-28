@@ -54,6 +54,7 @@ export function OccurrenceRow(props: {
   // ministerio + data) — busca uma vez so, na primeira vez que algum seletor
   // abre, e reusa pras demais vagas em vez de refazer a query por vaga.
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
+  const [guestNames, setGuestNames] = useState<string[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
   const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
@@ -65,8 +66,10 @@ export function OccurrenceRow(props: {
     setCandidatesLoading(true);
     getOccurrenceCandidatesAction(props.occurrenceId)
       .then((res) => {
-        if (res.ok) setCandidates(res.candidates);
-        else {
+        if (res.ok) {
+          setCandidates(res.candidates);
+          setGuestNames(res.guestNames);
+        } else {
           setCandidatesFailed(true);
           setCandidatesRef(res.ref);
         }
@@ -269,6 +272,7 @@ export function OccurrenceRow(props: {
                     onRetry={ensureCandidates}
                     onPick={(userId) => allocate(s.slotId, userId)}
                     onPickGuest={(name) => allocateGuestHandler(s.slotId, name)}
+                    guestNames={guestNames}
                   />
                 ) : (
                   <span className="text-sm text-text-muted flex-1">— vaga aberta</span>

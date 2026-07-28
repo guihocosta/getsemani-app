@@ -17,6 +17,7 @@ export function AllocatePicker(props: {
   onRetry: () => void;
   onPick: (userId: string) => void;
   onPickGuest?: (name: string) => void;
+  guestNames?: string[];
 }) {
   const [open, setOpen] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
@@ -108,6 +109,26 @@ export function AllocatePicker(props: {
             <span className="text-xs text-text-muted shrink-0">{c.count30d}x/30d</span>
           </button>
         ))}
+      {props.onPickGuest && !!props.guestNames?.length && !addingGuest && (
+        <div className="border-t border-border">
+          {props.guestNames.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                props.onPickGuest!(name);
+              }}
+              className="w-full flex items-center gap-1.5 px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+            >
+              {name}
+              <Badge tone="info" className="text-[10px]">
+                sem conta
+              </Badge>
+            </button>
+          ))}
+        </div>
+      )}
       {props.onPickGuest &&
         (addingGuest ? (
           guestForm

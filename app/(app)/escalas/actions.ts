@@ -175,7 +175,10 @@ export type { AllocationCandidate };
 // que deixava a tela lenta com varias vagas na mesma ocorrencia.
 export async function getOccurrenceCandidatesAction(
   occurrenceId: string,
-): Promise<{ ok: true; candidates: AllocationCandidate[] } | { ok: false; code: ActionCode; ref: string }> {
+): Promise<
+  | { ok: true; candidates: AllocationCandidate[]; guestNames: string[] }
+  | { ok: false; code: ActionCode; ref: string }
+> {
   try {
     const occurrence = await prisma.occurrence.findUniqueOrThrow({
       where: { id: occurrenceId },
@@ -191,9 +194,14 @@ export async function getOccurrenceCandidatesAction(
     const userIds = [...new Set(memberships.map((m) => m.userId))];
 
     const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const [load, unavailable] = await Promise.all([
+    const [load, unavailable, guestAllocs] = await Promise.all([
       loadByPerson(from, new Date(), [ministryId]),
       usersUnavailableAt(userIds, occurrence.date),
+      prisma.allocation.findMany({
+        where: { userId: null, guestName: { not: null }, slot: { occurrence: { schedule: { ministryId } } } },
+        select: { guestName: true },
+        distinct: ["guestName"],
+      }),
     ]);
     const countByUser = new Map(load.map((l) => [l.userId, l.count]));
 
@@ -202,8 +210,9 @@ export async function getOccurrenceCandidatesAction(
       countByUser,
       unavailableUserIds: unavailable,
     });
+    const guestNames = guestAllocs.map((g) => g.guestName!).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-    return { ok: true, candidates };
+    return { ok: true, candidates, guestNames };
   } catch (e) {
     return handleActionError("escalas.candidates", e, { occurrenceId });
   }
