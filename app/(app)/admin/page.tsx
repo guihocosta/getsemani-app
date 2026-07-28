@@ -49,8 +49,12 @@ export default async function AdminPage({
   const now = new Date();
   const nowKey = monthKey(now);
   const [defYear, defMonth] = nowKey.split("-").map(Number);
+  const vagasMesMatch = vagasMes?.match(/^(\d{4})-(\d{2})$/);
+  const vagasMesMonth = vagasMesMatch ? Number(vagasMesMatch[2]) : null;
   const [vagasYear, vagasMonth] =
-    vagasMes && /^\d{4}-\d{2}$/.test(vagasMes) ? vagasMes.split("-").map(Number) : [defYear, defMonth];
+    vagasMesMatch && vagasMesMonth !== null && vagasMesMonth >= 1 && vagasMesMonth <= 12
+      ? [Number(vagasMesMatch[1]), vagasMesMonth]
+      : [defYear, defMonth];
   const { from: vagasFrom, to: vagasTo } = monthWindow(vagasYear, vagasMonth);
 
   const in30 = new Date(now.getTime() + 30 * 864e5);
