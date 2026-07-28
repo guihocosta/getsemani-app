@@ -6,6 +6,8 @@ import type { AllocationStatus } from "@prisma/client";
 import { createSchedule } from "@/modules/scheduling/services/createSchedule";
 import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
+import { allocateGuest } from "@/modules/scheduling/services/allocateGuest";
+import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
@@ -111,6 +113,41 @@ export async function reassignAllocationAction(
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.reassign", e, { slotId, userId });
+  }
+}
+
+export async function allocateGuestAction(
+  slotId: string,
+  guestName: string,
+  guestCpf?: string,
+): Promise<
+  | { ok: true; allocation: { id: string; status: AllocationStatus } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const allocation = await allocateGuest({ slotId, guestName, guestCpf });
+    revalidatePath("/escalas");
+    return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
+  } catch (e) {
+    return handleActionError("escalas.allocateGuest", e, { slotId });
+  }
+}
+
+export async function linkGuestAction(
+  allocationId: string,
+  userId: string,
+  override = false,
+): Promise<
+  | { ok: true; allocation: { id: string; status: AllocationStatus } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const allocation = await linkGuestAllocation({ allocationId, userId, override });
+    revalidatePath("/escalas");
+    revalidatePath("/");
+    return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
+  } catch (e) {
+    return handleActionError("escalas.linkGuest", e, { allocationId, userId });
   }
 }
 
