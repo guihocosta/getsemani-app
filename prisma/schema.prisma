@@ -174,7 +174,9 @@ model Slot {
 model Allocation {
   id                     String           @id @default(uuid()) @db.Uuid
   slotId                 String           @unique @db.Uuid // 1 pessoa por vaga (FR-008)
-  userId                 String           @db.Uuid
+  userId                 String?          @db.Uuid
+  guestName              String?
+  guestCpf               String?
   source                 AllocationSource
   overrideUnavailability Boolean          @default(false)
   status                 AllocationStatus @default(PENDING)
@@ -183,7 +185,7 @@ model Allocation {
   createdAt              DateTime         @default(now())
 
   slot        Slot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
   swapRequest SwapRequest?
 
   @@index([userId, createdAt])
