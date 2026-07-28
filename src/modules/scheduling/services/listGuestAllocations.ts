@@ -12,6 +12,8 @@ export type GuestOccurrenceDetail = {
   date: Date;
 };
 
+export type GuestAllocationItem = GuestOccurrenceDetail;
+
 export type GroupedGuestItem = {
   guestName: string;
   totalAllocations: number;

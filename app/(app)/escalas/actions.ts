@@ -8,12 +8,13 @@ import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
 import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/allocateGuest";
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
+import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
-import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
-import { visibleMinistryIds, listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import { requireUser, requireLeaderOf, getSessionUser } from "@/modules/identity/services/authz";
+import { visibleMinistryIds, listMonthOccurrences, ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { prisma } from "@/lib/prisma";
 import { loadByPerson } from "@/modules/reports/services/reports";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
@@ -179,6 +180,35 @@ export async function linkGuestAction(
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.linkGuest", e, { allocationId, userId });
+  }
+}
+
+export async function linkAllGuestAction(
+  guestName: string,
+  userId: string,
+  override?: boolean
+): Promise<
+  | { ok: true; count: number }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const user = await getSessionUser();
+    if (!user) throw new Error("FORBIDDEN");
+
+    const ministryIds = await ledMinistryIds(user.id, user.isAdmin);
+    const result = await linkAllGuestAllocations({
+      guestName,
+      userId,
+      ministryIds,
+      override,
+    });
+
+    revalidatePath("/admin/convidados");
+    revalidatePath("/escalas");
+
+    return { ok: true, count: result.count };
+  } catch (e) {
+    return handleActionError("escalas.linkAllGuest", e, { guestName, userId });
   }
 }
 

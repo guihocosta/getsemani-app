@@ -10,6 +10,7 @@ export type ActionCode =
   | "ALREADY_REQUESTED"
   | "ALREADY_REVIEWED"
   | "NOT_GUEST"
+  | "NO_GUESTS_FOUND"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -22,6 +23,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   ALREADY_REQUESTED: "Você já pediu pra entrar nesse ministério.",
   ALREADY_REVIEWED: "Esse pedido já foi analisado.",
   NOT_GUEST: "Essa vaga já está com um usuário cadastrado.",
+  NO_GUESTS_FOUND: "Nenhuma alocação encontrada para essa pessoa sem conta.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 
