@@ -9,6 +9,7 @@ export type ActionCode =
   | "NO_ALLOCATION"
   | "ALREADY_REQUESTED"
   | "ALREADY_REVIEWED"
+  | "NOT_GUEST"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -20,6 +21,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   NO_ALLOCATION: "Essa vaga não tem ninguém alocado.",
   ALREADY_REQUESTED: "Você já pediu pra entrar nesse ministério.",
   ALREADY_REVIEWED: "Esse pedido já foi analisado.",
+  NOT_GUEST: "Essa vaga já está com um usuário cadastrado.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 
