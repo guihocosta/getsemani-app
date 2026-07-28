@@ -78,3 +78,5 @@ Aliases: `@/*` → `src/*`, `@app/*` → `app/*` (espelhados em `tsconfig.json` 
 - Server Actions com formulário retornam estado `{ ok, error? }` para `useActionState`. Ao usar `try/catch` numa action que faz `redirect()`, re-lançar o erro de redirect (checar `digest` começando com `NEXT_REDIRECT`) — ver `app/(app)/escalas/actions.ts`.
 - UI: mobile-first, `max-w-md`, nav inferior fixa (`src/ui/AppShell.tsx`), cores só via tokens do tema (`bg-surface`, `text-text-muted`, `text-primary`…) — nunca cores cruas do Tailwind, para o tema escuro (classe `.dark`) continuar válido.
 - Testes unitários cobrem regra de negócio de risco (recorrência, exclusão com escopo, conflito de indisponibilidade, concorrência de vaga, agregações). Bug corrigido ganha teste que o reproduz.
+- **Comunicação**: Sempre usar Caveman Ultra por padrão (respostas ultra concisas em pt-BR).
+- **Commits**: Sempre usar Conventional Commits em pt-BR (ex.: `feat: adicionar...`, `fix: corrigir...`).
