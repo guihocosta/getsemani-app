@@ -1,7 +1,8 @@
 // Service Worker — Web Push (App de Escalas Getsemani)
-const CACHE = "getsemani-v2";
+const CACHE = "getsemani-v3";
 
 self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(["/offline.html", "/icons/icon-192.png"])));
   self.skipWaiting();
 });
 
@@ -42,5 +43,10 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// Sem cache de navegacao: paginas sao force-dynamic e autenticadas,
-// cachear HTML entre deploys/sessoes causava tela de erro e vazamento de dados.
+// Handler de fetch: o Chrome so considera o app instalavel se o SW tiver um.
+// Continua sem cachear HTML autenticado (paginas sao force-dynamic) — so
+// intercepta navegacao pra servir a pagina estatica de offline quando a rede cai.
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode !== "navigate") return;
+  event.respondWith(fetch(event.request).catch(() => caches.match("/offline.html")));
+});
