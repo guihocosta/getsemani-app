@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
-import { requireUser } from "@/modules/identity/services/authz";
+import { Bell } from "lucide-react";
+import { requireUser, isLeaderOfAny } from "@/modules/identity/services/authz";
+import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { prisma } from "@/lib/prisma";
 import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";
+import { NavRow } from "@/ui/NavRow";
 import { fmtDate, fmtTime, dateKey } from "@/lib/time";
 import { AllocationActions } from "./AllocationActions";
+import { UpcomingCarousel } from "./UpcomingCarousel";
 import { InstallPopup } from "./InstallPopup";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +23,21 @@ export default async function HomePage() {
   });
   if (!activeMembership) redirect("/onboarding");
 
-  const items = await getMySchedule(user.id);
+  const isLeader = await isLeaderOfAny(user.id);
+  const showGestaoResumo = user.isAdmin || isLeader;
+
+  const [items, pendingCount] = await Promise.all([
+    getMySchedule(user.id),
+    showGestaoResumo
+      ? (async () => {
+          const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
+          return prisma.membership.count({
+            where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
+          });
+        })()
+      : Promise.resolve(0),
+  ]);
+
   const todayKey = dateKey(new Date());
 
   return (
@@ -29,6 +47,17 @@ export default async function HomePage() {
         <p className="text-sm text-text-muted">Olá,</p>
         <h1 className="text-3xl text-text">{user.name.split(" ")[0]}</h1>
       </header>
+
+      {showGestaoResumo && (
+        <Card className="mb-8">
+          <NavRow
+            href="/solicitacoes"
+            label="Solicitações"
+            subtitle={pendingCount > 0 ? `${pendingCount} pendente(s)` : "Nenhum pedido pendente"}
+            Icon={Bell}
+          />
+        </Card>
+      )}
 
       {items.length === 0 ? (
         <EmptyState
@@ -68,38 +97,7 @@ export default async function HomePage() {
           {items.length > 1 && (
             <>
               <h2 className="eyebrow mb-3">Depois</h2>
-              <ul className="flex flex-col gap-3">
-                {items.slice(1).map((it) => (
-                  <li key={it.allocationId}>
-                    <Card className="flex flex-col">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="eyebrow text-primary">{it.ministry}</p>
-                          <p className="text-lg text-text">{it.role}</p>
-                          <p className="text-sm text-text-muted">{fmtDate(it.date)}</p>
-                        </div>
-                        <p className="font-title text-2xl text-primary">{fmtTime(it.date)}</p>
-                      </div>
-                      <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-                        <div>
-                          {it.status === "PENDING" && (
-                            <Badge tone="info" className="normal-case! tracking-normal!">
-                              Aguardando confirmação
-                            </Badge>
-                          )}
-                        </div>
-                        <AllocationActions
-                          allocationId={it.allocationId}
-                          status={it.status}
-                          isToday={dateKey(it.date) === todayKey}
-                          checkedIn={!!it.checkedInAt}
-                          hasSwapOpen={it.hasSwapOpen}
-                        />
-                      </div>
-                    </Card>
-                  </li>
-                ))}
-              </ul>
+              <UpcomingCarousel items={items.slice(1)} todayKey={todayKey} />
             </>
           )}
         </>
