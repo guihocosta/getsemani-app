@@ -9,6 +9,8 @@ import { useConfirm } from "@/ui/ConfirmDialog";
 import {
   allocateAction,
   reassignAllocationAction,
+  allocateGuestAction,
+  linkGuestAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   type AllocationCandidate,
@@ -27,6 +29,11 @@ type Note = {
   mode: NoteMode;
 };
 
+function buildWhatsAppText(title: string, when: string, slots: Slot[]): string {
+  const linhas = slots.map((s) => `- ${s.role}: ${s.allocatedName ?? "— vaga aberta"}`);
+  return `*${title}*\n${when}\n\n${linhas.join("\n")}`;
+}
+
 export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
@@ -41,6 +48,8 @@ export function OccurrenceRow(props: {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
   const [reassigningSlotId, setReassigningSlotId] = useState<string | null>(null);
+  const [linkingSlotId, setLinkingSlotId] = useState<string | null>(null);
+  const [copyNote, setCopyNote] = useState(false);
   const { confirm, dialog } = useConfirm();
 
   // Candidatos sao os mesmos pra todas as vagas desta ocorrencia (mesmo
@@ -88,6 +97,7 @@ export function OccurrenceRow(props: {
         allocationId: res.allocation.id,
         allocatedStatus: res.allocation.status,
         checkedIn: false,
+        isGuest: false,
       });
       setNote(null);
       setReassigningSlotId(null);
@@ -96,6 +106,62 @@ export function OccurrenceRow(props: {
 
   function allocate(slotId: string, userId: string, override = false) {
     runAllocation("assign", slotId, userId, override);
+  }
+
+  function allocateGuestHandler(slotId: string, name: string, cpf?: string) {
+    start(async () => {
+      const res = await allocateGuestAction(slotId, name, cpf);
+      if (!res.ok) {
+        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        return;
+      }
+      props.onAllocated(slotId, {
+        allocatedUserId: null,
+        allocatedName: name,
+        allocationId: res.allocation.id,
+        allocatedStatus: res.allocation.status,
+        checkedIn: false,
+        isGuest: true,
+      });
+      setNote(null);
+    });
+  }
+
+  function linkGuest(slotId: string, allocationId: string, userId: string, override = false) {
+    start(async () => {
+      const res = await linkGuestAction(allocationId, userId, override);
+      if (!res.ok) {
+        if (res.code === "UNAVAILABILITY_BLOCKED") {
+          setNote({
+            slotId,
+            message: `${MENSAGENS.UNAVAILABILITY_BLOCKED} Vincular mesmo assim?`,
+            retryUserId: userId,
+            mode: "reassign",
+          });
+        } else {
+          setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "reassign" });
+        }
+        return;
+      }
+      const name = candidates?.find((c) => c.userId === userId)?.name ?? "Alguém";
+      props.onAllocated(slotId, {
+        allocatedUserId: userId,
+        allocatedName: name,
+        allocationId: res.allocation.id,
+        allocatedStatus: res.allocation.status,
+        checkedIn: false,
+        isGuest: false,
+      });
+      setNote(null);
+      setLinkingSlotId(null);
+    });
+  }
+
+  function copyWhatsAppText() {
+    const text = buildWhatsAppText(props.title, props.when, props.slots);
+    navigator.clipboard.writeText(text);
+    setCopyNote(true);
+    setTimeout(() => setCopyNote(false), 2000);
   }
 
   async function reassign(slotId: string, currentName: string | null, userId: string) {
@@ -143,6 +209,13 @@ export function OccurrenceRow(props: {
           </div>
           {props.canManage && (
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="text-xs text-text-muted hover:text-text"
+                onClick={copyWhatsAppText}
+              >
+                {copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
+              </button>
               <Link href={`/escalas/${props.scheduleId}/editar`} className="text-text-muted hover:text-text">
                 <Pencil size={14} strokeWidth={1.8} />
               </Link>
@@ -188,16 +261,55 @@ export function OccurrenceRow(props: {
                       cancelar
                     </button>
                   </div>
+                ) : linkingSlotId === s.slotId ? (
+                  <div className="flex-1 flex items-center gap-2">
+                    <AllocatePicker
+                      autoOpen
+                      disabled={pending}
+                      candidates={candidates}
+                      loading={candidatesLoading}
+                      failed={candidatesFailed}
+                      failedRef={candidatesRef}
+                      onOpen={ensureCandidates}
+                      onRetry={ensureCandidates}
+                      onPick={(userId) => s.allocationId && linkGuest(s.slotId, s.allocationId, userId)}
+                    />
+                    <button
+                      type="button"
+                      className="text-xs text-text-muted shrink-0"
+                      onClick={() => setLinkingSlotId(null)}
+                    >
+                      cancelar
+                    </button>
+                  </div>
                 ) : s.allocatedName ? (
                   <span className="text-sm text-text flex-1 flex items-center gap-1.5 flex-wrap">
                     {s.allocatedName}
-                    {s.allocatedStatus === "PENDING" && (
+                    {s.isGuest && (
+                      <Badge tone="info" className="text-[10px]">
+                        sem conta
+                      </Badge>
+                    )}
+                    {!s.isGuest && s.allocatedStatus === "PENDING" && (
                       <Badge tone="info" className="text-[10px]">
                         aguardando confirmação
                       </Badge>
                     )}
                     {props.isToday && s.checkedIn && (
                       <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
+                    )}
+                    {props.canManage && s.isGuest && (
+                      <button
+                        type="button"
+                        className="text-xs text-primary underline underline-offset-2"
+                        disabled={pending}
+                        onClick={() => {
+                          setLinkingSlotId(s.slotId);
+                          ensureCandidates();
+                        }}
+                      >
+                        vincular
+                      </button>
                     )}
                     {props.canManage && (
                       <button
@@ -222,6 +334,7 @@ export function OccurrenceRow(props: {
                     onOpen={ensureCandidates}
                     onRetry={ensureCandidates}
                     onPick={(userId) => allocate(s.slotId, userId)}
+                    onPickGuest={(name, cpf) => allocateGuestHandler(s.slotId, name, cpf)}
                   />
                 ) : (
                   <span className="text-sm text-text-muted flex-1">— vaga aberta</span>
@@ -232,7 +345,11 @@ export function OccurrenceRow(props: {
                     {noteFor.retryUserId && (
                       <button
                         className="underline underline-offset-2 ml-1"
-                        onClick={() => runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)}
+                        onClick={() =>
+                          s.isGuest && s.allocationId
+                            ? linkGuest(s.slotId, s.allocationId, noteFor.retryUserId!, true)
+                            : runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)
+                        }
                       >
                         Sim
                       </button>
