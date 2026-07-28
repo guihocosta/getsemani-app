@@ -4,9 +4,8 @@ import { useState, useTransition } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/ui/Button";
 import { Badge } from "@/ui/Badge";
-import { useConfirm } from "@/ui/ConfirmDialog";
 import { RequestSwapButton } from "./RequestSwapButton";
-import { confirmAllocationAction, declineAllocationAction, checkInAllocationAction } from "./respondAllocationActions";
+import { checkInAllocationAction } from "./respondAllocationActions";
 import type { AllocationStatus } from "@prisma/client";
 
 export function AllocationActions(props: {
@@ -18,17 +17,6 @@ export function AllocationActions(props: {
 }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const { confirm, dialog } = useConfirm();
-
-  async function decline() {
-    const ok = await confirm({
-      title: "Recusar esta escala?",
-      description: "A vaga volta a ficar aberta pros outros voluntários do ministério e o líder é avisado.",
-      confirmLabel: "Recusar",
-      tone: "danger",
-    });
-    if (ok) start(() => declineAllocationAction(props.allocationId));
-  }
 
   function checkIn() {
     setError(null);
@@ -36,28 +24,6 @@ export function AllocationActions(props: {
       const res = await checkInAllocationAction(props.allocationId);
       if (!res.ok) setError("Não deu pra fazer check-in agora.");
     });
-  }
-
-  if (props.status === "PENDING") {
-    return (
-      <div className="flex items-center gap-2">
-        {dialog}
-        <button
-          className="text-xs text-danger disabled:opacity-40"
-          disabled={pending}
-          onClick={decline}
-        >
-          Não posso
-        </button>
-        <Button
-          className="py-1.5 px-3 text-xs"
-          disabled={pending}
-          onClick={() => start(() => confirmAllocationAction(props.allocationId))}
-        >
-          Confirmar
-        </Button>
-      </div>
-    );
   }
 
   if (props.isToday) {
