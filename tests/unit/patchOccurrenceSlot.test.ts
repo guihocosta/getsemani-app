@@ -18,6 +18,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
         allocationId: null,
         allocatedStatus: null,
         checkedIn: false,
+        isGuest: false,
       },
       {
         slotId: "slot-2",
@@ -27,6 +28,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
         allocationId: null,
         allocatedStatus: null,
         checkedIn: false,
+        isGuest: false,
       },
     ],
     ...overrides,
@@ -39,6 +41,16 @@ const PATCH = {
   allocationId: "alloc-1",
   allocatedStatus: "PENDING" as const,
   checkedIn: false,
+  isGuest: false,
+};
+
+const GUEST_PATCH = {
+  allocatedUserId: null,
+  allocatedName: "Fulano (visitante)",
+  allocationId: "alloc-2",
+  allocatedStatus: "PENDING" as const,
+  checkedIn: false,
+  isGuest: true,
 };
 
 describe("patchOccurrenceSlot", () => {
@@ -67,5 +79,11 @@ describe("patchOccurrenceSlot", () => {
     const items = [makeItem()];
     const result = patchOccurrenceSlot(items, "occ-1", "slot-inexistente", PATCH);
     expect(result[0].slots.every((s) => s.allocatedUserId === null)).toBe(true);
+  });
+
+  it("aceita patch de guest sem userId", () => {
+    const items = [makeItem()];
+    const result = patchOccurrenceSlot(items, "occ-1", "slot-1", GUEST_PATCH);
+    expect(result[0].slots[0]).toMatchObject(GUEST_PATCH);
   });
 });

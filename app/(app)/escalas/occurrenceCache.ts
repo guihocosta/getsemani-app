@@ -8,6 +8,7 @@ export type Slot = {
   allocationId: string | null;
   allocatedStatus: AllocationStatus | null;
   checkedIn: boolean;
+  isGuest: boolean;
 };
 
 export type Item = {
@@ -21,11 +22,12 @@ export type Item = {
 };
 
 export type SlotPatch = {
-  allocatedUserId: string;
+  allocatedUserId: string | null;
   allocatedName: string;
   allocationId: string;
   allocatedStatus: AllocationStatus;
   checkedIn: boolean;
+  isGuest: boolean;
 };
 
 // Atualiza uma vaga especifica dentro da lista de ocorrencias do mes, sem
