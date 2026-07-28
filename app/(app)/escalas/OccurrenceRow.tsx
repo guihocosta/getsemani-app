@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
-import { Pencil, CheckCircle2, X, RotateCcw } from "lucide-react";
+import { CheckCircle2, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
@@ -16,16 +15,15 @@ import {
   getOccurrenceCandidatesAction,
   type AllocationCandidate,
 } from "./actions";
-import { AllocatePicker } from "./AllocatePicker";
+import { OccurrenceMenu } from "./OccurrenceMenu";
+import { SlotDetailSheet } from "./SlotDetailSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
 
 type Note = {
-  slotId: string;
   message: string;
-  ref?: string;
   retryUserId?: string;
   mode: NoteMode;
 };
@@ -51,18 +49,20 @@ export function OccurrenceRow(props: {
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
-  const [reassigningSlotId, setReassigningSlotId] = useState<string | null>(null);
+  const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [copyNote, setCopyNote] = useState(false);
   const { confirm, dialog } = useConfirm();
 
   // Candidatos sao os mesmos pra todas as vagas desta ocorrencia (mesmo
-  // ministerio + data) — busca uma vez so, na primeira vez que algum seletor
+  // ministerio + data) — busca uma vez so, na primeira vez que algum sheet
   // abre, e reusa pras demais vagas em vez de refazer a query por vaga.
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
   const [guestNames, setGuestNames] = useState<string[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
   const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
+
+  const activeSlot = props.slots.find((s) => s.slotId === activeSlotId) ?? null;
 
   function ensureCandidates() {
     if (candidates || candidatesLoading) return;
@@ -83,6 +83,17 @@ export function OccurrenceRow(props: {
       .finally(() => setCandidatesLoading(false));
   }
 
+  function openSheet(slotId: string) {
+    setActiveSlotId(slotId);
+    setNote(null);
+    ensureCandidates();
+  }
+
+  function closeSheet() {
+    setActiveSlotId(null);
+    setNote(null);
+  }
+
   function runAllocation(mode: NoteMode, slotId: string, userId: string, override = false) {
     if (!userId) return;
     start(async () => {
@@ -90,9 +101,9 @@ export function OccurrenceRow(props: {
       const res = await action(slotId, userId, override);
       if (!res.ok) {
         if (res.code === "UNAVAILABILITY_BLOCKED") {
-          setNote({ slotId, message: `${MENSAGENS.UNAVAILABILITY_BLOCKED} Alocar mesmo assim?`, retryUserId: userId, mode });
+          setNote({ message: `${MENSAGENS.UNAVAILABILITY_BLOCKED} Alocar mesmo assim?`, retryUserId: userId, mode });
         } else {
-          setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode });
+          setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode });
         }
         return;
       }
@@ -105,20 +116,35 @@ export function OccurrenceRow(props: {
         checkedIn: false,
         isGuest: false,
       });
-      setNote(null);
-      setReassigningSlotId(null);
+      closeSheet();
     });
   }
 
-  function allocate(slotId: string, userId: string, override = false) {
-    runAllocation("assign", slotId, userId, override);
+  async function reassign(slotId: string, currentName: string | null, userId: string) {
+    const candidate = candidates?.find((c) => c.userId === userId);
+    const ok = await confirm({
+      title: "Trocar alocação?",
+      description: `Tira ${currentName ?? "quem está alocado"} e coloca ${candidate?.name ?? "a pessoa escolhida"} nesta vaga.`,
+      confirmLabel: "Trocar",
+    });
+    if (!ok) return;
+    runAllocation("reassign", slotId, userId);
+  }
+
+  function handlePickUser(userId: string) {
+    if (!activeSlot) return;
+    if (activeSlot.allocatedName) {
+      reassign(activeSlot.slotId, activeSlot.allocatedName, userId);
+    } else {
+      runAllocation("assign", activeSlot.slotId, userId);
+    }
   }
 
   function allocateGuestHandler(slotId: string, name: string) {
     start(async () => {
       const res = await allocateGuestAction(slotId, name);
       if (!res.ok) {
-        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
         return;
       }
       props.onAllocated(slotId, {
@@ -129,7 +155,7 @@ export function OccurrenceRow(props: {
         checkedIn: false,
         isGuest: true,
       });
-      setNote(null);
+      closeSheet();
     });
   }
 
@@ -137,7 +163,7 @@ export function OccurrenceRow(props: {
     start(async () => {
       const res = await reassignGuestAction(slotId, name);
       if (!res.ok) {
-        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "reassign" });
+        setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "reassign" });
         return;
       }
       props.onAllocated(slotId, {
@@ -148,8 +174,7 @@ export function OccurrenceRow(props: {
         checkedIn: false,
         isGuest: true,
       });
-      setNote(null);
-      setReassigningSlotId(null);
+      closeSheet();
     });
   }
 
@@ -161,6 +186,15 @@ export function OccurrenceRow(props: {
     });
     if (!ok) return;
     reassignGuestHandler(slotId, name);
+  }
+
+  function handlePickGuest(name: string) {
+    if (!activeSlot) return;
+    if (activeSlot.allocatedName) {
+      reassignToGuestHandler(activeSlot.slotId, activeSlot.allocatedName, name);
+    } else {
+      allocateGuestHandler(activeSlot.slotId, name);
+    }
   }
 
   async function deactivateSlot(slot: Slot) {
@@ -176,20 +210,18 @@ export function OccurrenceRow(props: {
     start(async () => {
       const res = await setSlotActiveAction(slot.slotId, false);
       if (!res.ok) {
-        setNote({ slotId: slot.slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
         return;
       }
       props.onActiveChanged(slot.slotId, false);
+      closeSheet();
     });
   }
 
   function reactivateSlot(slotId: string) {
     start(async () => {
       const res = await setSlotActiveAction(slotId, true);
-      if (!res.ok) {
-        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
-        return;
-      }
+      if (!res.ok) return;
       props.onActiveChanged(slotId, true);
     });
   }
@@ -199,17 +231,6 @@ export function OccurrenceRow(props: {
     navigator.clipboard.writeText(text);
     setCopyNote(true);
     setTimeout(() => setCopyNote(false), 2000);
-  }
-
-  async function reassign(slotId: string, currentName: string | null, userId: string) {
-    const candidate = candidates?.find((c) => c.userId === userId);
-    const ok = await confirm({
-      title: "Trocar alocação?",
-      description: `Tira ${currentName ?? "quem está alocado"} e coloca ${candidate?.name ?? "a pessoa escolhida"} nesta vaga.`,
-      confirmLabel: "Trocar",
-    });
-    if (!ok) return;
-    runAllocation("reassign", slotId, userId);
   }
 
   async function del(scope: "SINGLE" | "FROM_HERE") {
@@ -238,6 +259,32 @@ export function OccurrenceRow(props: {
   return (
     <li>
       {dialog}
+      <SlotDetailSheet
+        open={activeSlotId !== null}
+        slot={activeSlot}
+        onClose={closeSheet}
+        candidates={candidates}
+        guestNames={guestNames}
+        loading={candidatesLoading}
+        failed={candidatesFailed}
+        failedRef={candidatesRef}
+        pending={pending}
+        note={
+          note
+            ? {
+                message: note.message,
+                onOverride:
+                  note.retryUserId && activeSlot
+                    ? () => runAllocation(note.mode, activeSlot.slotId, note.retryUserId!, true)
+                    : undefined,
+              }
+            : null
+        }
+        onRetryCandidates={ensureCandidates}
+        onPickUser={handlePickUser}
+        onPickGuest={handlePickGuest}
+        onDeactivate={() => activeSlot && deactivateSlot(activeSlot)}
+      />
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -245,135 +292,56 @@ export function OccurrenceRow(props: {
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
           {props.canManage && (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="text-xs text-text-muted hover:text-text"
-                onClick={copyWhatsAppText}
-              >
-                {copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
-              </button>
-              <Link href={`/escalas/${props.scheduleId}/editar`} className="text-text-muted hover:text-text">
-                <Pencil size={14} strokeWidth={1.8} />
-              </Link>
-              <button className="text-xs text-danger" disabled={pending} onClick={() => del("SINGLE")}>
-                Excluir esta
-              </button>
-              <button
-                className="text-xs text-danger"
-                disabled={pending}
-                onClick={() => del("FROM_HERE")}
-              >
-                Daqui em diante
-              </button>
-            </div>
+            <OccurrenceMenu
+              scheduleId={props.scheduleId}
+              copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
+              onCopy={copyWhatsAppText}
+              onDeleteSingle={() => del("SINGLE")}
+              onDeleteFromHere={() => del("FROM_HERE")}
+              disabled={pending}
+            />
           )}
         </div>
 
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-1">
           {props.slots
             .filter((s) => s.active)
-            .map((s) => {
-            const noteFor = note?.slotId === s.slotId ? note : null;
-            return (
-              <li key={s.slotId} className="flex items-center justify-between gap-2">
-                <span className="text-sm text-text-muted w-24 shrink-0">{s.role}</span>
-                {reassigningSlotId === s.slotId ? (
-                  <div className="flex-1 flex items-center gap-2">
-                    <AllocatePicker
-                      autoOpen
-                      excludeUserId={s.allocatedUserId ?? undefined}
-                      disabled={pending}
-                      candidates={candidates}
-                      loading={candidatesLoading}
-                      failed={candidatesFailed}
-                      failedRef={candidatesRef}
-                      onOpen={ensureCandidates}
-                      onRetry={ensureCandidates}
-                      onPick={(userId) => reassign(s.slotId, s.allocatedName, userId)}
-                      onPickGuest={(name) => reassignToGuestHandler(s.slotId, s.allocatedName, name)}
-                      guestNames={guestNames}
-                    />
-                    <button
-                      type="button"
-                      className="text-xs text-text-muted shrink-0"
-                      onClick={() => setReassigningSlotId(null)}
+            .map((s) => (
+              <li key={s.slotId}>
+                <button
+                  type="button"
+                  disabled={!props.canManage}
+                  onClick={() => props.canManage && openSheet(s.slotId)}
+                  className="w-full min-h-11 flex items-center gap-2 py-1.5 text-left disabled:cursor-default"
+                >
+                  <span className="text-sm text-text-muted w-24 shrink-0">{s.role}</span>
+                  {s.allocatedName ? (
+                    <span className="text-sm text-text flex-1 flex items-center gap-1.5 flex-wrap">
+                      {s.allocatedName}
+                      {s.isGuest && (
+                        <Badge tone="info" className="text-[10px]">
+                          sem conta
+                        </Badge>
+                      )}
+                      {!s.isGuest && s.allocatedStatus === "PENDING" && (
+                        <Badge tone="info" className="text-[10px]">
+                          aguardando confirmação
+                        </Badge>
+                      )}
+                      {props.isToday && s.checkedIn && (
+                        <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
+                      )}
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-sm flex-1 ${props.canManage ? "text-primary font-medium" : "text-text-muted"}`}
                     >
-                      cancelar
-                    </button>
-                  </div>
-                ) : s.allocatedName ? (
-                  <span className="text-sm text-text flex-1 flex items-center gap-1.5 flex-wrap">
-                    {s.allocatedName}
-                    {s.isGuest && (
-                      <Badge tone="info" className="text-[10px]">
-                        sem conta
-                      </Badge>
-                    )}
-                    {!s.isGuest && s.allocatedStatus === "PENDING" && (
-                      <Badge tone="info" className="text-[10px]">
-                        aguardando confirmação
-                      </Badge>
-                    )}
-                    {props.isToday && s.checkedIn && (
-                      <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
-                    )}
-                    {props.canManage && (
-                      <button
-                        type="button"
-                        className="text-xs text-primary underline underline-offset-2"
-                        disabled={pending}
-                        onClick={() => {
-                          setReassigningSlotId(s.slotId);
-                          ensureCandidates();
-                        }}
-                      >
-                        trocar
-                      </button>
-                    )}
-                  </span>
-                ) : props.canManage ? (
-                  <AllocatePicker
-                    disabled={pending}
-                    candidates={candidates}
-                    loading={candidatesLoading}
-                    failed={candidatesFailed}
-                    onOpen={ensureCandidates}
-                    onRetry={ensureCandidates}
-                    onPick={(userId) => allocate(s.slotId, userId)}
-                    onPickGuest={(name) => allocateGuestHandler(s.slotId, name)}
-                    guestNames={guestNames}
-                  />
-                ) : (
-                  <span className="text-sm text-text-muted flex-1">— vaga aberta</span>
-                )}
-                {noteFor && (
-                  <Badge tone="info" className="text-xs">
-                    {noteFor.message}
-                    {noteFor.retryUserId && (
-                      <button
-                        className="underline underline-offset-2 ml-1"
-                        onClick={() => runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)}
-                      >
-                        Sim
-                      </button>
-                    )}
-                  </Badge>
-                )}
-                {props.canManage && reassigningSlotId !== s.slotId && (
-                  <button
-                    type="button"
-                    className="text-text-muted hover:text-danger shrink-0"
-                    disabled={pending}
-                    title="Desativar vaga nesta ocorrência"
-                    onClick={() => deactivateSlot(s)}
-                  >
-                    <X size={14} strokeWidth={1.8} />
-                  </button>
-                )}
+                      — vaga aberta
+                    </span>
+                  )}
+                </button>
               </li>
-            );
-          })}
+            ))}
         </ul>
 
         {props.canManage && props.slots.some((s) => !s.active) && (
@@ -385,7 +353,7 @@ export function OccurrenceRow(props: {
                   <span className="text-xs text-text-muted">{s.role} · desativada</span>
                   <button
                     type="button"
-                    className="flex items-center gap-1 text-xs text-primary underline underline-offset-2"
+                    className="min-h-11 flex items-center gap-1 text-xs text-primary underline underline-offset-2"
                     disabled={pending}
                     onClick={() => reactivateSlot(s.slotId)}
                   >
