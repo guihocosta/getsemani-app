@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { Users2, Bell, ClipboardList, UserRoundPlus } from "lucide-react";
+import { Users2, Bell, ClipboardList, UserRoundPlus, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { fromZonedTime } from "date-fns-tz";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
 import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
@@ -8,11 +10,32 @@ import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { NavRow } from "@/ui/NavRow";
-import { fmtDateTime, monthKey, monthLabel } from "@/lib/time";
+import { fmtDateTime, monthKey, monthLabel, APP_TZ } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function monthWindow(year: number, month: number): { from: Date; to: Date } {
+  const from = fromZonedTime(`${year}-${pad(month)}-01T00:00:00`, APP_TZ);
+  const [nextYear, nextMonth] = month === 12 ? [year + 1, 1] : [year, month + 1];
+  const to = fromZonedTime(`${nextYear}-${pad(nextMonth)}-01T00:00:00`, APP_TZ);
+  return { from, to };
+}
+
+function shiftMonth(year: number, month: number, delta: number): [number, number] {
+  const total = year * 12 + (month - 1) + delta;
+  return [Math.floor(total / 12), (total % 12) + 1];
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vagasMes?: string }>;
+}) {
+  const { vagasMes } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
@@ -24,9 +47,15 @@ export default async function AdminPage() {
   const guestMinistryIds = await ledMinistryIds(user.id, user.isAdmin);
 
   const now = new Date();
+  const nowKey = monthKey(now);
+  const [defYear, defMonth] = nowKey.split("-").map(Number);
+  const [vagasYear, vagasMonth] =
+    vagasMes && /^\d{4}-\d{2}$/.test(vagasMes) ? vagasMes.split("-").map(Number) : [defYear, defMonth];
+  const { from: vagasFrom, to: vagasTo } = monthWindow(vagasYear, vagasMonth);
+
   const in30 = new Date(now.getTime() + 30 * 864e5);
   const [open, load, byMinistry, pendingCount, guests] = await Promise.all([
-    openSlots(now, scopeIds),
+    openSlots(vagasFrom, vagasTo, scopeIds),
     loadByPerson(new Date(now.getTime() - 30 * 864e5), in30, scopeIds),
     volunteersByMinistry(scopeIds),
     prisma.membership.count({
@@ -38,14 +67,6 @@ export default async function AdminPage() {
   const [ministryCount, personCount] = user.isAdmin
     ? await Promise.all([prisma.ministry.count(), prisma.user.count()])
     : [0, 0];
-
-  const openByMonth = new Map<string, typeof open>();
-  for (const s of open) {
-    const key = monthKey(s.date);
-    const list = openByMonth.get(key) ?? [];
-    list.push(s);
-    openByMonth.set(key, list);
-  }
 
   return (
     <div>
@@ -84,30 +105,48 @@ export default async function AdminPage() {
 
       <h2 className="eyebrow mb-3">Resumo</h2>
 
-      <h3 className="text-sm text-text-muted mb-2">Vagas sem ninguém ({open.length})</h3>
-      {open.length === 0 ? (
-        <EmptyState title="Tudo alocado 🎉" />
-      ) : (
-        <div className="mb-8">
-          {[...openByMonth.entries()].map(([key, slots]) => (
-            <div key={key} className="mb-4 last:mb-0">
-              <p className="eyebrow text-text-muted mb-2">{monthLabel(slots[0].date)}</p>
-              <ul className="flex flex-col gap-2">
-                {slots.map((s) => (
-                  <li key={s.slotId}>
-                    <Card className="flex items-center justify-between py-3">
-                      <div>
-                        <p className="eyebrow text-primary">{s.ministry}</p>
-                        <p className="text-text">{s.role}</p>
-                      </div>
-                      <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
-                    </Card>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm text-text-muted">Vagas sem ninguém ({open.length})</h3>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin?vagasMes=${(() => {
+              const [py, pm] = shiftMonth(vagasYear, vagasMonth, -1);
+              return `${py}-${pad(pm)}`;
+            })()}`}
+            className="text-text-muted hover:text-text"
+          >
+            <ChevronLeft size={16} />
+          </Link>
+          <p className="text-xs text-text-muted whitespace-nowrap">{monthLabel(vagasFrom)}</p>
+          <Link
+            href={`/admin?vagasMes=${(() => {
+              const [ny, nm] = shiftMonth(vagasYear, vagasMonth, 1);
+              return `${ny}-${pad(nm)}`;
+            })()}`}
+            className="text-text-muted hover:text-text"
+          >
+            <ChevronRight size={16} />
+          </Link>
         </div>
+      </div>
+      {open.length === 0 ? (
+        <div className="mb-8">
+          <EmptyState title="Nenhuma vaga em aberto neste mês" />
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-2 mb-8">
+          {open.map((s) => (
+            <li key={s.slotId}>
+              <Card className="flex items-center justify-between py-3">
+                <div>
+                  <p className="eyebrow text-primary">{s.ministry}</p>
+                  <p className="text-text">{s.role}</p>
+                </div>
+                <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
+              </Card>
+            </li>
+          ))}
+        </ul>
       )}
 
       <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>
