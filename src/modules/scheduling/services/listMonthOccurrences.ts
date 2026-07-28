@@ -22,6 +22,7 @@ export type MonthOccurrenceItem = {
     allocationId: string | null;
     allocatedStatus: AllocationStatus | null;
     checkedIn: boolean;
+    isGuest: boolean;
   }[];
 };
 
@@ -61,10 +62,11 @@ export async function listMonthOccurrences(
       slotId: s.id,
       role: s.role.name,
       allocatedUserId: s.allocation?.userId ?? null,
-      allocatedName: s.allocation?.user.name ?? null,
+      allocatedName: s.allocation?.user?.name ?? s.allocation?.guestName ?? null,
       allocationId: s.allocation?.id ?? null,
       allocatedStatus: s.allocation?.status ?? null,
       checkedIn: !!s.allocation?.checkedInAt,
+      isGuest: !!s.allocation && s.allocation.userId === null,
     })),
   }));
 }

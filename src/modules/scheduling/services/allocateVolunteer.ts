@@ -143,15 +143,17 @@ export async function reassignAllocation(params: {
     throw e;
   }
 
-  await notifyUser({
-    userId: previousUserId,
-    type: "ASSIGNMENT",
-    dedupeKey: `unassign:${previousAllocationId}`,
-    title: "Você foi removido de uma escala",
-    body: `${slot.role.name} · ${fmtDateTime(slot.occurrence.date)}`,
-    url: "/",
-    occurrenceId: slot.occurrenceId,
-  });
+  if (previousUserId) {
+    await notifyUser({
+      userId: previousUserId,
+      type: "ASSIGNMENT",
+      dedupeKey: `unassign:${previousAllocationId}`,
+      title: "Você foi removido de uma escala",
+      body: `${slot.role.name} · ${fmtDateTime(slot.occurrence.date)}`,
+      url: "/",
+      occurrenceId: slot.occurrenceId,
+    });
+  }
   await notifyUser({
     userId: params.userId,
     type: "ASSIGNMENT",

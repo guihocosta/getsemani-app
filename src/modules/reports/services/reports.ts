@@ -42,12 +42,13 @@ export async function loadByPerson(from: Date, to: Date, ministryIds?: string[])
     },
     _count: { _all: true },
   });
+  const grupedComUsuario = grouped.filter((g): g is typeof g & { userId: string } => g.userId !== null);
   const users = await prisma.user.findMany({
-    where: { id: { in: grouped.map((g) => g.userId) } },
+    where: { id: { in: grupedComUsuario.map((g) => g.userId) } },
     select: { id: true, name: true },
   });
   const nameOf = new Map(users.map((u) => [u.id, u.name]));
-  return grouped
+  return grupedComUsuario
     .map((g) => ({ userId: g.userId, name: nameOf.get(g.userId) ?? "?", count: g._count._all }))
     .sort((a, b) => b.count - a.count);
 }
