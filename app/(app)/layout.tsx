@@ -3,6 +3,7 @@ import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz
 import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/ui/AppShell";
+import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
@@ -20,6 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AppShell isAdmin={user.isAdmin} isLeader={isLeader} pendingCount={pendingCount}>
+      <ServiceWorkerRegister />
       {children}
     </AppShell>
   );

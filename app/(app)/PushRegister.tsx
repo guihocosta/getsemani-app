@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/ui/Button";
 import { Card } from "@/ui/Card";
+import { currentPlatform, isStandalone } from "@/lib/platform";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -13,23 +14,12 @@ function urlBase64ToUint8Array(base64: string) {
 
 type PushState = "idle" | "granted" | "denied" | "unsupported" | "ios-need-install";
 
-// iOS so aceita Web Push num PWA instalado (Tela de Inicio), nunca numa aba do Safari.
-function isIOS() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
-}
-function isStandalone() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
-
 // Registra SW e assina Web Push. Degrada graciosamente quando sem suporte/permissao (FR-017).
 export function PushRegister() {
   const [state, setState] = useState<PushState>("idle");
 
   useEffect(() => {
-    if (isIOS() && !isStandalone()) {
+    if (currentPlatform().os === "ios" && !isStandalone()) {
       setState("ios-need-install");
       return;
     }
@@ -42,7 +32,7 @@ export function PushRegister() {
       setState("unsupported");
       return;
     }
-    navigator.serviceWorker.register("/sw.js");
+    // O SW e registrado pelo ServiceWorkerRegister no layout; aqui so lemos a permissao.
     if (Notification.permission === "granted") setState("granted");
     if (Notification.permission === "denied") setState("denied");
   }, []);
