@@ -119,13 +119,12 @@ export async function reassignAllocationAction(
 export async function allocateGuestAction(
   slotId: string,
   guestName: string,
-  guestCpf?: string,
 ): Promise<
   | { ok: true; allocation: { id: string; status: AllocationStatus } }
   | { ok: false; code: ActionCode; ref: string }
 > {
   try {
-    const allocation = await allocateGuest({ slotId, guestName, guestCpf });
+    const allocation = await allocateGuest({ slotId, guestName });
     revalidatePath("/escalas");
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
@@ -144,6 +143,7 @@ export async function linkGuestAction(
   try {
     const allocation = await linkGuestAllocation({ allocationId, userId, override });
     revalidatePath("/escalas");
+    revalidatePath("/admin/convidados");
     revalidatePath("/");
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {

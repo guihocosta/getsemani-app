@@ -10,7 +10,6 @@ import {
   allocateAction,
   reassignAllocationAction,
   allocateGuestAction,
-  linkGuestAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   type AllocationCandidate,
@@ -48,7 +47,6 @@ export function OccurrenceRow(props: {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
   const [reassigningSlotId, setReassigningSlotId] = useState<string | null>(null);
-  const [linkingSlotId, setLinkingSlotId] = useState<string | null>(null);
   const [copyNote, setCopyNote] = useState(false);
   const { confirm, dialog } = useConfirm();
 
@@ -108,9 +106,9 @@ export function OccurrenceRow(props: {
     runAllocation("assign", slotId, userId, override);
   }
 
-  function allocateGuestHandler(slotId: string, name: string, cpf?: string) {
+  function allocateGuestHandler(slotId: string, name: string) {
     start(async () => {
-      const res = await allocateGuestAction(slotId, name, cpf);
+      const res = await allocateGuestAction(slotId, name);
       if (!res.ok) {
         setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
         return;
@@ -124,36 +122,6 @@ export function OccurrenceRow(props: {
         isGuest: true,
       });
       setNote(null);
-    });
-  }
-
-  function linkGuest(slotId: string, allocationId: string, userId: string, override = false) {
-    start(async () => {
-      const res = await linkGuestAction(allocationId, userId, override);
-      if (!res.ok) {
-        if (res.code === "UNAVAILABILITY_BLOCKED") {
-          setNote({
-            slotId,
-            message: `${MENSAGENS.UNAVAILABILITY_BLOCKED} Vincular mesmo assim?`,
-            retryUserId: userId,
-            mode: "reassign",
-          });
-        } else {
-          setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "reassign" });
-        }
-        return;
-      }
-      const name = candidates?.find((c) => c.userId === userId)?.name ?? "Alguém";
-      props.onAllocated(slotId, {
-        allocatedUserId: userId,
-        allocatedName: name,
-        allocationId: res.allocation.id,
-        allocatedStatus: res.allocation.status,
-        checkedIn: false,
-        isGuest: false,
-      });
-      setNote(null);
-      setLinkingSlotId(null);
     });
   }
 
@@ -261,27 +229,6 @@ export function OccurrenceRow(props: {
                       cancelar
                     </button>
                   </div>
-                ) : linkingSlotId === s.slotId ? (
-                  <div className="flex-1 flex items-center gap-2">
-                    <AllocatePicker
-                      autoOpen
-                      disabled={pending}
-                      candidates={candidates}
-                      loading={candidatesLoading}
-                      failed={candidatesFailed}
-                      failedRef={candidatesRef}
-                      onOpen={ensureCandidates}
-                      onRetry={ensureCandidates}
-                      onPick={(userId) => s.allocationId && linkGuest(s.slotId, s.allocationId, userId)}
-                    />
-                    <button
-                      type="button"
-                      className="text-xs text-text-muted shrink-0"
-                      onClick={() => setLinkingSlotId(null)}
-                    >
-                      cancelar
-                    </button>
-                  </div>
                 ) : s.allocatedName ? (
                   <span className="text-sm text-text flex-1 flex items-center gap-1.5 flex-wrap">
                     {s.allocatedName}
@@ -297,19 +244,6 @@ export function OccurrenceRow(props: {
                     )}
                     {props.isToday && s.checkedIn && (
                       <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
-                    )}
-                    {props.canManage && s.isGuest && (
-                      <button
-                        type="button"
-                        className="text-xs text-primary underline underline-offset-2"
-                        disabled={pending}
-                        onClick={() => {
-                          setLinkingSlotId(s.slotId);
-                          ensureCandidates();
-                        }}
-                      >
-                        vincular
-                      </button>
                     )}
                     {props.canManage && (
                       <button
@@ -334,7 +268,7 @@ export function OccurrenceRow(props: {
                     onOpen={ensureCandidates}
                     onRetry={ensureCandidates}
                     onPick={(userId) => allocate(s.slotId, userId)}
-                    onPickGuest={(name, cpf) => allocateGuestHandler(s.slotId, name, cpf)}
+                    onPickGuest={(name) => allocateGuestHandler(s.slotId, name)}
                   />
                 ) : (
                   <span className="text-sm text-text-muted flex-1">— vaga aberta</span>
@@ -345,11 +279,7 @@ export function OccurrenceRow(props: {
                     {noteFor.retryUserId && (
                       <button
                         className="underline underline-offset-2 ml-1"
-                        onClick={() =>
-                          s.isGuest && s.allocationId
-                            ? linkGuest(s.slotId, s.allocationId, noteFor.retryUserId!, true)
-                            : runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)
-                        }
+                        onClick={() => runAllocation(noteFor.mode, s.slotId, noteFor.retryUserId!, true)}
                       >
                         Sim
                       </button>

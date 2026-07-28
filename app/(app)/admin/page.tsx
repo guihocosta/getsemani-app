@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { Users2, Bell, ClipboardList } from "lucide-react";
+import { Users2, Bell, ClipboardList, UserRoundPlus } from "lucide-react";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
 import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { listGuestAllocations } from "@/modules/scheduling/services/listGuestAllocations";
 import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports/services/reports";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
@@ -20,16 +21,18 @@ export default async function AdminPage() {
 
   // Admin ve relatorios globais; lider ve so os ministerios que lidera.
   const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
+  const guestMinistryIds = await ledMinistryIds(user.id, user.isAdmin);
 
   const now = new Date();
   const in30 = new Date(now.getTime() + 30 * 864e5);
-  const [open, load, byMinistry, pendingCount] = await Promise.all([
+  const [open, load, byMinistry, pendingCount, guests] = await Promise.all([
     openSlots(now, scopeIds),
     loadByPerson(new Date(now.getTime() - 30 * 864e5), in30, scopeIds),
     volunteersByMinistry(scopeIds),
     prisma.membership.count({
       where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
     }),
+    listGuestAllocations(guestMinistryIds),
   ]);
 
   const [ministryCount, personCount] = user.isAdmin
@@ -62,6 +65,12 @@ export default async function AdminPage() {
           label="Solicitações"
           subtitle={pendingCount > 0 ? `${pendingCount} pendente(s)` : "Nenhum pedido pendente"}
           Icon={Bell}
+        />
+        <NavRow
+          href="/admin/convidados"
+          label="Pessoas sem conta"
+          subtitle={guests.length > 0 ? `${guests.length} pendente(s)` : "Nenhuma pendente"}
+          Icon={UserRoundPlus}
         />
       </Card>
 

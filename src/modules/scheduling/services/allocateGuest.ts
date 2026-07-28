@@ -7,10 +7,10 @@ export function decideAllocateGuest(params: { hasAllocation: boolean }): "OK" | 
   return "OK";
 }
 
-// Lider escala alguem sem conta (guestName + CPF opcional). Sem checagem de
-// indisponibilidade (nao ha usuario) e sem notifyUser (guest nao tem push) —
-// vira notificacao real so quando linkGuestAllocation vincular a um usuario.
-export async function allocateGuest(params: { slotId: string; guestName: string; guestCpf?: string }) {
+// Lider escala alguem sem conta (so o nome). Sem checagem de indisponibilidade
+// (nao ha usuario) e sem notifyUser (guest nao tem push) — vira notificacao
+// real so quando linkGuestAllocation vincular a um usuario.
+export async function allocateGuest(params: { slotId: string; guestName: string }) {
   const slot = await prisma.slot.findUniqueOrThrow({
     where: { id: params.slotId },
     include: { occurrence: { include: { schedule: true } }, allocation: true },
@@ -26,7 +26,6 @@ export async function allocateGuest(params: { slotId: string; guestName: string;
       data: {
         slotId: params.slotId,
         guestName: params.guestName,
-        guestCpf: params.guestCpf ?? null,
         source: "LEADER",
         status: "PENDING",
       },

@@ -16,12 +16,11 @@ export function AllocatePicker(props: {
   onOpen: () => void;
   onRetry: () => void;
   onPick: (userId: string) => void;
-  onPickGuest?: (name: string, cpf?: string) => void;
+  onPickGuest?: (name: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
   const [guestName, setGuestName] = useState("");
-  const [guestCpf, setGuestCpf] = useState("");
   const isOpen = props.autoOpen || open;
 
   function toggle() {
@@ -36,10 +35,9 @@ export function AllocatePicker(props: {
   function submitGuest() {
     const name = guestName.trim();
     if (!name || !props.onPickGuest) return;
-    props.onPickGuest(name, guestCpf.trim() || undefined);
+    props.onPickGuest(name);
     setAddingGuest(false);
     setGuestName("");
-    setGuestCpf("");
     setOpen(false);
   }
 
@@ -56,14 +54,6 @@ export function AllocatePicker(props: {
         onChange={(e) => setGuestName(e.target.value)}
         className="field !py-1.5 text-sm w-full"
         autoFocus
-      />
-      <input
-        type="text"
-        inputMode="numeric"
-        placeholder="CPF (opcional)"
-        value={guestCpf}
-        onChange={(e) => setGuestCpf(e.target.value.replace(/\D/g, ""))}
-        className="field !py-1.5 text-sm w-full"
       />
       <div className="flex items-center gap-3">
         <button
@@ -82,7 +72,7 @@ export function AllocatePicker(props: {
   );
 
   const list = (
-    <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-xl bg-surface ring-1 ring-border shadow-lg">
+    <div className="absolute z-30 mt-1 w-full max-h-56 overflow-y-auto rounded-xl bg-surface ring-1 ring-border shadow-lg">
       {props.loading && <p className="px-3 py-2 text-xs text-text-muted">Carregando…</p>}
       {props.failed && (
         <div className="px-3 py-2 text-xs text-text-muted">

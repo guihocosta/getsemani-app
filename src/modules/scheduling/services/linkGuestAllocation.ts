@@ -51,7 +51,6 @@ export async function linkGuestAllocation(params: {
     data: {
       userId: params.userId,
       guestName: null,
-      guestCpf: null,
       overrideUnavailability: conflict && !!params.override,
     },
   });
