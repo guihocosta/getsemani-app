@@ -2,14 +2,14 @@ import { prisma } from "@/lib/prisma";
 
 // FR-019: vagas em aberto (slots sem allocation em ocorrencias ativas futuras), por proximidade.
 // ministryIds opcional escopa o relatorio (lider ve so os seus); admin passa undefined (global).
-export async function openSlots(from = new Date(), ministryIds?: string[]) {
+export async function openSlots(from = new Date(), to?: Date, ministryIds?: string[]) {
   const slots = await prisma.slot.findMany({
     where: {
       allocation: null,
       active: true,
       occurrence: {
         status: "ACTIVE",
-        date: { gte: from },
+        date: { gte: from, ...(to ? { lte: to } : {}) },
         ...(ministryIds ? { schedule: { ministryId: { in: ministryIds } } } : {}),
       },
     },
