@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { Card } from "@/ui/Card";
-import { Badge } from "@/ui/Badge";
 import { AllocationActions } from "./AllocationActions";
 import { fmtDate, fmtTime, dateKey } from "@/lib/time";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
@@ -40,13 +39,7 @@ export function UpcomingCarousel({ items, todayKey }: { items: UpcomingItem[]; t
                 <p className="font-title text-2xl text-primary">{fmtTime(it.date)}</p>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-                <div>
-                  {it.status === "PENDING" && (
-                    <Badge tone="info" className="normal-case! tracking-normal!">
-                      Aguardando confirmação
-                    </Badge>
-                  )}
-                </div>
+                <div />
                 <AllocationActions
                   allocationId={it.allocationId}
                   status={it.status}
