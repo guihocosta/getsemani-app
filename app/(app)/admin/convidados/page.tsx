@@ -29,10 +29,10 @@ export default async function ConvidadosAdminPage() {
         />
       ) : (
         <ul className="flex flex-col gap-3">
-          {guests.flatMap((g) => g.allocations).map((item) => (
-            <li key={item.allocationId}>
+          {guests.map((g) => (
+            <li key={g.guestName}>
               <Card>
-                <GuestRow guest={item} />
+                <GuestRow guest={g} />
               </Card>
             </li>
           ))}

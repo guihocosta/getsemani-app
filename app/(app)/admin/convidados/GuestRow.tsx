@@ -4,15 +4,16 @@ import { useState, useTransition } from "react";
 import { AllocatePicker } from "@app/(app)/escalas/AllocatePicker";
 import {
   getOccurrenceCandidatesAction,
-  linkGuestAction,
+  linkAllGuestAction,
   type AllocationCandidate,
 } from "@app/(app)/escalas/actions";
 import { MENSAGENS } from "@/lib/actionError";
-import type { GuestAllocationItem } from "@/modules/scheduling/services/listGuestAllocations";
+import { Badge } from "@/ui/Badge";
+import type { GroupedGuestItem } from "@/modules/scheduling/services/listGuestAllocations";
 
-export function GuestRow({ guest }: { guest: GuestAllocationItem }) {
+export function GuestRow({ guest }: { guest: GroupedGuestItem }) {
   const [pending, start] = useTransition();
-  const [linked, setLinked] = useState(false);
+  const [linkedCount, setLinkedCount] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [retryUserId, setRetryUserId] = useState<string | null>(null);
@@ -23,10 +24,13 @@ export function GuestRow({ guest }: { guest: GuestAllocationItem }) {
 
   function ensureCandidates() {
     if (candidates || loading) return;
+    const firstOccurrenceId = guest.allocations[0]?.occurrenceId;
+    if (!firstOccurrenceId) return;
+
     setFailed(false);
     setFailedRef(null);
     setLoading(true);
-    getOccurrenceCandidatesAction(guest.occurrenceId)
+    getOccurrenceCandidatesAction(firstOccurrenceId)
       .then((res) => {
         if (res.ok) setCandidates(res.candidates);
         else {
@@ -40,7 +44,7 @@ export function GuestRow({ guest }: { guest: GuestAllocationItem }) {
 
   function link(userId: string, override = false) {
     start(async () => {
-      const res = await linkGuestAction(guest.allocationId, userId, override);
+      const res = await linkAllGuestAction(guest.guestName, userId, override);
       if (!res.ok) {
         if (res.code === "UNAVAILABILITY_BLOCKED") {
           setNote(`${MENSAGENS.UNAVAILABILITY_BLOCKED} Vincular mesmo assim?`);
@@ -50,26 +54,37 @@ export function GuestRow({ guest }: { guest: GuestAllocationItem }) {
         }
         return;
       }
-      setLinked(true);
+      setLinkedCount(res.count);
       setNote(null);
       setOpen(false);
     });
   }
 
+  const allocationLabel = `${guest.totalAllocations} ${
+    guest.totalAllocations === 1 ? "escalação" : "escalações"
+  }`;
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-2">
-        <div>
-          <p className="text-text">{guest.guestName}</p>
-          <p className="text-xs text-text-muted">
-            {guest.ministryName} · {guest.role}
-          </p>
+        <div className="flex items-center gap-2">
+          <p className="text-text font-medium">{guest.guestName}</p>
+          <Badge tone="info">{allocationLabel}</Badge>
         </div>
-        <span className="text-xs text-text-muted shrink-0">{guest.when}</span>
       </div>
 
-      {linked ? (
-        <p className="text-sm text-primary">Vinculado.</p>
+      <ul className="text-xs text-text-muted space-y-1 pl-1 border-l-2 border-border mb-3">
+        {guest.allocations.map((item) => (
+          <li key={item.allocationId}>
+            {item.when} · {item.ministryName} · {item.role}
+          </li>
+        ))}
+      </ul>
+
+      {linkedCount !== null ? (
+        <p className="text-sm text-primary">
+          {linkedCount} {linkedCount === 1 ? "escalação vinculada" : "escalações vinculadas"} com sucesso!
+        </p>
       ) : open ? (
         <div className="flex items-center gap-2">
           <AllocatePicker
@@ -117,3 +132,4 @@ export function GuestRow({ guest }: { guest: GuestAllocationItem }) {
     </div>
   );
 }
+
