@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/ui/EmptyState";
 import { OccurrenceRow } from "./OccurrenceRow";
 import { loadMonthAction } from "./actions";
-import { patchOccurrenceSlot, type Item, type SlotPatch } from "./occurrenceCache";
+import { patchOccurrenceSlot, patchSlotActive, type Item, type SlotPatch } from "./occurrenceCache";
 
 const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTH_LABELS = [
@@ -69,6 +69,14 @@ export function EscalaCalendar({
       const items = prev.get(key);
       if (!items) return prev;
       return new Map(prev).set(key, patchOccurrenceSlot(items, occurrenceId, slotId, patch));
+    });
+  }
+
+  function patchActive(occurrenceId: string, slotId: string, active: boolean) {
+    setCache((prev) => {
+      const items = prev.get(key);
+      if (!items) return prev;
+      return new Map(prev).set(key, patchSlotActive(items, occurrenceId, slotId, active));
     });
   }
 
@@ -227,6 +235,7 @@ export function EscalaCalendar({
               isToday={o.dayKey === todayKey}
               onChanged={refreshCurrentMonth}
               onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
+              onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
             />
           ))}
         </ul>

@@ -8,6 +8,7 @@ import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
 import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/allocateGuest";
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
+import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
@@ -146,6 +147,19 @@ export async function reassignGuestAction(
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.reassignGuest", e, { slotId });
+  }
+}
+
+export async function setSlotActiveAction(
+  slotId: string,
+  active: boolean,
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await setSlotActive({ slotId, active });
+    revalidatePath("/escalas");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("escalas.setSlotActive", e, { slotId, active });
   }
 }
 

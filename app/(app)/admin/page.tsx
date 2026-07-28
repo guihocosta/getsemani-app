@@ -8,7 +8,7 @@ import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { NavRow } from "@/ui/NavRow";
-import { fmtDateTime } from "@/lib/time";
+import { fmtDateTime, monthKey, monthLabel } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +38,14 @@ export default async function AdminPage() {
   const [ministryCount, personCount] = user.isAdmin
     ? await Promise.all([prisma.ministry.count(), prisma.user.count()])
     : [0, 0];
+
+  const openByMonth = new Map<string, typeof open>();
+  for (const s of open) {
+    const key = monthKey(s.date);
+    const list = openByMonth.get(key) ?? [];
+    list.push(s);
+    openByMonth.set(key, list);
+  }
 
   return (
     <div>
@@ -80,22 +88,26 @@ export default async function AdminPage() {
       {open.length === 0 ? (
         <EmptyState title="Tudo alocado 🎉" />
       ) : (
-        <ul className="flex flex-col gap-2 mb-8">
-          {open.slice(0, 5).map((s) => (
-            <li key={s.slotId}>
-              <Card className="flex items-center justify-between py-3">
-                <div>
-                  <p className="eyebrow text-primary">{s.ministry}</p>
-                  <p className="text-text">{s.role}</p>
-                </div>
-                <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
-              </Card>
-            </li>
+        <div className="mb-8">
+          {[...openByMonth.entries()].map(([key, slots]) => (
+            <div key={key} className="mb-4 last:mb-0">
+              <p className="eyebrow text-text-muted mb-2">{monthLabel(slots[0].date)}</p>
+              <ul className="flex flex-col gap-2">
+                {slots.map((s) => (
+                  <li key={s.slotId}>
+                    <Card className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="eyebrow text-primary">{s.ministry}</p>
+                        <p className="text-text">{s.role}</p>
+                      </div>
+                      <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
+                    </Card>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-          {open.length > 5 && (
-            <p className="text-xs text-text-muted text-center">e mais {open.length - 5}…</p>
-          )}
-        </ul>
+        </div>
       )}
 
       <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>

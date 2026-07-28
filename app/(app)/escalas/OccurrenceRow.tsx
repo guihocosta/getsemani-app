@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Pencil, CheckCircle2 } from "lucide-react";
+import { Pencil, CheckCircle2, X, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
@@ -11,6 +11,7 @@ import {
   reassignAllocationAction,
   allocateGuestAction,
   reassignGuestAction,
+  setSlotActiveAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   type AllocationCandidate,
@@ -30,7 +31,9 @@ type Note = {
 };
 
 function buildWhatsAppText(title: string, when: string, slots: Slot[]): string {
-  const linhas = slots.map((s) => `- ${s.role}: ${s.allocatedName ?? "— vaga aberta"}`);
+  const linhas = slots
+    .filter((s) => s.active)
+    .map((s) => `- ${s.role}: ${s.allocatedName ?? "— vaga aberta"}`);
   return `*${title}*\n${when}\n\n${linhas.join("\n")}`;
 }
 
@@ -44,6 +47,7 @@ export function OccurrenceRow(props: {
   isToday: boolean;
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
+  onActiveChanged: (slotId: string, active: boolean) => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
@@ -159,6 +163,37 @@ export function OccurrenceRow(props: {
     reassignGuestHandler(slotId, name);
   }
 
+  async function deactivateSlot(slot: Slot) {
+    const ok = await confirm({
+      title: "Desativar vaga?",
+      description: slot.allocatedName
+        ? `Essa função não existe nesse culto. Some da lista e tira ${slot.allocatedName} dela.`
+        : "Essa função não existe nesse culto. Some da lista até você reativar.",
+      confirmLabel: "Desativar",
+      tone: "danger",
+    });
+    if (!ok) return;
+    start(async () => {
+      const res = await setSlotActiveAction(slot.slotId, false);
+      if (!res.ok) {
+        setNote({ slotId: slot.slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        return;
+      }
+      props.onActiveChanged(slot.slotId, false);
+    });
+  }
+
+  function reactivateSlot(slotId: string) {
+    start(async () => {
+      const res = await setSlotActiveAction(slotId, true);
+      if (!res.ok) {
+        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        return;
+      }
+      props.onActiveChanged(slotId, true);
+    });
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -236,7 +271,9 @@ export function OccurrenceRow(props: {
         </div>
 
         <ul className="flex flex-col gap-2">
-          {props.slots.map((s) => {
+          {props.slots
+            .filter((s) => s.active)
+            .map((s) => {
             const noteFor = note?.slotId === s.slotId ? note : null;
             return (
               <li key={s.slotId} className="flex items-center justify-between gap-2">
@@ -323,10 +360,42 @@ export function OccurrenceRow(props: {
                     )}
                   </Badge>
                 )}
+                {props.canManage && reassigningSlotId !== s.slotId && (
+                  <button
+                    type="button"
+                    className="text-text-muted hover:text-danger shrink-0"
+                    disabled={pending}
+                    title="Desativar vaga nesta ocorrência"
+                    onClick={() => deactivateSlot(s)}
+                  >
+                    <X size={14} strokeWidth={1.8} />
+                  </button>
+                )}
               </li>
             );
           })}
         </ul>
+
+        {props.canManage && props.slots.some((s) => !s.active) && (
+          <ul className="flex flex-col gap-1 mt-3 pt-3 border-t border-border">
+            {props.slots
+              .filter((s) => !s.active)
+              .map((s) => (
+                <li key={s.slotId} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-text-muted">{s.role} · desativada</span>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-xs text-primary underline underline-offset-2"
+                    disabled={pending}
+                    onClick={() => reactivateSlot(s.slotId)}
+                  >
+                    <RotateCcw size={12} strokeWidth={1.8} />
+                    reativar
+                  </button>
+                </li>
+              ))}
+          </ul>
+        )}
       </Card>
     </li>
   );

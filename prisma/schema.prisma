@@ -159,9 +159,10 @@ model Occurrence {
 }
 
 model Slot {
-  id           String @id @default(uuid()) @db.Uuid
-  occurrenceId String @db.Uuid
-  roleId       String @db.Uuid
+  id           String  @id @default(uuid()) @db.Uuid
+  occurrenceId String  @db.Uuid
+  roleId       String  @db.Uuid
+  active       Boolean @default(true) // desliga a vaga so nesta ocorrencia, sem tocar a serie
 
   occurrence Occurrence  @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
   role       Role        @relation(fields: [roleId], references: [id], onDelete: Restrict)

@@ -6,6 +6,7 @@ export async function openSlots(from = new Date(), ministryIds?: string[]) {
   const slots = await prisma.slot.findMany({
     where: {
       allocation: null,
+      active: true,
       occurrence: {
         status: "ACTIVE",
         date: { gte: from },

@@ -18,3 +18,12 @@ export function fmtDateTime(d: Date): string {
 export function dateKey(d: Date): string {
   return formatInTimeZone(d, APP_TZ, "yyyy-MM-dd");
 }
+
+export function monthKey(d: Date): string {
+  return formatInTimeZone(d, APP_TZ, "yyyy-MM");
+}
+
+export function monthLabel(d: Date): string {
+  const label = formatInTimeZone(d, APP_TZ, "MMMM 'de' yyyy", { locale: ptBR });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}

@@ -23,6 +23,7 @@ export type MonthOccurrenceItem = {
     allocatedStatus: AllocationStatus | null;
     checkedIn: boolean;
     isGuest: boolean;
+    active: boolean;
   }[];
 };
 
@@ -67,6 +68,7 @@ export async function listMonthOccurrences(
       allocatedStatus: s.allocation?.status ?? null,
       checkedIn: !!s.allocation?.checkedInAt,
       isGuest: !!s.allocation && s.allocation.userId === null,
+      active: s.active,
     })),
   }));
 }

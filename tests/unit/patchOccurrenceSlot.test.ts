@@ -19,6 +19,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
         allocatedStatus: null,
         checkedIn: false,
         isGuest: false,
+        active: true,
       },
       {
         slotId: "slot-2",
@@ -29,6 +30,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
         allocatedStatus: null,
         checkedIn: false,
         isGuest: false,
+        active: true,
       },
     ],
     ...overrides,
