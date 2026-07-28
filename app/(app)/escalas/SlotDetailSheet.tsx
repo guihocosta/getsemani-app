@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/ui/Badge";
 import { BottomSheet } from "@/ui/BottomSheet";
 import type { AllocationCandidate } from "./actions";
@@ -25,8 +25,23 @@ export function SlotDetailSheet(props: {
   const [picking, setPicking] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
   const [guestName, setGuestName] = useState("");
+  const [lastSlot, setLastSlot] = useState<Slot | null>(null);
 
-  const slot = props.slot;
+  useEffect(() => {
+    if (props.open) {
+      setPicking(false);
+      setAddingGuest(false);
+      setGuestName("");
+    }
+  }, [props.open]);
+
+  useEffect(() => {
+    if (props.slot) {
+      setLastSlot(props.slot);
+    }
+  }, [props.slot]);
+
+  const slot = props.slot ?? lastSlot;
   const filled = !!slot?.allocatedName;
   const showPicker = !filled || picking;
 
