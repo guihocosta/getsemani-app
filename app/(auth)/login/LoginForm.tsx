@@ -93,8 +93,9 @@ export function LoginForm() {
         onChange={(e) => setEmail(e.target.value)}
         className="field"
       />
+      <p className="text-xs text-text-muted">Você receberá um código de 6 dígitos no seu e-mail.</p>
       {error && <p className="text-xs text-danger">{error}</p>}
-      <Button onClick={sendCode} disabled={!email || pending}>
+      <Button onClick={sendCode} disabled={!email.trim() || pending}>
         Entrar com e-mail
       </Button>
       <Button variant="secondary" onClick={signInGoogle}>
