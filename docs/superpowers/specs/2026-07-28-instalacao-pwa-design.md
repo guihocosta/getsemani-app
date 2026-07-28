@@ -123,9 +123,11 @@ Hoje `install-popup-seen` esconde o popup para sempre no primeiro dismiss. Passa
 
 **Unitários (vitest, `tests/unit/platform.test.ts`)** — `detectPlatform` contra uma tabela de user agents reais: iPhone Safari, iPhone Chrome (`CriOS`), iPhone Instagram (`Instagram`), iPad iOS 17 (`Macintosh` + touch), Android Chrome, Android WebView (`; wv)`), Chrome desktop. Verifica `os`, `browser`, `supportsNativePrompt`, `sharePosition`.
 
-**E2E (playwright)** — com `devices["iPhone 13"]`: o popup aparece na Home após o delay, mostra os passos do iOS e não mostra botão "Instalar"; "Agora não" fecha e grava o snooze; recarregar não reabre.
+**Unitários (vitest, `tests/unit/installPopup.test.ts`)** — `shouldShowInstallPopup`: suprime quando standalone, suprime quando concluído, suprime dentro dos 14 dias de adiamento, volta a mostrar depois, e fora do iOS só mostra quando há prompt nativo disponível.
 
-**Manual** — Lighthouse categoria PWA em preview da Vercel para confirmar "Installable"; instalação real num Android e adição à Tela de Início num iPhone.
+**E2E** — não há suíte Playwright autenticada no projeto (`tests/e2e` não existe); criar fixtures de sessão Supabase só para este fluxo custaria mais que o valor entregue. Verificação fica manual.
+
+**Manual** — Lighthouse categoria PWA em preview da Vercel para confirmar "Installable"; instalação real num Android; adição à Tela de Início num iPhone Safari; abrir o link dentro do Instagram e conferir o estado "abrir no Safari".
 
 ## Critérios de aceite
 
