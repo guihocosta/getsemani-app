@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
-// FR-019: vagas em aberto (slots sem allocation em ocorrencias ativas futuras), por proximidade.
+// FR-019: vagas em aberto (slots sem allocation em ocorrencias ativas), por proximidade.
+// Janela meio-aberta [from, to): from e inclusivo, to e exclusivo (quem chama controla os dois limites).
 // ministryIds opcional escopa o relatorio (lider ve so os seus); admin passa undefined (global).
 export async function openSlots(from = new Date(), to?: Date, ministryIds?: string[]) {
   const slots = await prisma.slot.findMany({
@@ -9,7 +10,7 @@ export async function openSlots(from = new Date(), to?: Date, ministryIds?: stri
       active: true,
       occurrence: {
         status: "ACTIVE",
-        date: { gte: from, ...(to ? { lte: to } : {}) },
+        date: { gte: from, ...(to ? { lt: to } : {}) },
         ...(ministryIds ? { schedule: { ministryId: { in: ministryIds } } } : {}),
       },
     },

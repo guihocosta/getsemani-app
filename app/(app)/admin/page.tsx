@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { Users2, Bell, ClipboardList, UserRoundPlus, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { fromZonedTime } from "date-fns-tz";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
 import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
@@ -10,19 +9,12 @@ import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { NavRow } from "@/ui/NavRow";
-import { fmtDateTime, monthKey, monthLabel, APP_TZ } from "@/lib/time";
+import { fmtDateTime, monthKey, monthLabel, monthWindow, parseMonthParam } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
-}
-
-function monthWindow(year: number, month: number): { from: Date; to: Date } {
-  const from = fromZonedTime(`${year}-${pad(month)}-01T00:00:00`, APP_TZ);
-  const [nextYear, nextMonth] = month === 12 ? [year + 1, 1] : [year, month + 1];
-  const to = fromZonedTime(`${nextYear}-${pad(nextMonth)}-01T00:00:00`, APP_TZ);
-  return { from, to };
 }
 
 function shiftMonth(year: number, month: number, delta: number): [number, number] {
@@ -49,17 +41,19 @@ export default async function AdminPage({
   const now = new Date();
   const nowKey = monthKey(now);
   const [defYear, defMonth] = nowKey.split("-").map(Number);
-  const vagasMesMatch = vagasMes?.match(/^(\d{4})-(\d{2})$/);
-  const vagasMesMonth = vagasMesMatch ? Number(vagasMesMatch[2]) : null;
-  const [vagasYear, vagasMonth] =
-    vagasMesMatch && vagasMesMonth !== null && vagasMesMonth >= 1 && vagasMesMonth <= 12
-      ? [Number(vagasMesMatch[1]), vagasMesMonth]
-      : [defYear, defMonth];
+  const { year: vagasYear, month: vagasMonth } = parseMonthParam(vagasMes, {
+    year: defYear,
+    month: defMonth,
+  });
   const { from: vagasFrom, to: vagasTo } = monthWindow(vagasYear, vagasMonth);
+  // No mes corrente, comeca de "now" (vagas passadas ja nao sao acionaveis);
+  // em outros meses o inicio do mes ja e o recorte certo.
+  const isCurrentMonth = vagasYear === defYear && vagasMonth === defMonth;
+  const openSlotsFrom = isCurrentMonth ? now : vagasFrom;
 
   const in30 = new Date(now.getTime() + 30 * 864e5);
   const [open, load, byMinistry, pendingCount, guests] = await Promise.all([
-    openSlots(vagasFrom, vagasTo, scopeIds),
+    openSlots(openSlotsFrom, vagasTo, scopeIds),
     loadByPerson(new Date(now.getTime() - 30 * 864e5), in30, scopeIds),
     volunteersByMinistry(scopeIds),
     prisma.membership.count({

@@ -24,6 +24,7 @@ export function UpcomingCarousel({ items, todayKey }: { items: UpcomingItem[]; t
       <div
         ref={scrollRef}
         onScroll={handleScroll}
+        data-no-swipe
         className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4 [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
       >
