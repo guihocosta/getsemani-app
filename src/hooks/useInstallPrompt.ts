@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { currentPlatform, isStandalone, type InstallPlatform } from "@/lib/platform";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -11,6 +12,7 @@ type BeforeInstallPromptEvent = Event & {
 // o evento num modulo compartilhado pra Home (popup) e Perfil (botao) usarem o mesmo.
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 let listenerAttached = false;
+let installed = false;
 const subscribers = new Set<() => void>();
 
 function notify() {
@@ -27,35 +29,37 @@ function attachListener() {
   });
   window.addEventListener("appinstalled", () => {
     deferredPrompt = null;
+    installed = true;
     notify();
   });
 }
 
-export function isIOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
+/** true depois do evento `appinstalled` nesta aba. */
+export function wasInstalledNow() {
+  return installed;
 }
 
-export function isStandalone(): boolean {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
+const UNKNOWN: InstallPlatform = {
+  os: "other",
+  browser: "other",
+  supportsNativePrompt: false,
+  sharePosition: "none",
+};
 
 export function useInstallPrompt() {
   const [canPrompt, setCanPrompt] = useState(false);
   const [standalone, setStandalone] = useState(true); // assume instalado ate checar (evita flash)
-  const [ios, setIos] = useState(false);
+  const [platform, setPlatform] = useState<InstallPlatform>(UNKNOWN);
 
   useEffect(() => {
     attachListener();
     setStandalone(isStandalone());
-    setIos(isIOS());
+    setPlatform(currentPlatform());
     setCanPrompt(!!deferredPrompt);
 
     const onChange = () => {
       setCanPrompt(!!deferredPrompt);
-      setStandalone(isStandalone());
+      setStandalone(isStandalone() || wasInstalledNow());
     };
     subscribers.add(onChange);
     return () => {
@@ -72,5 +76,5 @@ export function useInstallPrompt() {
     return choice.outcome;
   }, []);
 
-  return { canPrompt, isStandalone: standalone, isIOS: ios, promptInstall };
+  return { canPrompt, isStandalone: standalone, platform, promptInstall };
 }
