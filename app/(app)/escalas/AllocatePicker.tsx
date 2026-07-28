@@ -96,17 +96,14 @@ export function AllocatePicker(props: {
               setOpen(false);
               props.onPick(c.userId);
             }}
-            className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+            className="w-full flex items-center gap-1.5 px-3 py-2 text-left text-sm text-text hover:bg-surface-2 flex-wrap"
           >
-            <span className="flex items-center gap-1.5 flex-wrap">
-              {c.name}
-              {c.unavailable && (
-                <Badge tone="danger" className="text-[10px]">
-                  Indisponível
-                </Badge>
-              )}
-            </span>
-            <span className="text-xs text-text-muted shrink-0">{c.count30d}x/30d</span>
+            {c.name}
+            {c.unavailable && (
+              <Badge tone="danger" className="text-[10px]">
+                Indisponível
+              </Badge>
+            )}
           </button>
         ))}
       {props.onPickGuest && !!props.guestNames?.length && !addingGuest && (

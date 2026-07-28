@@ -6,7 +6,7 @@ import type { AllocationStatus } from "@prisma/client";
 import { createSchedule } from "@/modules/scheduling/services/createSchedule";
 import { updateSchedule } from "@/modules/scheduling/services/updateSchedule";
 import { allocateVolunteer, reassignAllocation } from "@/modules/scheduling/services/allocateVolunteer";
-import { allocateGuest } from "@/modules/scheduling/services/allocateGuest";
+import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/allocateGuest";
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
@@ -129,6 +129,23 @@ export async function allocateGuestAction(
     return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
   } catch (e) {
     return handleActionError("escalas.allocateGuest", e, { slotId });
+  }
+}
+
+export async function reassignGuestAction(
+  slotId: string,
+  guestName: string,
+): Promise<
+  | { ok: true; allocation: { id: string; status: AllocationStatus } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const allocation = await reassignToGuest({ slotId, guestName });
+    revalidatePath("/escalas");
+    revalidatePath("/admin/convidados");
+    return { ok: true, allocation: { id: allocation.id, status: allocation.status } };
+  } catch (e) {
+    return handleActionError("escalas.reassignGuest", e, { slotId });
   }
 }
 

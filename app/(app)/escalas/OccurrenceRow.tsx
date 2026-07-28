@@ -10,6 +10,7 @@ import {
   allocateAction,
   reassignAllocationAction,
   allocateGuestAction,
+  reassignGuestAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   type AllocationCandidate,
@@ -128,6 +129,36 @@ export function OccurrenceRow(props: {
     });
   }
 
+  function reassignGuestHandler(slotId: string, name: string) {
+    start(async () => {
+      const res = await reassignGuestAction(slotId, name);
+      if (!res.ok) {
+        setNote({ slotId, message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "reassign" });
+        return;
+      }
+      props.onAllocated(slotId, {
+        allocatedUserId: null,
+        allocatedName: name,
+        allocationId: res.allocation.id,
+        allocatedStatus: res.allocation.status,
+        checkedIn: false,
+        isGuest: true,
+      });
+      setNote(null);
+      setReassigningSlotId(null);
+    });
+  }
+
+  async function reassignToGuestHandler(slotId: string, currentName: string | null, name: string) {
+    const ok = await confirm({
+      title: "Trocar alocação?",
+      description: `Tira ${currentName ?? "quem está alocado"} e coloca ${name} (sem conta) nesta vaga.`,
+      confirmLabel: "Trocar",
+    });
+    if (!ok) return;
+    reassignGuestHandler(slotId, name);
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -223,6 +254,8 @@ export function OccurrenceRow(props: {
                       onOpen={ensureCandidates}
                       onRetry={ensureCandidates}
                       onPick={(userId) => reassign(s.slotId, s.allocatedName, userId)}
+                      onPickGuest={(name) => reassignToGuestHandler(s.slotId, s.allocatedName, name)}
+                      guestNames={guestNames}
                     />
                     <button
                       type="button"
