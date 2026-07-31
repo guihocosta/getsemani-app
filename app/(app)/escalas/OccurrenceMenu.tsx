@@ -8,6 +8,7 @@ export function OccurrenceMenu(props: {
   scheduleId: string;
   copyLabel: string;
   onCopy: () => void;
+  onAddExtra: () => void;
   onDeleteSingle: () => void;
   onDeleteFromHere: () => void;
   disabled?: boolean;
@@ -42,6 +43,17 @@ export function OccurrenceMenu(props: {
             <Pencil size={14} strokeWidth={1.8} />
             Editar
           </Link>
+          <button
+            type="button"
+            disabled={props.disabled}
+            onClick={() => {
+              setOpen(false);
+              props.onAddExtra();
+            }}
+            className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+          >
+            Adicionar vaga extra
+          </button>
           <button
             type="button"
             disabled={props.disabled}

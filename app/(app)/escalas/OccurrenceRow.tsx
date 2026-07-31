@@ -17,6 +17,7 @@ import {
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
 import { SlotDetailSheet } from "./SlotDetailSheet";
+import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
@@ -50,6 +51,7 @@ export function OccurrenceRow(props: {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
+  const [addExtraOpen, setAddExtraOpen] = useState(false);
   const [copyNote, setCopyNote] = useState(false);
   const { confirm, dialog } = useConfirm();
 
@@ -285,6 +287,12 @@ export function OccurrenceRow(props: {
         onPickGuest={handlePickGuest}
         onDeactivate={() => activeSlot && deactivateSlot(activeSlot)}
       />
+      <AddExtraSlotSheet
+        open={addExtraOpen}
+        onClose={() => setAddExtraOpen(false)}
+        occurrenceId={props.occurrenceId}
+        onAdded={() => props.onChanged()}
+      />
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -296,6 +304,7 @@ export function OccurrenceRow(props: {
               scheduleId={props.scheduleId}
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
+              onAddExtra={() => setAddExtraOpen(true)}
               onDeleteSingle={() => del("SINGLE")}
               onDeleteFromHere={() => del("FROM_HERE")}
               disabled={pending}
