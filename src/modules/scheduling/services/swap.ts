@@ -132,14 +132,16 @@ export async function claimSwap(params: { swapRequestId: string }) {
     };
   });
 
-  await notifyUser({
-    userId: originalUserId,
-    type: "SWAP",
-    dedupeKey: `swap-claimed-requester:${swapId}`,
-    title: "Sua troca foi assumida!",
-    body: `${user.name} assumiu sua escala de ${roleName} · ${fmtDateTime(occurrenceDate)}`,
-    url: "/",
-  });
+  if (originalUserId) {
+    await notifyUser({
+      userId: originalUserId,
+      type: "SWAP",
+      dedupeKey: `swap-claimed-requester:${swapId}`,
+      title: "Sua troca foi assumida!",
+      body: `${user.name} assumiu sua escala de ${roleName} · ${fmtDateTime(occurrenceDate)}`,
+      url: "/",
+    });
+  }
 
   const leaders = await prisma.membership.findMany({
     where: { ministryId, status: "ACTIVE", role: "LEADER" },

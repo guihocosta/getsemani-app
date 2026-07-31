@@ -6,7 +6,7 @@ import { AllocationActions } from "./AllocationActions";
 import { fmtDate, fmtTime } from "@/lib/time";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
 
-export function UpcomingCarousel({ items }: { items: UpcomingItem[] }) {
+export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
