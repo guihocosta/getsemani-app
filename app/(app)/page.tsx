@@ -12,6 +12,7 @@ import { AllocationActions } from "./AllocationActions";
 import { UpcomingCarousel } from "./UpcomingCarousel";
 import { InstallPopup } from "./InstallPopup";
 import { PendingConfirmationsCard } from "./PendingConfirmationsCard";
+import { TodayCheckInCard } from "./TodayCheckInCard";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,10 @@ export default async function HomePage() {
 
   const todayKey = dateKey(new Date());
   const pendingItems = items.filter((it) => it.status === "PENDING");
+  
   const confirmedItems = items.filter((it) => it.status !== "PENDING");
+  const todayItems = confirmedItems.filter((it) => dateKey(it.date) === todayKey);
+  const futureItems = confirmedItems.filter((it) => dateKey(it.date) !== todayKey);
 
   return (
     <div>
@@ -63,7 +67,9 @@ export default async function HomePage() {
 
       {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
 
-      {confirmedItems.length === 0 ? (
+      {todayItems.length > 0 && <TodayCheckInCard items={todayItems} />}
+
+      {futureItems.length === 0 ? (
         <EmptyState
           title="Nenhuma escala próxima"
           subtitle="Quando você for escalado e confirmar, aparecerá aqui."
@@ -74,28 +80,26 @@ export default async function HomePage() {
           <Card className="mb-8 flex flex-col">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow text-primary">{confirmedItems[0].ministry}</p>
-                <p className="text-xl text-text">{confirmedItems[0].role}</p>
-                <p className="text-sm text-text-muted">{fmtDate(confirmedItems[0].date)}</p>
+                <p className="eyebrow text-primary">{futureItems[0].ministry}</p>
+                <p className="text-xl text-text">{futureItems[0].role}</p>
+                <p className="text-sm text-text-muted">{fmtDate(futureItems[0].date)}</p>
               </div>
-              <p className="font-title text-3xl text-primary">{fmtTime(confirmedItems[0].date)}</p>
+              <p className="font-title text-3xl text-primary">{fmtTime(futureItems[0].date)}</p>
             </div>
             <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
               <div />
               <AllocationActions
-                allocationId={confirmedItems[0].allocationId}
-                status={confirmedItems[0].status}
-                isToday={dateKey(confirmedItems[0].date) === todayKey}
-                checkedIn={!!confirmedItems[0].checkedInAt}
-                hasSwapOpen={confirmedItems[0].hasSwapOpen}
+                allocationId={futureItems[0].allocationId}
+                status={futureItems[0].status}
+                hasSwapOpen={futureItems[0].hasSwapOpen}
               />
             </div>
           </Card>
 
-          {confirmedItems.length > 1 && (
+          {futureItems.length > 1 && (
             <>
               <h2 className="eyebrow mb-3">Depois</h2>
-              <UpcomingCarousel items={confirmedItems.slice(1)} todayKey={todayKey} />
+              <UpcomingCarousel items={futureItems.slice(1)} todayKey={todayKey} />
             </>
           )}
         </>

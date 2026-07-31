@@ -3,10 +3,10 @@
 import { useRef, useState } from "react";
 import { Card } from "@/ui/Card";
 import { AllocationActions } from "./AllocationActions";
-import { fmtDate, fmtTime, dateKey } from "@/lib/time";
+import { fmtDate, fmtTime } from "@/lib/time";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
 
-export function UpcomingCarousel({ items, todayKey }: { items: UpcomingItem[]; todayKey: string }) {
+export function UpcomingCarousel({ items }: { items: UpcomingItem[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -43,8 +43,6 @@ export function UpcomingCarousel({ items, todayKey }: { items: UpcomingItem[]; t
                 <AllocationActions
                   allocationId={it.allocationId}
                   status={it.status}
-                  isToday={dateKey(it.date) === todayKey}
-                  checkedIn={!!it.checkedInAt}
                   hasSwapOpen={it.hasSwapOpen}
                 />
               </div>
