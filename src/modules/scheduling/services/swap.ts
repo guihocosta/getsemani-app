@@ -70,12 +70,24 @@ export async function requestSwap(params: { allocationId: string }) {
 export async function claimSwap(params: { swapRequestId: string }) {
   const user = await requireUser();
 
-  return prisma.$transaction(async (tx) => {
+  const {
+    updated,
+    originalUserId,
+    originalUserName,
+    roleName,
+    occurrenceDate,
+    ministryId,
+    occurrenceId,
+    swapId,
+  } = await prisma.$transaction(async (tx) => {
     const swap = await tx.swapRequest.findUniqueOrThrow({
       where: { id: params.swapRequestId },
       include: {
         allocation: {
-          include: { slot: { include: { occurrence: { include: { schedule: true } } } } },
+          include: {
+            user: true,
+            slot: { include: { role: true, occurrence: { include: { schedule: true } } } },
+          },
         },
       },
     });
@@ -108,6 +120,45 @@ export async function claimSwap(params: { swapRequestId: string }) {
       where: { id: swap.id },
       data: { status: "CLAIMED", claimedBy: user.id, resolvedAt: new Date() },
     });
-    return updated;
+    return {
+      updated,
+      originalUserId: swap.allocation.userId,
+      originalUserName: swap.allocation.user?.name ?? "",
+      roleName: swap.allocation.slot.role.name,
+      occurrenceDate: swap.allocation.slot.occurrence.date,
+      ministryId,
+      occurrenceId: swap.allocation.slot.occurrenceId,
+      swapId: swap.id,
+    };
   });
+
+  await notifyUser({
+    userId: originalUserId,
+    type: "SWAP",
+    dedupeKey: `swap-claimed-requester:${swapId}`,
+    title: "Sua troca foi assumida!",
+    body: `${user.name} assumiu sua escala de ${roleName} · ${fmtDateTime(occurrenceDate)}`,
+    url: "/",
+  });
+
+  const leaders = await prisma.membership.findMany({
+    where: { ministryId, status: "ACTIVE", role: "LEADER" },
+    select: { userId: true },
+  });
+
+  await Promise.all(
+    leaders.map((leader) =>
+      notifyUser({
+        userId: leader.userId,
+        type: "SWAP",
+        dedupeKey: `swap-claimed-leader:${swapId}:${leader.userId}`,
+        title: "Troca efetuada no ministério",
+        body: `${user.name} assumiu a escala de ${originalUserName} · ${roleName} · ${fmtDateTime(occurrenceDate)}`,
+        url: "/escalas",
+        occurrenceId,
+      }),
+    ),
+  );
+
+  return updated;
 }
