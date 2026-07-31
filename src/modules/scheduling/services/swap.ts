@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { SlotTaken } from "./allocateVolunteer";
+import { notifyUser } from "@/modules/notifications/services/notify";
+import { fmtDateTime } from "@/lib/time";
 
 export class NotOwner extends Error {
   constructor() {
@@ -14,14 +16,53 @@ export async function requestSwap(params: { allocationId: string }) {
   const user = await requireUser();
   const alloc = await prisma.allocation.findUniqueOrThrow({
     where: { id: params.allocationId },
-    include: { swapRequest: true },
+    include: {
+      user: true,
+      swapRequest: true,
+      slot: {
+        include: {
+          role: true,
+          occurrence: {
+            include: {
+              schedule: {
+                include: { ministry: true },
+              },
+            },
+          },
+        },
+      },
+    },
   });
   if (alloc.userId !== user.id) throw new NotOwner();
   if (alloc.swapRequest && alloc.swapRequest.status === "OPEN") return alloc.swapRequest;
 
-  return prisma.swapRequest.create({
+  const swapRequest = await prisma.swapRequest.create({
     data: { allocationId: alloc.id, requestedBy: user.id, status: "OPEN" },
   });
+
+  const ministryId = alloc.slot.occurrence.schedule.ministryId;
+  const members = await prisma.membership.findMany({
+    where: { ministryId, status: "ACTIVE" },
+  });
+  const recipientIds = members
+    .map((m) => m.userId)
+    .filter((id) => id !== user.id);
+
+  await Promise.all(
+    recipientIds.map((recipientId) =>
+      notifyUser({
+        userId: recipientId,
+        type: "SWAP",
+        dedupeKey: `swap-request:${swapRequest.id}:${recipientId}`,
+        title: "Vaga disponível para troca",
+        body: `${alloc.user!.name} pediu troca em ${alloc.slot.occurrence.schedule.ministry.name} · ${alloc.slot.role.name} · ${fmtDateTime(alloc.slot.occurrence.date)}`,
+        url: "/escalas",
+        occurrenceId: alloc.slot.occurrenceId,
+      }),
+    ),
+  );
+
+  return swapRequest;
 }
 
 // Outro voluntario elegivel assume a escala em aberto. Transacao: cria nova
