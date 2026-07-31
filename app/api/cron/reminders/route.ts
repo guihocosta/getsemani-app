@@ -6,7 +6,7 @@ import { fmtDateTime } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
-const REMINDER_WINDOW_H = 24; // avisa escalas dentro das proximas 24h
+const REMINDER_WINDOW_H = 36; // avisa escalas dentro das proximas 36h
 
 // Dispara lembretes idempotentes (dedupeKey) para escalas proximas (FR-015, D7).
 export async function GET(request: Request) {
