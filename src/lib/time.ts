@@ -53,3 +53,8 @@ export function monthLabel(d: Date): string {
   const label = formatInTimeZone(d, APP_TZ, "MMMM 'de' yyyy", { locale: ptBR });
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
+
+export function startOfDay(d: Date): Date {
+  const localDateStr = dateKey(d);
+  return fromZonedTime(`${localDateStr}T00:00:00`, APP_TZ);
+}

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { startOfDay } from "@/lib/time";
 import type { AllocationStatus } from "@prisma/client";
 
 export type UpcomingItem = {
@@ -12,7 +13,7 @@ export type UpcomingItem = {
 };
 
 // Proximas escalas do usuario (ocorrencias ativas, futuras), ordem cronologica.
-export async function getMySchedule(userId: string, from = new Date()): Promise<UpcomingItem[]> {
+export async function getMySchedule(userId: string, from = startOfDay(new Date())): Promise<UpcomingItem[]> {
   const allocs = await prisma.allocation.findMany({
     where: {
       userId,
