@@ -18,7 +18,6 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
 
   // Garantir que o índice ativo não ultrapasse caso a lista diminua
   const safeActive = Math.min(active, items.length - 1);
-  const currentItem = items[safeActive];
 
   async function decline(allocationId: string) {
     const ok = await confirm({
