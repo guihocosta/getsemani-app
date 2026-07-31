@@ -19,6 +19,8 @@ import { prisma } from "@/lib/prisma";
 import { loadByPerson } from "@/modules/reports/services/reports";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
 import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
+import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
+import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -276,5 +278,42 @@ export async function getOccurrenceCandidatesAction(
     return { ok: true, candidates, guestNames };
   } catch (e) {
     return handleActionError("escalas.candidates", e, { occurrenceId });
+  }
+}
+
+export async function getAvailableRolesAction(occurrenceId: string): Promise<
+  | { ok: true; roles: { id: string; name: string }[] }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const occurrence = await prisma.occurrence.findUniqueOrThrow({
+      where: { id: occurrenceId },
+      include: { schedule: true },
+    });
+    await requireLeaderOf(occurrence.schedule.ministryId);
+
+    const roles = await getAvailableRoles(occurrenceId);
+    return { ok: true, roles };
+  } catch (e) {
+    return handleActionError("escalas.getAvailableRoles", e, { occurrenceId });
+  }
+}
+
+export async function addExtraSlotAction(occurrenceId: string, roleId: string): Promise<
+  | { ok: true }
+  | { ok: false; code: ActionCode; ref: string }
+> {
+  try {
+    const occurrence = await prisma.occurrence.findUniqueOrThrow({
+      where: { id: occurrenceId },
+      include: { schedule: true },
+    });
+    await requireLeaderOf(occurrence.schedule.ministryId);
+
+    await addExtraSlot(occurrenceId, roleId);
+    revalidatePath("/escalas");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("escalas.addExtraSlot", e, { occurrenceId, roleId });
   }
 }
