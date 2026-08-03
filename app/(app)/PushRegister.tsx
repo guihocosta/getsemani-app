@@ -8,6 +8,16 @@ import { resolvePushState, type PushState } from "@/lib/pushState";
 
 const VAPID_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
+// Evita que syncSubscription() trave para sempre: navigator.serviceWorker.ready
+// nunca rejeita se o registro do SW falhou (ServiceWorkerRegister.tsx engole o erro
+// silenciosamente), entao sem timeout a UI ficaria presa em "Verificando..." pra sempre.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), ms)),
+  ]);
+}
+
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -59,7 +69,7 @@ export function PushRegister() {
     // Permissao concedida nao garante assinatura viva: o iOS descarta a
     // subscription ao reinstalar o PWA ou apos muito tempo sem uso.
     if (next === "granted") {
-      syncSubscription().catch(() => setState("error"));
+      withTimeout(syncSubscription(), 10000).catch(() => setState("error"));
     }
   }, []);
 
@@ -71,8 +81,11 @@ export function PushRegister() {
       setState("denied");
       return;
     }
+    // Feedback visual imediato: sem isso o botao "Ativar" continua clicavel
+    // durante o SW ready + subscribe + POST, que pode demorar.
+    setState("checking");
     try {
-      await syncSubscription();
+      await withTimeout(syncSubscription(), 10000);
       setState("granted");
     } catch {
       setState("error");
@@ -88,7 +101,10 @@ export function PushRegister() {
       if (!res.ok || !data.ok) {
         setTestMsg("Falha ao enviar. Tente de novo.");
       } else if (!data.sent) {
-        setTestMsg("Nenhum dispositivo registrado neste aparelho.");
+        // Sem assinatura viva no servidor: volta para o estado "error", que
+        // reaproveita o botao "Tentar de novo" (retry -> syncSubscription) em
+        // vez de deixar o usuario preso sem saida alem de recarregar a pagina.
+        setState("error");
       } else {
         setTestMsg("Enviada! Deve chegar em instantes.");
       }
@@ -102,7 +118,7 @@ export function PushRegister() {
   const retry = useCallback(async () => {
     setState("checking");
     try {
-      await syncSubscription();
+      await withTimeout(syncSubscription(), 10000);
       setState("granted");
     } catch {
       setState("error");
