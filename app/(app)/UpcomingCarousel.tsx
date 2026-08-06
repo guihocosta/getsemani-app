@@ -44,6 +44,7 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
                   allocationId={it.allocationId}
                   status={it.status}
                   hasSwapOpen={it.hasSwapOpen}
+                  swapRequestId={it.swapRequestId}
                 />
               </div>
             </Card>

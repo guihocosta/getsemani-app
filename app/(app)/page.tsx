@@ -92,6 +92,7 @@ export default async function HomePage() {
                 allocationId={futureItems[0].allocationId}
                 status={futureItems[0].status}
                 hasSwapOpen={futureItems[0].hasSwapOpen}
+                swapRequestId={futureItems[0].swapRequestId}
               />
             </div>
           </Card>

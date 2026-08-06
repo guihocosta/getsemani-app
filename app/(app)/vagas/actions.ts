@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { selfAllocate } from "@/modules/scheduling/services/selfAllocate";
-import { requestSwap, claimSwap } from "@/modules/scheduling/services/swap";
+import { requestSwap, claimSwap, cancelSwap } from "@/modules/scheduling/services/swap";
 import { handleActionError, type ActionCode } from "@/lib/actionError";
 
 export type { ActionCode };
@@ -34,6 +34,19 @@ export async function requestSwapAction(
     return { ok: true };
   } catch (e) {
     return handleActionError("vagas.requestSwap", e, { allocationId });
+  }
+}
+
+export async function cancelSwapAction(
+  swapRequestId: string,
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await cancelSwap({ swapRequestId });
+    revalidatePath("/");
+    revalidatePath("/vagas");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("vagas.cancelSwap", e, { swapRequestId });
   }
 }
 

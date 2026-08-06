@@ -198,6 +198,7 @@ model SwapRequest {
   status       SwapStatus @default(OPEN)
   claimedBy    String?    @db.Uuid
   createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   resolvedAt   DateTime?
 
   allocation Allocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)

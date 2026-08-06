@@ -3,11 +3,34 @@ import { requireUser } from "@/modules/identity/services/authz";
 import { SlotTaken } from "./allocateVolunteer";
 import { notifyUser } from "@/modules/notifications/services/notify";
 import { fmtDateTime } from "@/lib/time";
+import type { SwapStatus } from "@prisma/client";
 
 export class NotOwner extends Error {
   constructor() {
     super("NOT_OWNER");
   }
+}
+
+export class SwapNotOpen extends Error {
+  constructor() {
+    super("SWAP_NOT_OPEN");
+  }
+}
+
+export function decideRequestSwap(existing: SwapStatus | null): "CREATE" | "REUSE" | "REOPEN" {
+  if (existing === null) return "CREATE";
+  if (existing === "OPEN") return "REUSE";
+  return "REOPEN";
+}
+
+export function decideCancelSwap(params: {
+  requestedBy: string;
+  userId: string;
+  status: SwapStatus;
+}): "OK" | "NOT_OWNER" | "NOT_OPEN" {
+  if (params.requestedBy !== params.userId) return "NOT_OWNER";
+  if (params.status !== "OPEN") return "NOT_OPEN";
+  return "OK";
 }
 
 // Voluntario pede troca: cria SwapRequest OPEN. Slot vira pool aberto,
@@ -34,11 +57,22 @@ export async function requestSwap(params: { allocationId: string }) {
     },
   });
   if (alloc.userId !== user.id) throw new NotOwner();
-  if (alloc.swapRequest && alloc.swapRequest.status === "OPEN") return alloc.swapRequest;
+  if (alloc.slot.occurrence.status !== "ACTIVE" || alloc.slot.occurrence.date <= new Date()) {
+    throw new SlotTaken();
+  }
 
-  const swapRequest = await prisma.swapRequest.create({
-    data: { allocationId: alloc.id, requestedBy: user.id, status: "OPEN" },
-  });
+  const decision = decideRequestSwap(alloc.swapRequest?.status ?? null);
+  if (decision === "REUSE") return alloc.swapRequest!;
+
+  const swapRequest =
+    decision === "REOPEN"
+      ? await prisma.swapRequest.update({
+          where: { id: alloc.swapRequest!.id },
+          data: { status: "OPEN", requestedBy: user.id, claimedBy: null, resolvedAt: null },
+        })
+      : await prisma.swapRequest.create({
+          data: { allocationId: alloc.id, requestedBy: user.id, status: "OPEN" },
+        });
 
   const ministryId = alloc.slot.occurrence.schedule.ministryId;
   const members = await prisma.membership.findMany({
@@ -53,7 +87,7 @@ export async function requestSwap(params: { allocationId: string }) {
       notifyUser({
         userId: recipientId,
         type: "SWAP",
-        dedupeKey: `swap-request:${swapRequest.id}:${recipientId}`,
+        dedupeKey: `swap-request:${swapRequest.id}:${swapRequest.updatedAt.getTime()}:${recipientId}`,
         title: "Vaga disponível para troca",
         body: `${alloc.user!.name} pediu troca em ${alloc.slot.occurrence.schedule.ministry.name} · ${alloc.slot.role.name} · ${fmtDateTime(alloc.slot.occurrence.date)}`,
         url: "/escalas",
@@ -63,6 +97,24 @@ export async function requestSwap(params: { allocationId: string }) {
   );
 
   return swapRequest;
+}
+
+// Voluntario desiste do proprio pedido de troca. A allocation nao e tocada:
+// desistir significa continuar escalado.
+export async function cancelSwap(params: { swapRequestId: string }) {
+  const user = await requireUser();
+  const swap = await prisma.swapRequest.findUniqueOrThrow({
+    where: { id: params.swapRequestId },
+  });
+
+  const decision = decideCancelSwap({ requestedBy: swap.requestedBy, userId: user.id, status: swap.status });
+  if (decision === "NOT_OWNER") throw new NotOwner();
+  if (decision === "NOT_OPEN") throw new SwapNotOpen();
+
+  return prisma.swapRequest.update({
+    where: { id: swap.id },
+    data: { status: "CANCELLED", resolvedAt: new Date() },
+  });
 }
 
 // Outro voluntario elegivel assume a escala em aberto. Transacao: cria nova
@@ -79,6 +131,7 @@ export async function claimSwap(params: { swapRequestId: string }) {
     ministryId,
     occurrenceId,
     swapId,
+    resolvedAt,
   } = await prisma.$transaction(async (tx) => {
     const swap = await tx.swapRequest.findUniqueOrThrow({
       where: { id: params.swapRequestId },
@@ -93,6 +146,12 @@ export async function claimSwap(params: { swapRequestId: string }) {
     });
     if (swap.status !== "OPEN") throw new SlotTaken();
     if (swap.requestedBy === user.id) throw new NotOwner();
+    if (
+      swap.allocation.slot.occurrence.status !== "ACTIVE" ||
+      swap.allocation.slot.occurrence.date <= new Date()
+    ) {
+      throw new SlotTaken();
+    }
 
     const ministryId = swap.allocation.slot.occurrence.schedule.ministryId;
     if (!user.isAdmin) {
@@ -116,9 +175,10 @@ export async function claimSwap(params: { swapRequestId: string }) {
         checkedInAt: null,
       },
     });
+    const resolved = new Date();
     await tx.swapRequest.update({
       where: { id: swap.id },
-      data: { status: "CLAIMED", claimedBy: user.id, resolvedAt: new Date() },
+      data: { status: "CLAIMED", claimedBy: user.id, resolvedAt: resolved },
     });
     return {
       updated,
@@ -129,6 +189,7 @@ export async function claimSwap(params: { swapRequestId: string }) {
       ministryId,
       occurrenceId: swap.allocation.slot.occurrenceId,
       swapId: swap.id,
+      resolvedAt: resolved,
     };
   });
 
@@ -136,7 +197,7 @@ export async function claimSwap(params: { swapRequestId: string }) {
     await notifyUser({
       userId: originalUserId,
       type: "SWAP",
-      dedupeKey: `swap-claimed-requester:${swapId}`,
+      dedupeKey: `swap-claimed-requester:${swapId}:${resolvedAt.getTime()}`,
       title: "Sua troca foi assumida!",
       body: `${user.name} assumiu sua escala de ${roleName} · ${fmtDateTime(occurrenceDate)}`,
       url: "/",
@@ -153,7 +214,7 @@ export async function claimSwap(params: { swapRequestId: string }) {
       notifyUser({
         userId: leader.userId,
         type: "SWAP",
-        dedupeKey: `swap-claimed-leader:${swapId}:${leader.userId}`,
+        dedupeKey: `swap-claimed-leader:${swapId}:${resolvedAt.getTime()}:${leader.userId}`,
         title: "Troca efetuada no ministério",
         body: `${user.name} assumiu a escala de ${originalUserName} · ${roleName} · ${fmtDateTime(occurrenceDate)}`,
         url: "/escalas",

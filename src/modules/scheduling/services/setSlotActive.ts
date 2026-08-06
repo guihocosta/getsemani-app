@@ -10,12 +10,27 @@ import { fmtDateTime } from "@/lib/time";
 export async function setSlotActive(params: { slotId: string; active: boolean }) {
   const slot = await prisma.slot.findUniqueOrThrow({
     where: { id: params.slotId },
-    include: { occurrence: { include: { schedule: true } }, allocation: true, role: true },
+    include: {
+      occurrence: { include: { schedule: true } },
+      allocation: { include: { swapRequest: true } },
+      role: true,
+    },
   });
   await requireLeaderOf(slot.occurrence.schedule.ministryId);
 
   if (!params.active && slot.allocation) {
     await prisma.allocation.delete({ where: { id: slot.allocation.id } });
+    if (slot.allocation.userId && slot.allocation.swapRequest?.status === "OPEN") {
+      await notifyUser({
+        userId: slot.allocation.userId,
+        type: "SWAP",
+        dedupeKey: `swap-ended:${slot.allocation.swapRequest.id}`,
+        title: "Seu pedido de troca foi encerrado",
+        body: `O líder alterou a escala · ${slot.role.name} · ${fmtDateTime(slot.occurrence.date)}`,
+        url: "/",
+        occurrenceId: slot.occurrenceId,
+      });
+    }
     if (slot.allocation.userId) {
       await notifyUser({
         userId: slot.allocation.userId,

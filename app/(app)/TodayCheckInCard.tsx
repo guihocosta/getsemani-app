@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
+import { Badge } from "@/ui/Badge";
 import { CheckCircle2 } from "lucide-react";
 import { fmtTime } from "@/lib/time";
 import { checkInAllocationAction } from "./respondAllocationActions";
@@ -64,7 +65,14 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>
-                  <p className="text-xl font-semibold text-text mt-0.5">{item.role}</p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <p className="text-xl font-semibold text-text">{item.role}</p>
+                    {item.hasSwapOpen && (
+                      <Badge tone="info" className="text-[10px] normal-case! tracking-normal! px-1.5 py-0.5">
+                        troca pedida
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-sm text-text-muted mt-1">Hoje</p>
                 </div>
                 <p className="font-title text-4xl text-primary">{fmtTime(item.date)}</p>

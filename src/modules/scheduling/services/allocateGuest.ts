@@ -44,7 +44,11 @@ export async function allocateGuest(params: { slotId: string; guestName: string 
 export async function reassignToGuest(params: { slotId: string; guestName: string }) {
   const slot = await prisma.slot.findUniqueOrThrow({
     where: { id: params.slotId },
-    include: { occurrence: { include: { schedule: true } }, allocation: true, role: true },
+    include: {
+      occurrence: { include: { schedule: true } },
+      allocation: { include: { swapRequest: true } },
+      role: true,
+    },
   });
   await requireLeaderOf(slot.occurrence.schedule.ministryId);
 
@@ -52,6 +56,7 @@ export async function reassignToGuest(params: { slotId: string; guestName: strin
 
   const previousUserId = slot.allocation.userId;
   const previousAllocationId = slot.allocation.id;
+  const previousSwapRequest = slot.allocation.swapRequest;
 
   let alloc;
   try {
@@ -69,6 +74,18 @@ export async function reassignToGuest(params: { slotId: string; guestName: strin
   } catch (e: unknown) {
     if ((e as { code?: string }).code === "P2002") throw new SlotTaken();
     throw e;
+  }
+
+  if (previousUserId && previousSwapRequest?.status === "OPEN") {
+    await notifyUser({
+      userId: previousUserId,
+      type: "SWAP",
+      dedupeKey: `swap-ended:${previousSwapRequest.id}`,
+      title: "Seu pedido de troca foi encerrado",
+      body: `O líder alterou a escala · ${slot.role.name} · ${fmtDateTime(slot.occurrence.date)}`,
+      url: "/",
+      occurrenceId: slot.occurrenceId,
+    });
   }
 
   if (previousUserId) {

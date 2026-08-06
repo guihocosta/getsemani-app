@@ -11,6 +11,7 @@ export type ActionCode =
   | "ALREADY_REVIEWED"
   | "NOT_GUEST"
   | "NO_GUESTS_FOUND"
+  | "SWAP_NOT_OPEN"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -24,6 +25,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   ALREADY_REVIEWED: "Esse pedido já foi analisado.",
   NOT_GUEST: "Essa vaga já está com um usuário cadastrado.",
   NO_GUESTS_FOUND: "Nenhuma alocação encontrada para essa pessoa sem conta.",
+  SWAP_NOT_OPEN: "Esse pedido de troca não está mais aberto.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 

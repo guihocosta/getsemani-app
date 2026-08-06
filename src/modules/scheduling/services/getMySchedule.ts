@@ -8,6 +8,7 @@ export type UpcomingItem = {
   ministry: string;
   role: string;
   hasSwapOpen: boolean;
+  swapRequestId: string | null;
   status: AllocationStatus;
   checkedInAt: Date | null;
 };
@@ -37,6 +38,7 @@ export async function getMySchedule(userId: string, from = startOfDay(new Date()
       ministry: a.slot.occurrence.schedule.ministry.name,
       role: a.slot.role.name,
       hasSwapOpen: a.swapRequest?.status === "OPEN",
+      swapRequestId: a.swapRequest?.status === "OPEN" ? a.swapRequest.id : null,
       status: a.status,
       checkedInAt: a.checkedInAt,
     }))

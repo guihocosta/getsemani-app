@@ -40,7 +40,8 @@ export default async function VagasPage() {
     take: 50,
   });
 
-  // trocas abertas nos meus ministerios (que nao sao minhas), so nos proximos WINDOW_DAYS dias
+  // trocas abertas nos meus ministerios (que nao sao minhas); sem limite de
+  // janela pra frente, pra nao sumir da tela um pedido que ainda esta valendo
   const swaps = await prisma.swapRequest.findMany({
     where: {
       status: "OPEN",
@@ -48,7 +49,8 @@ export default async function VagasPage() {
       allocation: {
         slot: {
           occurrence: {
-            date: { gte: now, lte: windowEnd },
+            status: "ACTIVE",
+            date: { gte: now },
             schedule: { ministryId: { in: ministryIds } },
           },
         },
@@ -63,6 +65,7 @@ export default async function VagasPage() {
         },
       },
     },
+    orderBy: { allocation: { slot: { occurrence: { date: "asc" } } } },
     take: 50,
   });
 
@@ -101,7 +104,7 @@ export default async function VagasPage() {
     <div>
       <header className="mb-6">
         <h1 className="text-3xl text-text">Vagas</h1>
-        <p className="text-sm text-text-muted mt-0.5">Próximos {WINDOW_DAYS} dias</p>
+        <p className="text-sm text-text-muted mt-0.5">Vagas abertas e pedidos de troca</p>
       </header>
 
       {items.length === 0 ? (

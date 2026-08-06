@@ -2,20 +2,23 @@ import { NextResponse } from "next/server";
 import { isAuthorizedCron } from "@/lib/cron";
 import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/modules/notifications/services/notify";
-import { fmtDateTime } from "@/lib/time";
+import { reminderStageFor, reminderCopy } from "@/modules/notifications/domain/reminders";
+import { fmtDateTime, fmtTime } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
-const REMINDER_WINDOW_H = 36; // avisa escalas dentro das proximas 36h
+const SCAN_WINDOW_H = 48; // cobre vespera (~24-48h) e hoje (0-24h) com folga
 
-// Dispara lembretes idempotentes (dedupeKey) para escalas proximas (FR-015, D7).
+// Dispara lembretes idempotentes (dedupeKey) pra escalas de amanha e de hoje
+// (FR-015, D7). Estagio decidido por dia-calendario, nao por horas: cron
+// diario e best-effort e pode atrasar dentro da hora.
 export async function GET(request: Request) {
   if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   const now = new Date();
-  const until = new Date(now.getTime() + REMINDER_WINDOW_H * 3600 * 1000);
+  const until = new Date(now.getTime() + SCAN_WINDOW_H * 3600 * 1000);
 
   const allocs = await prisma.allocation.findMany({
     where: {
@@ -23,6 +26,7 @@ export async function GET(request: Request) {
       slot: { occurrence: { status: "ACTIVE", date: { gte: now, lte: until } } },
     },
     include: {
+      swapRequest: true,
       slot: {
         include: {
           role: true,
@@ -32,24 +36,38 @@ export async function GET(request: Request) {
     },
   });
 
+  const porEstagio: Record<string, number> = { vespera: 0, hoje: 0 };
+
   const results = await Promise.all(
-    allocs.map((a) => {
+    allocs.map(async (a) => {
       const occ = a.slot.occurrence;
-      const isPending = a.status === "PENDING";
-      return notifyUser({
+      const stage = reminderStageFor({ now, occurrenceDate: occ.date });
+      if (!stage) return null;
+
+      const hasSwapOpen = a.swapRequest?.status === "OPEN";
+      const { title, body } = reminderCopy({
+        stage,
+        hasSwapOpen,
+        isPending: a.status === "PENDING",
+        ministry: a.slot.occurrence.schedule.ministry.name,
+        role: a.slot.role.name,
+        date: stage === "hoje" ? fmtTime(occ.date) : fmtDateTime(occ.date),
+      });
+
+      const result = await notifyUser({
         userId: a.userId!,
         type: "REMINDER",
-        dedupeKey: `reminder:${a.id}:${occ.id}`,
-        title: isPending
-          ? `Confirme sua escala: ${a.slot.occurrence.schedule.ministry.name}`
-          : `Lembrete: ${a.slot.occurrence.schedule.ministry.name}`,
-        body: `${a.slot.role.name} · ${fmtDateTime(occ.date)}`,
+        dedupeKey: `reminder-${stage}:${a.id}:${occ.id}`,
+        title,
+        body,
         url: "/",
         occurrenceId: occ.id,
       });
+      if (result === "sent") porEstagio[stage]++;
+      return result;
     }),
   );
   const sent = results.filter((r) => r === "sent").length;
 
-  return NextResponse.json({ ok: true, sent, scanned: allocs.length });
+  return NextResponse.json({ ok: true, sent, scanned: allocs.length, porEstagio });
 }
