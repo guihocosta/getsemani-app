@@ -84,4 +84,10 @@ describe("decideCopyAllocation", () => {
       decideCopyAllocation({ ...base, targetHasAllocation: true, hasConflict: true }),
     ).toBe("SKIP_SLOT_TAKEN");
   });
+
+  it("membership tem precedencia sobre capacitacao quando as duas faltam", () => {
+    expect(
+      decideCopyAllocation({ ...base, isActiveMember: false, isCapable: false }),
+    ).toBe("SKIP_NOT_MEMBER");
+  });
 });

@@ -142,7 +142,8 @@ T6 → T7 → T8 → T9
 - [x] Indisponibilidade devolve `"SKIP_UNAVAILABLE"` (REPT-04.1)
 - [x] Pessoa sem conta (`sourceUserId: null`) devolve `"OK"` sem checar membership, capacitação nem indisponibilidade
 - [x] Slot ocupado tem precedência sobre indisponibilidade
-- [x] Testes em `tests/unit/rotation.test.ts`, 7 testes novos passam (12 no arquivo)
+- [x] Membership tem precedência sobre capacitação quando as duas faltam (fix pós-Verifier: mutante sobrevivente — sem teste discriminava a ordem quando `isActiveMember=false` e `isCapable=false` simultaneamente)
+- [x] Testes em `tests/unit/rotation.test.ts`, 8 testes novos passam (13 no arquivo)
 - [x] Gate check passa: `npm run test`
 
 **Tests**: unit
