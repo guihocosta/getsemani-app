@@ -276,9 +276,9 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Seção renderiza com os dados reais do usuário logado
-- [ ] Nenhuma seção existente da página muda de posição ou comportamento
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Seção renderiza com os dados reais do usuário logado
+- [x] Nenhuma seção existente da página muda de posição ou comportamento
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build
