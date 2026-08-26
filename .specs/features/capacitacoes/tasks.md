@@ -386,11 +386,11 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Capacitado com carga alta vem antes de não capacitado com carga baixa (CAPA-05.1)
-- [ ] Dentro de cada grupo a ordem por carga 30d é mantida (CAPA-05.4)
-- [ ] `Set` vazio preserva exatamente o comportamento atual
-- [ ] Os 4 testes existentes continuam passando e 3 novos cobrem a capacitação (7 no total)
-- [ ] Gate check passa: `npm run test`
+- [x] Capacitado com carga alta vem antes de não capacitado com carga baixa (CAPA-05.1)
+- [x] Dentro de cada grupo a ordem por carga 30d é mantida (CAPA-05.4)
+- [x] `Set` vazio preserva exatamente o comportamento atual
+- [x] Os 5 testes existentes (não 4 — recontado no arquivo real) continuam passando e 3 novos cobrem a capacitação (8 no total)
+- [x] Gate check passa: `npm run test`
 
 **Tests**: unit
 **Gate**: quick

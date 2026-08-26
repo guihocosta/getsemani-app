@@ -268,10 +268,13 @@ export async function getOccurrenceCandidatesAction(
     ]);
     const countByUser = new Map(load.map((l) => [l.userId, l.count]));
 
+    // capableUserIds vazio: a lista e por ocorrencia (varias vagas de funcoes
+    // diferentes), nao por vaga — ver Deviations do batch de execucao (T13).
     const candidates = buildCandidateList({
       memberships,
       countByUser,
       unavailableUserIds: unavailable,
+      capableUserIds: new Set<string>(),
     });
     const guestNames = guestAllocs.map((g) => g.guestName!).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
