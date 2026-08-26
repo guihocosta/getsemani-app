@@ -3,6 +3,8 @@ import Link from "next/link";
 import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
+import { capableRoleIds as getCapableRoleIds } from "@/modules/ministries/services/userSkills";
+import { groupVagasByCapability } from "@/modules/scheduling/domain/groupVagas";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";
@@ -75,6 +77,7 @@ export default async function VagasPage() {
     date: Date;
     ministry: string;
     role: string;
+    roleId: string;
     action: ReactNode;
   };
 
@@ -85,6 +88,7 @@ export default async function VagasPage() {
       date: s.occurrence.date,
       ministry: s.occurrence.schedule.ministry.name,
       role: s.role.name,
+      roleId: s.roleId,
       action: <SelfAllocateButton slotId={s.id} />,
     })),
     ...swaps.map((sw) => {
@@ -95,10 +99,38 @@ export default async function VagasPage() {
         date: s.occurrence.date,
         ministry: s.occurrence.schedule.ministry.name,
         role: s.role.name,
+        roleId: s.roleId,
         action: <ClaimSwapButton swapRequestId={sw.id} />,
       };
     }),
   ].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  const capableRoleIds = await getCapableRoleIds(user.id);
+  const { praVoce, outras } = groupVagasByCapability(items, capableRoleIds);
+
+  function renderItems(list: Item[]) {
+    return (
+      <ul className="flex flex-col gap-3">
+        {list.map((it) => (
+          <li key={it.key}>
+            <Card className="flex items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="eyebrow text-primary">{it.ministry}</p>
+                  <Badge tone={it.kind === "free" ? "info" : "muted"} className="text-[9px]">
+                    {it.kind === "free" ? "vaga" : "troca"}
+                  </Badge>
+                </div>
+                <p className="text-lg text-text">{it.role}</p>
+                <p className="text-sm text-text-muted">{fmtDateTime(it.date)}</p>
+              </div>
+              {it.action}
+            </Card>
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   return (
     <div>
@@ -110,25 +142,20 @@ export default async function VagasPage() {
       {items.length === 0 ? (
         <EmptyState title="Nenhuma vaga ou troca aberta" subtitle="Tudo preenchido nos seus ministérios." />
       ) : (
-        <ul className="flex flex-col gap-3">
-          {items.map((it) => (
-            <li key={it.key}>
-              <Card className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="eyebrow text-primary">{it.ministry}</p>
-                    <Badge tone={it.kind === "free" ? "info" : "muted"} className="text-[9px]">
-                      {it.kind === "free" ? "vaga" : "troca"}
-                    </Badge>
-                  </div>
-                  <p className="text-lg text-text">{it.role}</p>
-                  <p className="text-sm text-text-muted">{fmtDateTime(it.date)}</p>
-                </div>
-                {it.action}
-              </Card>
-            </li>
-          ))}
-        </ul>
+        <>
+          {praVoce.length > 0 && (
+            <div className="mb-6">
+              <h2 className="eyebrow mb-3">Pra você</h2>
+              {renderItems(praVoce)}
+            </div>
+          )}
+          {outras.length > 0 && (
+            <div className="mb-6">
+              <h2 className="eyebrow mb-3">Outras vagas</h2>
+              {renderItems(outras)}
+            </div>
+          )}
+        </>
       )}
 
       <p className="text-center text-xs text-text-muted mt-6">

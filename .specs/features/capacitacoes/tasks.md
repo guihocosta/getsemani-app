@@ -359,10 +359,10 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Vagas livres e pedidos de troca são classificados pela mesma regra (CAPA-04.2)
-- [ ] Cabeçalho de grupo vazio não é renderizado (CAPA-04.3, CAPA-04.4)
-- [ ] Sem itens, o `EmptyState` atual aparece sem cabeçalho (CAPA-04.6)
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Vagas livres e pedidos de troca são classificados pela mesma regra (CAPA-04.2)
+- [x] Cabeçalho de grupo vazio não é renderizado (CAPA-04.3, CAPA-04.4)
+- [x] Sem itens, o `EmptyState` atual aparece sem cabeçalho (CAPA-04.6)
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build
