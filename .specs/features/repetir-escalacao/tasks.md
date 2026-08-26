@@ -309,11 +309,11 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Resultado exibido com as duas contagens (REPT-02.5)
-- [ ] Erro exibido no mesmo padrão das demais ações da tela
-- [ ] Ocorrências afetadas aparecem preenchidas após a ação
-- [ ] Vagas puladas continuam livres e visíveis em `/vagas` (REPT-05.7)
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Resultado exibido com as duas contagens (REPT-02.5)
+- [x] Erro exibido no mesmo padrão das demais ações da tela
+- [x] Ocorrências afetadas aparecem preenchidas após a ação
+- [x] Vagas puladas continuam livres e visíveis em `/vagas` (REPT-05.7)
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build

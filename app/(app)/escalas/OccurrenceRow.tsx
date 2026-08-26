@@ -13,6 +13,7 @@ import {
   setSlotActiveAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
+  repeatScheduleAction,
   type AllocationCandidate,
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
@@ -40,6 +41,7 @@ function buildWhatsAppText(title: string, when: string, slots: Slot[]): string {
 export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
+  rotationCycle: number | null;
   title: string;
   when: string;
   slots: Slot[];
@@ -54,6 +56,7 @@ export function OccurrenceRow(props: {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [addExtraOpen, setAddExtraOpen] = useState(false);
   const [copyNote, setCopyNote] = useState(false);
+  const [repeatNote, setRepeatNote] = useState<{ message: string; isError: boolean } | null>(null);
   const { confirm, dialog } = useConfirm();
 
   // Candidatos (carga + indisponibilidade) sao os mesmos pra todas as vagas
@@ -238,6 +241,24 @@ export function OccurrenceRow(props: {
     });
   }
 
+  function repeatSchedule() {
+    setRepeatNote(null);
+    start(async () => {
+      const res = await repeatScheduleAction(props.scheduleId);
+      if (!res.ok) {
+        setRepeatNote({ message: res.error, isError: true });
+        return;
+      }
+      const vagas = res.filled === 1 ? "vaga preenchida" : "vagas preenchidas";
+      const puladas = res.skipped === 1 ? "pulada" : "puladas";
+      setRepeatNote({
+        message: `${res.filled} ${vagas}, ${res.skipped} ${puladas}`,
+        isError: false,
+      });
+      props.onChanged();
+    });
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -315,12 +336,20 @@ export function OccurrenceRow(props: {
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
+              onRepeat={repeatSchedule}
+              rotationCycle={props.rotationCycle}
               onDeleteSingle={() => del("SINGLE")}
               onDeleteFromHere={() => del("FROM_HERE")}
               disabled={pending}
             />
           )}
         </div>
+
+        {repeatNote && (
+          <p className={`text-xs mb-3 ${repeatNote.isError ? "text-danger" : "text-text-muted"}`}>
+            {repeatNote.message}
+          </p>
+        )}
 
         <ul className="flex flex-col gap-1">
           {props.slots

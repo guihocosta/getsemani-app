@@ -11,6 +11,7 @@ export type MonthOccurrenceItem = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  rotationCycle: number | null;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
@@ -57,6 +58,7 @@ export async function listMonthOccurrences(
     occurrenceId: o.id,
     scheduleId: o.scheduleId,
     ministryId: o.schedule.ministryId,
+    rotationCycle: o.schedule.rotationCycle,
     dayKey: dateKey(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
