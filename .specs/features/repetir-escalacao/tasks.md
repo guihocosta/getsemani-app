@@ -195,15 +195,15 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Alocações criadas com `status: "PENDING"` e `source: "LEADER"` (REPT-02.3)
-- [ ] Pessoa com conta recebe notificação ASSIGNMENT (REPT-02.4)
-- [ ] Pessoa sem conta é copiada sem notificação
-- [ ] `rotationCycle` nulo lança `NO_ROTATION_CYCLE` sem criar nada
-- [ ] Não líder recebe `FORBIDDEN` sem criar nada (REPT-02.7)
-- [ ] `P2002` numa vaga conta como pulada e não aborta o restante
-- [ ] Rodar duas vezes seguidas devolve `filled: 0` na segunda (REPT-02.8)
-- [ ] Membership, capacitação e indisponibilidade resolvidas em lote, não por alocação
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] Alocações criadas com `status: "PENDING"` e `source: "LEADER"` (REPT-02.3)
+- [x] Pessoa com conta recebe notificação ASSIGNMENT (REPT-02.4)
+- [x] Pessoa sem conta é copiada sem notificação
+- [x] `rotationCycle` nulo lança `NO_ROTATION_CYCLE` sem criar nada
+- [x] Não líder recebe `FORBIDDEN` sem criar nada (REPT-02.7)
+- [x] `P2002` numa vaga conta como pulada e não aborta o restante
+- [x] Rodar duas vezes seguidas devolve `filled: 0` na segunda (REPT-02.8)
+- [x] Membership, capacitação e indisponibilidade resolvidas em lote, não por alocação
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
