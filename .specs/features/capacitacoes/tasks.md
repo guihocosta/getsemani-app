@@ -166,10 +166,10 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Líder de outro ministério recebe `FORBIDDEN` e nada é gravado (CAPA-03.3)
-- [ ] Admin consegue editar em qualquer ministério (CAPA-03.4)
-- [ ] Alvo sem membership ACTIVE recebe `FORBIDDEN`
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] Líder de outro ministério recebe `FORBIDDEN` e nada é gravado (CAPA-03.3)
+- [x] Admin consegue editar em qualquer ministério (CAPA-03.4)
+- [x] Alvo sem membership ACTIVE recebe `FORBIDDEN`
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
