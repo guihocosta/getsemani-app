@@ -204,6 +204,7 @@ T6 → T7 → T8 → T9
 - [x] `P2002` numa vaga conta como pulada e não aborta o restante
 - [x] Rodar duas vezes seguidas devolve `filled: 0` na segunda (REPT-02.8)
 - [x] Membership, capacitação e indisponibilidade resolvidas em lote, não por alocação
+- [x] Função sem nenhuma capacitação declarada (`capableUserIdsForRole` vazio) não bloqueia ninguém — só bloqueia quando há gente marcada capaz e a origem não está nesse grupo (fix pós-Verifier: gap funcional REPT-04.4, ver AD-002)
 - [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none

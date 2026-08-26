@@ -36,7 +36,7 @@ ocorrência materializada nasce vazia e o líder repete o trabalho manualmente.
 | Ocorrências consideradas | Só `Occurrence.status = ACTIVE`, ordenadas por data crescente; canceladas não entram na contagem do ciclo | Ocorrência cancelada não tem escalação a copiar nem vaga a preencher | n |
 | Status da alocação criada | `PENDING`, `source = LEADER`, com notificação ASSIGNMENT | Decisão do usuário; idêntico a alocar pelo líder, então a pessoa pode recusar | y |
 | Alocação de pessoa sem conta (guest) | Copiada como está, `PENDING`, sem notificação | Espelha `allocateGuest`; guest não tem push nem indisponibilidade a checar | n |
-| Dependência de capacitação | Se a feature `capacitacoes` estiver no ar, quem perdeu a capacitação da função é pulado | Decisão do usuário ("pular quem saiu"); sem ela, só a membership é checada | n |
+| Dependência de capacitação | Só bloqueia quando **alguém** já foi marcado capaz naquela função e a pessoa da origem não está nesse grupo. Função sem nenhuma capacitação declarada (ninguém configurou ainda) não bloqueia ninguém | Resolvido durante a validação (Verifier, gap REPT-04.4): a leitura literal — bloquear sempre que a origem não está no `Set` de capacitados — bloquearia 100% das cópias em qualquer função que ninguém tenha configurado em `/perfil`, contradizendo AD-002 ("capacitação orienta, não trava"). "WHERE a capacitação... existe" (EARS optional-feature) é lido por função: só existe quando alguém a declarou | y (ajustado na implementação) |
 | Limite superior do ciclo | 1 a 12 ocorrências | Ciclo maior que 12 ultrapassa a janela de 90 dias de materialização e nunca teria origem | n |
 
 **Open questions:** none — all resolved or logged above.

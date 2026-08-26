@@ -89,9 +89,14 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
     ).map((m) => m.userId),
   );
 
-  const capableByRole = new Map<string, Set<string>>();
+  // null = ninguem jamais declarou capacitacao nessa funcao (feature nao "existe"
+  // pra ela ainda, REPT-04.4 "WHERE a capacitacao... existe") -> nao bloqueia,
+  // igual a filosofia de capacitacoes (AD-002: orienta, nao trava). So bloqueia
+  // quando ha gente marcada capaz e a pessoa da origem nao esta nesse grupo.
+  const capableByRole = new Map<string, Set<string> | null>();
   for (const roleId of new Set(copies.map((c) => c.roleId))) {
-    capableByRole.set(roleId, await capableUserIdsForRole(roleId));
+    const set = await capableUserIdsForRole(roleId);
+    capableByRole.set(roleId, set.size > 0 ? set : null);
   }
 
   const unavailableByDate = new Map<number, Set<string>>();
@@ -104,7 +109,9 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
 
   for (const copy of copies) {
     const isActiveMember = copy.sourceUserId !== null && activeMembers.has(copy.sourceUserId);
-    const isCapable = copy.sourceUserId !== null && (capableByRole.get(copy.roleId)?.has(copy.sourceUserId) ?? false);
+    const capableSet = capableByRole.get(copy.roleId) ?? null;
+    const isCapable =
+      copy.sourceUserId !== null && (capableSet === null || capableSet.has(copy.sourceUserId));
     const hasConflict =
       copy.sourceUserId !== null && (unavailableByDate.get(copy.targetDate.getTime())?.has(copy.sourceUserId) ?? false);
 
