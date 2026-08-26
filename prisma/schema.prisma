@@ -138,6 +138,7 @@ model Schedule {
   startTime       String // "HH:mm" local (APP_TIMEZONE)
   durationMin     Int       @default(120)
   recurrenceUntil DateTime? @db.Date // null = sem data fim
+  rotationCycle   Int? // ciclo de rodizio em ocorrencias (1..12); null = sem rodizio
   createdBy       String    @db.Uuid
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

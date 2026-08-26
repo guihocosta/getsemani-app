@@ -78,10 +78,10 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] `rotationCycle Int?` declarado com comentário em pt-BR
-- [ ] `npx prisma migrate dev --name schedule_rotation_cycle` gera a migration sem erro
-- [ ] Escalas existentes ficam com `rotationCycle` nulo (REPT-01.5)
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] `rotationCycle Int?` declarado com comentário em pt-BR
+- [x] `npx prisma migrate dev --name schedule_rotation_cycle` gera a migration sem erro
+- [x] Escalas existentes ficam com `rotationCycle` nulo (REPT-01.5)
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build
