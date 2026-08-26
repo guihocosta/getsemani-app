@@ -302,10 +302,10 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Cada ministério liderado lista membros ACTIVE com as funções ativas marcáveis (CAPA-03.1)
-- [ ] Marcar e desmarcar persiste (CAPA-03.2)
-- [ ] Ministério que o usuário não lidera não aparece editável
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Cada ministério liderado lista membros ACTIVE com as funções ativas marcáveis (CAPA-03.1)
+- [x] Marcar e desmarcar persiste (CAPA-03.2)
+- [x] Ministério que o usuário não lidera não aparece editável
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build

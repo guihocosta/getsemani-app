@@ -6,8 +6,11 @@ import { Card } from "@/ui/Card";
 import { RoleRow } from "./RoleRow";
 import { AddRoleForm } from "./AddRoleForm";
 import { EditMinistryForm } from "./EditMinistryForm";
+import { MemberSkillsRow } from "./MemberSkillsRow";
 
 type Role = { id: string; name: string; active: boolean };
+type SkillRole = { id: string; name: string; capaz: boolean };
+type SkillMatrixEntry = { user: { id: string; name: string }; roles: SkillRole[] };
 type Ministry = {
   id: string;
   name: string;
@@ -17,7 +20,18 @@ type Ministry = {
   _count: { memberships: number };
 };
 
-export function MinistryCard({ ministry: m }: { ministry: Ministry }) {
+// canManage: so admin gerencia dados do ministerio (nome, funcoes) — CAPA-03
+// so cobre a capacitacao da equipe, entao o lider (canManage=false) so ve a
+// lista de funcoes ativas em modo leitura e a matriz de capacitacao abaixo.
+export function MinistryCard({
+  ministry: m,
+  canManage,
+  skillMatrix,
+}: {
+  ministry: Ministry;
+  canManage: boolean;
+  skillMatrix: SkillMatrixEntry[];
+}) {
   const [editing, setEditing] = useState(false);
   const active = m.roles.filter((r) => r.active);
   const inactive = m.roles.filter((r) => !r.active);
@@ -36,18 +50,20 @@ export function MinistryCard({ ministry: m }: { ministry: Ministry }) {
           <span className="text-sm text-text-muted">
             {m._count.memberships} {m._count.memberships === 1 ? "membro" : "membros"}
           </span>
-          <button
-            onClick={() => setEditing((v) => !v)}
-            className="text-text-muted hover:text-text"
-            aria-label="Editar ministério"
-          >
-            <Pencil size={16} strokeWidth={1.8} />
-          </button>
+          {canManage && (
+            <button
+              onClick={() => setEditing((v) => !v)}
+              className="text-text-muted hover:text-text"
+              aria-label="Editar ministério"
+            >
+              <Pencil size={16} strokeWidth={1.8} />
+            </button>
+          )}
         </div>
       </div>
       {m.description && <p className="text-sm text-text-muted mb-3">{m.description}</p>}
 
-      {editing ? (
+      {editing && canManage ? (
         <EditMinistryForm
           ministryId={m.id}
           name={m.name}
@@ -62,12 +78,18 @@ export function MinistryCard({ ministry: m }: { ministry: Ministry }) {
             {active.length === 0 && (
               <li className="text-sm text-text-muted">Nenhuma função ativa.</li>
             )}
-            {active.map((r) => (
-              <RoleRow key={r.id} roleId={r.id} name={r.name} active={r.active} />
-            ))}
+            {active.map((r) =>
+              canManage ? (
+                <RoleRow key={r.id} roleId={r.id} name={r.name} active={r.active} />
+              ) : (
+                <li key={r.id} className="text-sm text-text">
+                  {r.name}
+                </li>
+              ),
+            )}
           </ul>
 
-          {inactive.length > 0 && (
+          {canManage && inactive.length > 0 && (
             <details className="mb-3">
               <summary className="eyebrow cursor-pointer select-none">
                 Inativas ({inactive.length})
@@ -80,7 +102,20 @@ export function MinistryCard({ ministry: m }: { ministry: Ministry }) {
             </details>
           )}
 
-          <AddRoleForm ministryId={m.id} />
+          {canManage && <AddRoleForm ministryId={m.id} />}
+
+          {skillMatrix.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-border">
+              <p className="eyebrow mb-2">Capacitação da equipe</p>
+              <ul className="flex flex-col gap-3">
+                {skillMatrix.map((entry) => (
+                  <li key={entry.user.id}>
+                    <MemberSkillsRow userId={entry.user.id} name={entry.user.name} roles={entry.roles} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </Card>
