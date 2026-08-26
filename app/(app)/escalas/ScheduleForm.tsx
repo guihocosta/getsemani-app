@@ -16,6 +16,7 @@ type EditingSchedule = {
   startTime: string;
   recurrenceRule: string;
   recurrenceUntil: string | null;
+  rotationCycle: number | null;
   roleIds: string[];
 };
 
@@ -43,6 +44,9 @@ export function ScheduleForm({
   const [endCount, setEndCount] = useState(8);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(editing?.roleIds ?? []);
   const [roleError, setRoleError] = useState(false);
+  const [rotationCycle, setRotationCycle] = useState(
+    editing?.rotationCycle != null ? String(editing.rotationCycle) : "",
+  );
 
   const ministry = ministries.find((m) => m.id === ministryId);
   const weekday = startDate ? new Date(`${startDate}T00:00:00Z`).getUTCDay() : 0;
@@ -132,6 +136,23 @@ export function ScheduleForm({
               className="field"
             />
           </div>
+        </div>
+
+        <div>
+          <p className="eyebrow mb-1">Ciclo de rodízio</p>
+          <select
+            name="rotationCycle"
+            className="field"
+            value={rotationCycle}
+            onChange={(e) => setRotationCycle(e.target.value)}
+          >
+            <option value="">Sem rodízio</option>
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

@@ -11,11 +11,13 @@ export type MonthOccurrenceItem = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  rotationCycle: number | null;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
   slots: {
     slotId: string;
+    roleId: string;
     role: string;
     allocatedUserId: string | null;
     allocatedName: string | null;
@@ -56,11 +58,13 @@ export async function listMonthOccurrences(
     occurrenceId: o.id,
     scheduleId: o.scheduleId,
     ministryId: o.schedule.ministryId,
+    rotationCycle: o.schedule.rotationCycle,
     dayKey: dateKey(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
     slots: o.slots.map((s) => ({
       slotId: s.id,
+      roleId: s.roleId,
       role: s.role.name,
       allocatedUserId: s.allocation?.userId ?? null,
       allocatedName: s.allocation?.user?.name ?? s.allocation?.guestName ?? null,

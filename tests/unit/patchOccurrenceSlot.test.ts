@@ -6,12 +6,14 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     occurrenceId: "occ-1",
     scheduleId: "sched-1",
     ministryId: "min-1",
+    rotationCycle: null,
     dayKey: "2026-07-27",
     title: "Culto",
     when: "27/07 10:00",
     slots: [
       {
         slotId: "slot-1",
+        roleId: "role-vocal",
         role: "Vocal",
         allocatedUserId: null,
         allocatedName: null,
@@ -23,6 +25,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
       },
       {
         slotId: "slot-2",
+        roleId: "role-bateria",
         role: "Bateria",
         allocatedUserId: null,
         allocatedName: null,

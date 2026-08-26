@@ -41,6 +41,7 @@ export default async function EditarEscalaPage({ params }: { params: Promise<{ i
           recurrenceUntil: schedule.recurrenceUntil
             ? schedule.recurrenceUntil.toISOString().slice(0, 10)
             : null,
+          rotationCycle: schedule.rotationCycle,
           roleIds: schedule.defaultRoles.map((r) => r.roleId),
         }}
       />

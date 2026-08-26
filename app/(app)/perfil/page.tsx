@@ -1,10 +1,12 @@
 import { CalendarOff, Moon } from "lucide-react";
 import { requireUser } from "@/modules/identity/services/authz";
+import { listOwnSkillOptions } from "@/modules/ministries/services/userSkills";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { ThemeToggle } from "@/ui/ThemeToggle";
 import { ProfileForm } from "./ProfileForm";
+import { SkillsSection } from "./SkillsSection";
 import { InstallSection } from "./InstallSection";
 import { SignOutButton } from "./SignOutButton";
 import { NavRow } from "@/ui/NavRow";
@@ -17,6 +19,8 @@ const STATUS_LABEL = { ACTIVE: "Ativo", PENDING: "Aguardando aprovação" } as c
 
 export default async function PerfilPage() {
   const user = await requireUser();
+
+  const skillOptions = await listOwnSkillOptions(user.id);
 
   const memberships = await prisma.membership.findMany({
     where: { userId: user.id },
@@ -47,6 +51,11 @@ export default async function PerfilPage() {
           subtitle="Marcar dias e horários indisponíveis"
           Icon={CalendarOff}
         />
+      </Card>
+
+      <h2 className="eyebrow mb-3">Minhas funções</h2>
+      <Card className="mb-6">
+        <SkillsSection options={skillOptions} />
       </Card>
 
       <h2 className="eyebrow mb-3">Meus ministérios</h2>

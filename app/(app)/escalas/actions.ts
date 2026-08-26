@@ -21,6 +21,8 @@ import { usersUnavailableAt } from "@/modules/availability/services/checkConflic
 import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
+import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
+import { repeatSchedule } from "@/modules/scheduling/services/repeatSchedule";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -28,6 +30,7 @@ function friendlyError(e: unknown): string {
   const msg = (e as Error)?.message ?? "";
   if (msg.includes("roleIds")) return "Escolha pelo menos uma função.";
   if (msg === "FORBIDDEN") return "Você não tem permissão para essa ação.";
+  if (msg === "INVALID_ROTATION_CYCLE") return "Ciclo de rodízio deve ser entre 1 e 12.";
   return "Não deu para salvar. Confira os campos e tente de novo.";
 }
 
@@ -37,6 +40,7 @@ export async function createScheduleAction(
 ): Promise<ScheduleFormState> {
   try {
     const recurrenceUntil = formData.get("recurrenceUntil");
+    const rotationCycle = formData.get("rotationCycle");
     const roleIds = formData.getAll("roleIds").map(String);
     if (roleIds.length === 0) return { ok: false, error: "Escolha pelo menos uma função." };
 
@@ -47,6 +51,7 @@ export async function createScheduleAction(
       startDate: String(formData.get("startDate")),
       startTime: String(formData.get("startTime")),
       recurrenceUntil: recurrenceUntil ? String(recurrenceUntil) : null,
+      rotationCycle: rotationCycle ? Number(rotationCycle) : null,
       roleIds,
     });
     await materializeOccurrences(new Date(), schedule.id);
@@ -64,6 +69,7 @@ export async function updateScheduleAction(
 ): Promise<ScheduleFormState> {
   try {
     const recurrenceUntil = formData.get("recurrenceUntil");
+    const rotationCycle = formData.get("rotationCycle");
     const roleIds = formData.getAll("roleIds").map(String);
     if (roleIds.length === 0) return { ok: false, error: "Escolha pelo menos uma função." };
 
@@ -74,6 +80,7 @@ export async function updateScheduleAction(
       startTime: String(formData.get("startTime")),
       recurrenceRule: String(formData.get("recurrenceRule")),
       recurrenceUntil: recurrenceUntil ? String(recurrenceUntil) : null,
+      rotationCycle: rotationCycle ? Number(rotationCycle) : null,
       roleIds,
     });
     await materializeOccurrences(new Date(), scheduleId);
@@ -234,18 +241,27 @@ export type { AllocationCandidate };
 // dias no MESMO ministerio e se esta indisponivel na data da ocorrencia — pra
 // alocar com informacao em vez de as cegas. Uma busca so por ocorrencia (nao
 // por vaga): todas as vagas da mesma ocorrencia compartilham ministerio + data,
-// entao a lista e identica — evita repetir 5 queries a cada seletor aberto, o
-// que deixava a tela lenta com varias vagas na mesma ocorrencia.
+// entao a lista base e identica — evita repetir 5 queries a cada seletor
+// aberto, o que deixava a tela lenta com varias vagas na mesma ocorrencia.
+// Capacitacao e a excecao: e por funcao, entao vem a parte em
+// capableUserIdsByRole (1 query por roleId distinto da ocorrencia, nao por
+// vaga) — o client reordena com markCapable ao trocar de vaga ativa, sem nova
+// requisicao (ver Addendum em .specs/features/capacitacoes/design.md).
 export async function getOccurrenceCandidatesAction(
   occurrenceId: string,
 ): Promise<
-  | { ok: true; candidates: AllocationCandidate[]; guestNames: string[] }
+  | {
+      ok: true;
+      candidates: AllocationCandidate[];
+      capableUserIdsByRole: Record<string, string[]>;
+      guestNames: string[];
+    }
   | { ok: false; code: ActionCode; ref: string }
 > {
   try {
     const occurrence = await prisma.occurrence.findUniqueOrThrow({
       where: { id: occurrenceId },
-      include: { schedule: true },
+      include: { schedule: true, slots: true },
     });
     await requireLeaderOf(occurrence.schedule.ministryId);
 
@@ -255,9 +271,10 @@ export async function getOccurrenceCandidatesAction(
       include: { user: true },
     });
     const userIds = [...new Set(memberships.map((m) => m.userId))];
+    const roleIds = [...new Set(occurrence.slots.map((s) => s.roleId))];
 
     const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const [load, unavailable, guestAllocs] = await Promise.all([
+    const [load, unavailable, guestAllocs, capableSets] = await Promise.all([
       loadByPerson(from, new Date(), [ministryId]),
       usersUnavailableAt(userIds, occurrence.date),
       prisma.allocation.findMany({
@@ -265,17 +282,24 @@ export async function getOccurrenceCandidatesAction(
         select: { guestName: true },
         distinct: ["guestName"],
       }),
+      Promise.all(roleIds.map((roleId) => capableUserIdsForRole(roleId))),
     ]);
     const countByUser = new Map(load.map((l) => [l.userId, l.count]));
+    const capableUserIdsByRole = Object.fromEntries(
+      roleIds.map((roleId, i) => [roleId, [...capableSets[i]]]),
+    );
 
+    // capableUserIds vazio aqui: a base e por ocorrencia (varias funcoes); a
+    // capacitacao real por funcao e aplicada no client via markCapable.
     const candidates = buildCandidateList({
       memberships,
       countByUser,
       unavailableUserIds: unavailable,
+      capableUserIds: new Set<string>(),
     });
     const guestNames = guestAllocs.map((g) => g.guestName!).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-    return { ok: true, candidates, guestNames };
+    return { ok: true, candidates, capableUserIdsByRole, guestNames };
   } catch (e) {
     return handleActionError("escalas.candidates", e, { occurrenceId });
   }
@@ -315,5 +339,25 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
     return { ok: true };
   } catch (e) {
     return handleActionError("escalas.addExtraSlot", e, { occurrenceId, roleId });
+  }
+}
+
+// Repete a escalacao do ciclo anterior nas proximas rotationCycle ocorrencias
+// futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
+// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas).
+export async function repeatScheduleAction(
+  scheduleId: string,
+): Promise<{ ok: true; filled: number; skipped: number } | { ok: false; error: string }> {
+  try {
+    const result = await repeatSchedule(scheduleId);
+    revalidatePath("/escalas");
+    return { ok: true, filled: result.filled, skipped: result.skipped };
+  } catch (e) {
+    const msg = (e as Error)?.message ?? "";
+    if (msg === "FORBIDDEN") return { ok: false, error: "Você não tem permissão para essa ação." };
+    if (msg === "NO_ROTATION_CYCLE") {
+      return { ok: false, error: "Defina o ciclo de rodízio ao editar a escala." };
+    }
+    return { ok: false, error: "Não deu para repetir a escalação agora." };
   }
 }

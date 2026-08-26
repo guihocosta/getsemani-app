@@ -13,12 +13,14 @@ import {
   setSlotActiveAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
+  repeatScheduleAction,
   type AllocationCandidate,
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
 import { SlotDetailSheet } from "./SlotDetailSheet";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
+import { markCapable } from "@/modules/scheduling/services/candidateList";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -39,6 +41,7 @@ function buildWhatsAppText(title: string, when: string, slots: Slot[]): string {
 export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
+  rotationCycle: number | null;
   title: string;
   when: string;
   slots: Slot[];
@@ -53,18 +56,27 @@ export function OccurrenceRow(props: {
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [addExtraOpen, setAddExtraOpen] = useState(false);
   const [copyNote, setCopyNote] = useState(false);
+  const [repeatNote, setRepeatNote] = useState<{ message: string; isError: boolean } | null>(null);
   const { confirm, dialog } = useConfirm();
 
-  // Candidatos sao os mesmos pra todas as vagas desta ocorrencia (mesmo
-  // ministerio + data) — busca uma vez so, na primeira vez que algum sheet
-  // abre, e reusa pras demais vagas em vez de refazer a query por vaga.
+  // Candidatos (carga + indisponibilidade) sao os mesmos pra todas as vagas
+  // desta ocorrencia (mesmo ministerio + data) — busca uma vez so, na primeira
+  // vez que algum sheet abre, e reusa pras demais vagas em vez de refazer a
+  // query por vaga. Capacitacao e por funcao (nao por ocorrencia): vem a parte
+  // em capableUserIdsByRole e e reaplicada por markCapable a cada vaga aberta,
+  // sem nova requisicao (ver Addendum em .specs/features/capacitacoes/design.md).
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
+  const [capableUserIdsByRole, setCapableUserIdsByRole] = useState<Record<string, string[]>>({});
   const [guestNames, setGuestNames] = useState<string[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
   const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
 
   const activeSlot = props.slots.find((s) => s.slotId === activeSlotId) ?? null;
+  const sheetCandidates =
+    candidates && activeSlot
+      ? markCapable(candidates, new Set(capableUserIdsByRole[activeSlot.roleId] ?? []))
+      : candidates;
 
   function ensureCandidates() {
     if (candidates || candidatesLoading) return;
@@ -75,6 +87,7 @@ export function OccurrenceRow(props: {
       .then((res) => {
         if (res.ok) {
           setCandidates(res.candidates);
+          setCapableUserIdsByRole(res.capableUserIdsByRole);
           setGuestNames(res.guestNames);
         } else {
           setCandidatesFailed(true);
@@ -228,6 +241,24 @@ export function OccurrenceRow(props: {
     });
   }
 
+  function repeatSchedule() {
+    setRepeatNote(null);
+    start(async () => {
+      const res = await repeatScheduleAction(props.scheduleId);
+      if (!res.ok) {
+        setRepeatNote({ message: res.error, isError: true });
+        return;
+      }
+      const vagas = res.filled === 1 ? "vaga preenchida" : "vagas preenchidas";
+      const puladas = res.skipped === 1 ? "pulada" : "puladas";
+      setRepeatNote({
+        message: `${res.filled} ${vagas}, ${res.skipped} ${puladas}`,
+        isError: false,
+      });
+      props.onChanged();
+    });
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -265,7 +296,7 @@ export function OccurrenceRow(props: {
         open={activeSlotId !== null}
         slot={activeSlot}
         onClose={closeSheet}
-        candidates={candidates}
+        candidates={sheetCandidates}
         guestNames={guestNames}
         loading={candidatesLoading}
         failed={candidatesFailed}
@@ -305,12 +336,20 @@ export function OccurrenceRow(props: {
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
+              onRepeat={repeatSchedule}
+              rotationCycle={props.rotationCycle}
               onDeleteSingle={() => del("SINGLE")}
               onDeleteFromHere={() => del("FROM_HERE")}
               disabled={pending}
             />
           )}
         </div>
+
+        {repeatNote && (
+          <p className={`text-xs mb-3 ${repeatNote.isError ? "text-danger" : "text-text-muted"}`}>
+            {repeatNote.message}
+          </p>
+        )}
 
         <ul className="flex flex-col gap-1">
           {props.slots

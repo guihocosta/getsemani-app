@@ -9,6 +9,8 @@ export function OccurrenceMenu(props: {
   copyLabel: string;
   onCopy: () => void;
   onAddExtra: () => void;
+  onRepeat?: () => void;
+  rotationCycle?: number | null;
   onDeleteSingle: () => void;
   onDeleteFromHere: () => void;
   disabled?: boolean;
@@ -54,6 +56,22 @@ export function OccurrenceMenu(props: {
           >
             Adicionar vaga extra
           </button>
+          <button
+            type="button"
+            disabled={props.disabled || props.rotationCycle == null}
+            onClick={() => {
+              setOpen(false);
+              props.onRepeat?.();
+            }}
+            className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+          >
+            Repetir escalação
+          </button>
+          {props.rotationCycle == null && (
+            <p className="px-4 pb-2 text-xs text-text-muted">
+              Defina o ciclo de rodízio ao editar a escala.
+            </p>
+          )}
           <button
             type="button"
             disabled={props.disabled}

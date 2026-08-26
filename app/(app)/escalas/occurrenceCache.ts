@@ -2,6 +2,7 @@ import type { AllocationStatus } from "@prisma/client";
 
 export type Slot = {
   slotId: string;
+  roleId: string;
   role: string;
   allocatedUserId: string | null;
   allocatedName: string | null;
@@ -16,6 +17,7 @@ export type Item = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  rotationCycle: number | null;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;

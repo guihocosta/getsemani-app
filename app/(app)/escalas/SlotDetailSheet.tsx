@@ -122,6 +122,7 @@ export function SlotDetailSheet(props: {
                     >
                       {c.name}
                       {c.unavailable && <Badge tone="danger">Indisponível</Badge>}
+                      {!c.capable && <Badge tone="muted">não capacitado</Badge>}
                     </button>
                   ))}
 
@@ -187,6 +188,17 @@ export function SlotDetailSheet(props: {
                   className="w-full min-h-11 text-center text-sm text-text-muted mt-1"
                 >
                   cancelar troca
+                </button>
+              )}
+
+              {!filled && (
+                <button
+                  type="button"
+                  disabled={props.pending}
+                  onClick={props.onDeactivate}
+                  className="w-full min-h-11 text-center text-sm text-danger mt-1 disabled:opacity-40"
+                >
+                  Desativar vaga
                 </button>
               )}
             </div>

@@ -228,6 +228,7 @@ export function EscalaCalendar({
               key={o.occurrenceId}
               occurrenceId={o.occurrenceId}
               scheduleId={o.scheduleId}
+              rotationCycle={o.rotationCycle}
               title={o.title}
               when={o.when}
               slots={o.slots}
