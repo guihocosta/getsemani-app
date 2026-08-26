@@ -329,13 +329,13 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Separa corretamente com capacitação parcial (CAPA-04.1)
-- [ ] `Set` vazio devolve tudo em `outras` (CAPA-04.3)
-- [ ] Todos capacitados devolve `outras` vazio (CAPA-04.4)
-- [ ] Ordem de entrada preservada dentro de cada grupo (CAPA-04.5)
-- [ ] Lista vazia devolve os dois grupos vazios (CAPA-04.6)
-- [ ] Testes em `tests/unit/groupVagas.test.ts`, 5 testes passam
-- [ ] Gate check passa: `npm run test`
+- [x] Separa corretamente com capacitação parcial (CAPA-04.1)
+- [x] `Set` vazio devolve tudo em `outras` (CAPA-04.3)
+- [x] Todos capacitados devolve `outras` vazio (CAPA-04.4)
+- [x] Ordem de entrada preservada dentro de cada grupo (CAPA-04.5)
+- [x] Lista vazia devolve os dois grupos vazios (CAPA-04.6)
+- [x] Testes em `tests/unit/groupVagas.test.ts`, 5 testes passam
+- [x] Gate check passa: `npm run test`
 
 **Tests**: unit
 **Gate**: quick
