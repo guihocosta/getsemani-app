@@ -282,10 +282,10 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Item aparece no menu e fecha o menu ao ser acionado
-- [ ] Sem ciclo, item fica desabilitado com a dica da AC REPT-02.6
-- [ ] Só tokens de tema, nenhuma cor crua do Tailwind
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Item aparece no menu e fecha o menu ao ser acionado
+- [x] Sem ciclo, item fica desabilitado com a dica da AC REPT-02.6
+- [x] Só tokens de tema, nenhuma cor crua do Tailwind
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build
