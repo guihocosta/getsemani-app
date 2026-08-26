@@ -193,11 +193,11 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] `listOwnSkillOptions` retorna só funções ativas de ministérios com membership ACTIVE, com flag de capacitado
-- [ ] `listMinistrySkillMatrix` deduplica membros com duas memberships no mesmo ministério
-- [ ] Capacitação de quem perdeu a membership não aparece em nenhuma das quatro leituras
-- [ ] `capableRoleIds` e `capableUserIdsForRole` retornam `Set<string>`
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] `listOwnSkillOptions` retorna só funções ativas de ministérios com membership ACTIVE, com flag de capacitado
+- [x] `listMinistrySkillMatrix` deduplica membros com duas memberships no mesmo ministério
+- [x] Capacitação de quem perdeu a membership não aparece em nenhuma das quatro leituras
+- [x] `capableRoleIds` e `capableUserIdsForRole` retornam `Set<string>`
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
