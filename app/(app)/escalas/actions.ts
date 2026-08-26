@@ -22,6 +22,7 @@ import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actio
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
+import { repeatSchedule } from "@/modules/scheduling/services/repeatSchedule";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -338,5 +339,25 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
     return { ok: true };
   } catch (e) {
     return handleActionError("escalas.addExtraSlot", e, { occurrenceId, roleId });
+  }
+}
+
+// Repete a escalacao do ciclo anterior nas proximas rotationCycle ocorrencias
+// futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
+// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas).
+export async function repeatScheduleAction(
+  scheduleId: string,
+): Promise<{ ok: true; filled: number; skipped: number } | { ok: false; error: string }> {
+  try {
+    const result = await repeatSchedule(scheduleId);
+    revalidatePath("/escalas");
+    return { ok: true, filled: result.filled, skipped: result.skipped };
+  } catch (e) {
+    const msg = (e as Error)?.message ?? "";
+    if (msg === "FORBIDDEN") return { ok: false, error: "Você não tem permissão para essa ação." };
+    if (msg === "NO_ROTATION_CYCLE") {
+      return { ok: false, error: "Defina o ciclo de rodízio ao editar a escala." };
+    }
+    return { ok: false, error: "Não deu para repetir a escalação agora." };
   }
 }

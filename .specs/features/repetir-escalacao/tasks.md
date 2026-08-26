@@ -255,10 +255,10 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Sucesso devolve `filled` e `skipped`
-- [ ] `FORBIDDEN` e `NO_ROTATION_CYCLE` viram mensagem pt-BR, sem vazar o código
-- [ ] `revalidatePath("/escalas")` chamado no sucesso
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] Sucesso devolve `filled` e `skipped`
+- [x] `FORBIDDEN` e `NO_ROTATION_CYCLE` viram mensagem pt-BR, sem vazar o código
+- [x] `revalidatePath("/escalas")` chamado no sucesso
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
