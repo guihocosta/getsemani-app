@@ -71,6 +71,7 @@ model User {
   notifications     Notification[]
   swapRequests      SwapRequest[]      @relation("SwapRequestedBy")
   swapClaims        SwapRequest[]      @relation("SwapClaimedBy")
+  skills            UserSkill[]
 }
 
 model Ministry {
@@ -107,10 +108,25 @@ model Role {
   name       String
   active     Boolean  @default(true)
 
-  ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
-  slots    Slot[]
+  ministry   Ministry    @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  slots      Slot[]
+  userSkills UserSkill[]
 
   @@index([ministryId])
+}
+
+// Capacitacao: a pessoa sabe executar esta funcao. Independe de estar escalada.
+model UserSkill {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  roleId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
 }
 
 model Schedule {
