@@ -8,6 +8,7 @@ const Input = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   recurrenceRule: z.string().min(3),
   recurrenceUntil: z.coerce.date().nullish(),
+  rotationCycle: z.number().int().nullish(), // ciclo de rodizio em ocorrencias (1..12); null = sem rodizio
   roleIds: z.array(z.string().uuid()).min(1),
 });
 
@@ -16,6 +17,9 @@ const Input = z.object({
 // e nao reescreve ocorrencias/alocacoes ja existentes.
 export async function updateSchedule(raw: unknown) {
   const data = Input.parse(raw);
+  if (data.rotationCycle != null && (data.rotationCycle < 1 || data.rotationCycle > 12)) {
+    throw new Error("INVALID_ROTATION_CYCLE");
+  }
 
   const schedule = await prisma.schedule.findUniqueOrThrow({ where: { id: data.scheduleId } });
   await requireLeaderOf(schedule.ministryId);
@@ -29,6 +33,7 @@ export async function updateSchedule(raw: unknown) {
         startTime: data.startTime,
         recurrenceRule: data.recurrenceRule,
         recurrenceUntil: data.recurrenceUntil ?? null,
+        rotationCycle: data.rotationCycle ?? null,
         defaultRoles: { create: data.roleIds.map((roleId) => ({ roleId })) },
       },
       include: { defaultRoles: true },

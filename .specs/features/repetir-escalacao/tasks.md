@@ -167,11 +167,11 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Valor 1..12 é persistido (REPT-01.2)
-- [ ] Nulo é persistido como "sem rodízio" (REPT-01.3)
-- [ ] 0, 13 ou negativo lança `INVALID_ROTATION_CYCLE` sem gravar (REPT-01.4)
-- [ ] `createSchedule` recebe a mesma validação
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] Valor 1..12 é persistido (REPT-01.2)
+- [x] Nulo é persistido como "sem rodízio" (REPT-01.3)
+- [x] 0, 13 ou negativo lança `INVALID_ROTATION_CYCLE` sem gravar (REPT-01.4)
+- [x] `createSchedule` recebe a mesma validação
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full

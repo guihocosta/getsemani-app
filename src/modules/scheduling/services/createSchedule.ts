@@ -10,11 +10,15 @@ const Input = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   durationMin: z.number().int().positive().default(120),
   recurrenceUntil: z.coerce.date().nullish(),
+  rotationCycle: z.number().int().nullish(), // ciclo de rodizio em ocorrencias (1..12); null = sem rodizio
   roleIds: z.array(z.string().uuid()).min(1),
 });
 
 export async function createSchedule(raw: unknown) {
   const data = Input.parse(raw);
+  if (data.rotationCycle != null && (data.rotationCycle < 1 || data.rotationCycle > 12)) {
+    throw new Error("INVALID_ROTATION_CYCLE");
+  }
   const leader = await requireLeaderOf(data.ministryId);
 
   return prisma.schedule.create({
@@ -26,6 +30,7 @@ export async function createSchedule(raw: unknown) {
       startTime: data.startTime,
       durationMin: data.durationMin,
       recurrenceUntil: data.recurrenceUntil ?? null,
+      rotationCycle: data.rotationCycle ?? null,
       createdBy: leader.id,
       defaultRoles: { create: data.roleIds.map((roleId) => ({ roleId })) },
     },
