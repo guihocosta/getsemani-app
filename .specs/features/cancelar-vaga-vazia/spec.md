@@ -9,8 +9,8 @@ o buraco é só de interface.
 
 ## Goals
 
-- [ ] Líder desativa uma vaga vazia direto do detalhe da vaga, sem precisar alocar alguém antes.
-- [ ] Nenhuma mudança de comportamento para vaga preenchida.
+- [x] Líder desativa uma vaga vazia direto do detalhe da vaga, sem precisar alocar alguém antes.
+- [x] Nenhuma mudança de comportamento para vaga preenchida.
 
 ## Out of Scope
 
@@ -26,7 +26,7 @@ o buraco é só de interface.
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 | --------------------- | -------------- | --------- | ---------- |
-| Confirmação antes de desativar vaga vazia | Sem diálogo de confirmação | Nada é perdido (não há alocação) e a ação é reversível pelo menu "Adicionar vaga extra" | n |
+| Confirmação antes de desativar vaga vazia | Reusa o mesmo `onDeactivate`/`ConfirmDialog` já usado no estado preenchido, em vez de pular a confirmação | Corrigido durante a implementação: `onDeactivate` já chega pronto em `SlotDetailSheet` com confirmação + tratamento de erro acoplados (`OccurrenceRow.deactivateSlot`); reusar em vez de bifurcar o fluxo é mais simples e mantém o mesmo comportamento nos dois estados | y (ajustado na implementação) |
 | Posição do botão no estado vazio | Rodapé do seletor, abaixo de "+ Pessoa sem conta", em `text-danger` | Mantém o seletor como ação primária e a desativação como saída secundária | n |
 | Rótulo do botão | "Desativar vaga", igual ao estado preenchido | Mesma ação, mesmo nome | n |
 
@@ -45,7 +45,7 @@ o buraco é só de interface.
 **Acceptance Criteria**:
 
 1. WHILE o detalhe de uma vaga sem alocação está aberto o sistema SHALL exibir o botão "Desativar vaga".
-2. WHEN o líder toca em "Desativar vaga" numa vaga sem alocação THEN o sistema SHALL chamar `setSlotActiveAction(slotId, false)` e marcar a vaga como inativa.
+2. WHEN o líder toca em "Desativar vaga" numa vaga sem alocação e confirma na caixa de diálogo THEN o sistema SHALL chamar `setSlotActiveAction(slotId, false)` e marcar a vaga como inativa.
 3. WHEN a desativação retorna sucesso THEN o sistema SHALL fechar o detalhe e remover a vaga da ocorrência na tela, sem recarregar o mês.
 4. The system SHALL manter o botão "Desativar vaga" no estado preenchido exatamente onde está hoje.
 5. IF a ação retorna erro THEN o sistema SHALL manter a vaga visível e exibir a mensagem de erro no mesmo padrão já usado pelas demais ações da tela.
@@ -65,13 +65,13 @@ o buraco é só de interface.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| VAGA-01 | P1: Desativar vaga vazia | Tasks | Pending |
+| VAGA-01 | P1: Desativar vaga vazia | Verified | Verified |
 
-**Coverage:** 1 total, 0 mapeados para tarefas, 1 não mapeado.
+**Coverage:** 1 total, 1 mapeado, 0 não mapeado.
 
 ---
 
 ## Success Criteria
 
-- [ ] Vaga vazia pode ser desativada em 2 toques a partir da ocorrência.
-- [ ] Fluxo de vaga preenchida permanece idêntico ao atual.
+- [x] Vaga vazia pode ser desativada em 2 toques + 1 confirmação a partir da ocorrência.
+- [x] Fluxo de vaga preenchida permanece idêntico ao atual.

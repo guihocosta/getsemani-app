@@ -190,6 +190,17 @@ export function SlotDetailSheet(props: {
                   cancelar troca
                 </button>
               )}
+
+              {!filled && (
+                <button
+                  type="button"
+                  disabled={props.pending}
+                  onClick={props.onDeactivate}
+                  className="w-full min-h-11 text-center text-sm text-danger mt-1 disabled:opacity-40"
+                >
+                  Desativar vaga
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-4 pt-1">
