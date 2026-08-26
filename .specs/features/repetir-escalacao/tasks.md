@@ -227,11 +227,11 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Opções "Sem rodízio" e 1 a 12 (REPT-01.1)
-- [ ] Campo aparece tanto na criação quanto na edição
-- [ ] Valor atual da escala vem pré-selecionado na edição
-- [ ] Só tokens de tema, nenhuma cor crua do Tailwind
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Opções "Sem rodízio" e 1 a 12 (REPT-01.1)
+- [x] Campo aparece tanto na criação quanto na edição
+- [x] Valor atual da escala vem pré-selecionado na edição
+- [x] Só tokens de tema, nenhuma cor crua do Tailwind
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build

@@ -29,6 +29,7 @@ function friendlyError(e: unknown): string {
   const msg = (e as Error)?.message ?? "";
   if (msg.includes("roleIds")) return "Escolha pelo menos uma função.";
   if (msg === "FORBIDDEN") return "Você não tem permissão para essa ação.";
+  if (msg === "INVALID_ROTATION_CYCLE") return "Ciclo de rodízio deve ser entre 1 e 12.";
   return "Não deu para salvar. Confira os campos e tente de novo.";
 }
 
@@ -38,6 +39,7 @@ export async function createScheduleAction(
 ): Promise<ScheduleFormState> {
   try {
     const recurrenceUntil = formData.get("recurrenceUntil");
+    const rotationCycle = formData.get("rotationCycle");
     const roleIds = formData.getAll("roleIds").map(String);
     if (roleIds.length === 0) return { ok: false, error: "Escolha pelo menos uma função." };
 
@@ -48,6 +50,7 @@ export async function createScheduleAction(
       startDate: String(formData.get("startDate")),
       startTime: String(formData.get("startTime")),
       recurrenceUntil: recurrenceUntil ? String(recurrenceUntil) : null,
+      rotationCycle: rotationCycle ? Number(rotationCycle) : null,
       roleIds,
     });
     await materializeOccurrences(new Date(), schedule.id);
@@ -65,6 +68,7 @@ export async function updateScheduleAction(
 ): Promise<ScheduleFormState> {
   try {
     const recurrenceUntil = formData.get("recurrenceUntil");
+    const rotationCycle = formData.get("rotationCycle");
     const roleIds = formData.getAll("roleIds").map(String);
     if (roleIds.length === 0) return { ok: false, error: "Escolha pelo menos uma função." };
 
@@ -75,6 +79,7 @@ export async function updateScheduleAction(
       startTime: String(formData.get("startTime")),
       recurrenceRule: String(formData.get("recurrenceRule")),
       recurrenceUntil: recurrenceUntil ? String(recurrenceUntil) : null,
+      rotationCycle: rotationCycle ? Number(rotationCycle) : null,
       roleIds,
     });
     await materializeOccurrences(new Date(), scheduleId);
