@@ -248,11 +248,11 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Chips agrupados por ministério, marcados conforme o estado atual (CAPA-01.1)
-- [ ] Clique reflete na tela sem recarregar (CAPA-01.2)
-- [ ] Sem membership ACTIVE exibe o texto da AC CAPA-01.6
-- [ ] Só tokens de tema, nenhuma cor crua do Tailwind
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] Chips agrupados por ministério, marcados conforme o estado atual (CAPA-01.1)
+- [x] Clique reflete na tela sem recarregar (CAPA-01.2)
+- [x] Sem membership ACTIVE exibe o texto da AC CAPA-01.6
+- [x] Só tokens de tema, nenhuma cor crua do Tailwind
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
 **Tests**: none
 **Gate**: build
