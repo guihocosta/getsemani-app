@@ -19,6 +19,7 @@ import { OccurrenceMenu } from "./OccurrenceMenu";
 import { SlotDetailSheet } from "./SlotDetailSheet";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
+import { markCapable } from "@/modules/scheduling/services/candidateList";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -55,16 +56,24 @@ export function OccurrenceRow(props: {
   const [copyNote, setCopyNote] = useState(false);
   const { confirm, dialog } = useConfirm();
 
-  // Candidatos sao os mesmos pra todas as vagas desta ocorrencia (mesmo
-  // ministerio + data) — busca uma vez so, na primeira vez que algum sheet
-  // abre, e reusa pras demais vagas em vez de refazer a query por vaga.
+  // Candidatos (carga + indisponibilidade) sao os mesmos pra todas as vagas
+  // desta ocorrencia (mesmo ministerio + data) — busca uma vez so, na primeira
+  // vez que algum sheet abre, e reusa pras demais vagas em vez de refazer a
+  // query por vaga. Capacitacao e por funcao (nao por ocorrencia): vem a parte
+  // em capableUserIdsByRole e e reaplicada por markCapable a cada vaga aberta,
+  // sem nova requisicao (ver Addendum em .specs/features/capacitacoes/design.md).
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
+  const [capableUserIdsByRole, setCapableUserIdsByRole] = useState<Record<string, string[]>>({});
   const [guestNames, setGuestNames] = useState<string[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
   const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
 
   const activeSlot = props.slots.find((s) => s.slotId === activeSlotId) ?? null;
+  const sheetCandidates =
+    candidates && activeSlot
+      ? markCapable(candidates, new Set(capableUserIdsByRole[activeSlot.roleId] ?? []))
+      : candidates;
 
   function ensureCandidates() {
     if (candidates || candidatesLoading) return;
@@ -75,6 +84,7 @@ export function OccurrenceRow(props: {
       .then((res) => {
         if (res.ok) {
           setCandidates(res.candidates);
+          setCapableUserIdsByRole(res.capableUserIdsByRole);
           setGuestNames(res.guestNames);
         } else {
           setCandidatesFailed(true);
@@ -265,7 +275,7 @@ export function OccurrenceRow(props: {
         open={activeSlotId !== null}
         slot={activeSlot}
         onClose={closeSheet}
-        candidates={candidates}
+        candidates={sheetCandidates}
         guestNames={guestNames}
         loading={candidatesLoading}
         failed={candidatesFailed}

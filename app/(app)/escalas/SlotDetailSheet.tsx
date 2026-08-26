@@ -122,6 +122,7 @@ export function SlotDetailSheet(props: {
                     >
                       {c.name}
                       {c.unavailable && <Badge tone="danger">Indisponível</Badge>}
+                      {!c.capable && <Badge tone="muted">não capacitado</Badge>}
                     </button>
                   ))}
 

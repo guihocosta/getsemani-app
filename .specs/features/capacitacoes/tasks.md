@@ -399,12 +399,14 @@ T10 → T11 → T12 → T13
 
 ---
 
-### T13: Selo "não capacitado" no detalhe da vaga
+### T13: Selo "não capacitado" no detalhe da vaga (revisada — ver Addendum em design.md)
 
-**What**: Exibir o `Badge` "não capacitado" ao lado dos candidatos sem capacitação, mantendo o botão clicável, e alimentar `capableUserIds` a partir da action que carrega os candidatos.
-**Where**: `app/(app)/escalas/SlotDetailSheet.tsx` (modify)
+**Bloqueio original**: a primeira execução travou porque `getOccurrenceCandidatesAction` busca candidatos uma vez por ocorrência e reusa entre vagas de funções diferentes — aplicar capacitação de 1 função nesse cache misturaria funções. Ver "Addendum" em `design.md`. Escopo revisado abaixo substitui o original.
+
+**What**: `capableUserIdsByRole` retornado pela action (um `capableUserIdsForRole` por `roleId` distinto da ocorrência), `roleId` propagado até o `Slot` do client, `markCapable` puro em `candidateList.ts` reordenando a lista já buscada por função da vaga ativa, e o `Badge` "não capacitado" no detalhe da vaga.
+**Where**: `src/modules/scheduling/services/candidateList.ts` (modify), `src/modules/scheduling/services/listMonthOccurrences.ts` (modify), `app/(app)/escalas/occurrenceCache.ts` (modify), `app/(app)/escalas/actions.ts` (modify), `app/(app)/escalas/OccurrenceRow.tsx` (modify), `app/(app)/escalas/SlotDetailSheet.tsx` (modify)
 **Depends on**: T12
-**Reuses**: Padrão do `Badge tone="danger"` de "Indisponível" em `SlotDetailSheet.tsx:124`
+**Reuses**: Padrão do `Badge tone="danger"` de "Indisponível" em `SlotDetailSheet.tsx:124`; `capableUserIdsForRole` (T5)
 **Requirement**: CAPA-05
 
 **Tools**:
@@ -414,15 +416,18 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Selo aparece só para quem não é capacitado na função da vaga (CAPA-05.2)
-- [ ] Candidato não capacitado continua clicável e alocável (CAPA-05.3)
-- [ ] Selo "Indisponível" continua funcionando junto do novo
-- [ ] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
+- [x] `markCapable` reordena e marca `capable` sem recalcular carga/indisponibilidade, com os mesmos 2 testes de ordenação de `buildCandidateList` (capacitado primeiro, empate por carga)
+- [x] `roleId` chega ao `Slot` do client sem quebrar `patchOccurrenceSlot`/`patchSlotActive` (spread preserva o campo novo)
+- [x] Vaga de função A não marca como capacitado quem só é capacitado na função B da mesma ocorrência
+- [x] Selo aparece só para quem não é capacitado na função da vaga aberta (CAPA-05.2)
+- [x] Candidato não capacitado continua clicável e alocável (CAPA-05.3)
+- [x] Selo "Indisponível" continua funcionando junto do novo
+- [x] Gate check passa: `npm run typecheck && npm run lint && npm run test && npm run build`
 
-**Tests**: none
+**Tests**: unit (para `markCapable`)
 **Gate**: build
 
-**Commit**: `feat(capacitacoes): marcar candidato nao capacitado no detalhe da vaga`
+**Commit**: `feat(capacitacoes): marcar candidato nao capacitado por funcao da vaga`
 
 ---
 
@@ -499,4 +504,4 @@ As dependências entre fases (T3 precisa do schema de T1, T11 precisa das leitur
 | T10 | Domínio puro | unit | unit | ✅ OK |
 | T11 | Página | none | none | ✅ OK |
 | T12 | Domínio puro (`buildCandidateList`) | unit | unit | ✅ OK |
-| T13 | Componente client | none | none | ✅ OK |
+| T13 | Domínio puro (`markCapable`) + serviço + componente client | unit (domínio); none (resto) | unit | ✅ OK |

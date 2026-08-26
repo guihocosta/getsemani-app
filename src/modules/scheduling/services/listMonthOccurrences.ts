@@ -16,6 +16,7 @@ export type MonthOccurrenceItem = {
   when: string;
   slots: {
     slotId: string;
+    roleId: string;
     role: string;
     allocatedUserId: string | null;
     allocatedName: string | null;
@@ -61,6 +62,7 @@ export async function listMonthOccurrences(
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
     slots: o.slots.map((s) => ({
       slotId: s.id,
+      roleId: s.roleId,
       role: s.role.name,
       allocatedUserId: s.allocation?.userId ?? null,
       allocatedName: s.allocation?.user?.name ?? s.allocation?.guestName ?? null,

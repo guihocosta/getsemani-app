@@ -21,6 +21,7 @@ import { usersUnavailableAt } from "@/modules/availability/services/checkConflic
 import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
+import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -234,18 +235,27 @@ export type { AllocationCandidate };
 // dias no MESMO ministerio e se esta indisponivel na data da ocorrencia — pra
 // alocar com informacao em vez de as cegas. Uma busca so por ocorrencia (nao
 // por vaga): todas as vagas da mesma ocorrencia compartilham ministerio + data,
-// entao a lista e identica — evita repetir 5 queries a cada seletor aberto, o
-// que deixava a tela lenta com varias vagas na mesma ocorrencia.
+// entao a lista base e identica — evita repetir 5 queries a cada seletor
+// aberto, o que deixava a tela lenta com varias vagas na mesma ocorrencia.
+// Capacitacao e a excecao: e por funcao, entao vem a parte em
+// capableUserIdsByRole (1 query por roleId distinto da ocorrencia, nao por
+// vaga) — o client reordena com markCapable ao trocar de vaga ativa, sem nova
+// requisicao (ver Addendum em .specs/features/capacitacoes/design.md).
 export async function getOccurrenceCandidatesAction(
   occurrenceId: string,
 ): Promise<
-  | { ok: true; candidates: AllocationCandidate[]; guestNames: string[] }
+  | {
+      ok: true;
+      candidates: AllocationCandidate[];
+      capableUserIdsByRole: Record<string, string[]>;
+      guestNames: string[];
+    }
   | { ok: false; code: ActionCode; ref: string }
 > {
   try {
     const occurrence = await prisma.occurrence.findUniqueOrThrow({
       where: { id: occurrenceId },
-      include: { schedule: true },
+      include: { schedule: true, slots: true },
     });
     await requireLeaderOf(occurrence.schedule.ministryId);
 
@@ -255,9 +265,10 @@ export async function getOccurrenceCandidatesAction(
       include: { user: true },
     });
     const userIds = [...new Set(memberships.map((m) => m.userId))];
+    const roleIds = [...new Set(occurrence.slots.map((s) => s.roleId))];
 
     const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const [load, unavailable, guestAllocs] = await Promise.all([
+    const [load, unavailable, guestAllocs, capableSets] = await Promise.all([
       loadByPerson(from, new Date(), [ministryId]),
       usersUnavailableAt(userIds, occurrence.date),
       prisma.allocation.findMany({
@@ -265,11 +276,15 @@ export async function getOccurrenceCandidatesAction(
         select: { guestName: true },
         distinct: ["guestName"],
       }),
+      Promise.all(roleIds.map((roleId) => capableUserIdsForRole(roleId))),
     ]);
     const countByUser = new Map(load.map((l) => [l.userId, l.count]));
+    const capableUserIdsByRole = Object.fromEntries(
+      roleIds.map((roleId, i) => [roleId, [...capableSets[i]]]),
+    );
 
-    // capableUserIds vazio: a lista e por ocorrencia (varias vagas de funcoes
-    // diferentes), nao por vaga — ver Deviations do batch de execucao (T13).
+    // capableUserIds vazio aqui: a base e por ocorrencia (varias funcoes); a
+    // capacitacao real por funcao e aplicada no client via markCapable.
     const candidates = buildCandidateList({
       memberships,
       countByUser,
@@ -278,7 +293,7 @@ export async function getOccurrenceCandidatesAction(
     });
     const guestNames = guestAllocs.map((g) => g.guestName!).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-    return { ok: true, candidates, guestNames };
+    return { ok: true, candidates, capableUserIdsByRole, guestNames };
   } catch (e) {
     return handleActionError("escalas.candidates", e, { occurrenceId });
   }

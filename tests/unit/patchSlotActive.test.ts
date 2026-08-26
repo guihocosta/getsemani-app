@@ -12,6 +12,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     slots: [
       {
         slotId: "slot-1",
+        roleId: "role-vocal",
         role: "Vocal",
         allocatedUserId: "u1",
         allocatedName: "Ana",
