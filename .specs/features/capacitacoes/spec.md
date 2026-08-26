@@ -130,13 +130,14 @@ quais funções ela é capacitada a realizar.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| CAPA-01 | P1: Pessoa declara suas funções | Design | Pending |
-| CAPA-02 | P1: Pessoa declara suas funções | Design | Pending |
-| CAPA-03 | P1: Líder ajusta a capacitação da equipe | Design | Pending |
-| CAPA-04 | P1: Vagas separadas por capacitação | Design | Pending |
-| CAPA-05 | P2: Capacitação na lista de candidatos do líder | Design | Pending |
+| CAPA-01 | P1: Pessoa declara suas funções | Verified | Verified |
+| CAPA-03 | P1: Líder ajusta a capacitação da equipe | Verified | Verified |
+| CAPA-04 | P1: Vagas separadas por capacitação | Verified | Verified |
+| CAPA-05 | P2: Capacitação na lista de candidatos do líder | Verified | Verified |
 
-**Coverage:** 5 total, 0 mapeados para tarefas, 5 não mapeados.
+**Coverage:** 4 total, 4 mapeados para tarefas, 0 não mapeados.
+
+**Nota**: a numeração pula de CAPA-01 pra CAPA-03 — um `CAPA-02` órfão (linha duplicada, nunca referenciado em design.md/tasks.md) foi removido durante a validação; ver `validation.md`.
 
 ---
 
