@@ -135,15 +135,15 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Slot inativo devolve `"SKIP_SLOT_INACTIVE"` (REPT-04.5)
-- [ ] Slot já ocupado devolve `"SKIP_SLOT_TAKEN"` (REPT-04.2)
-- [ ] Sem membership ACTIVE devolve `"SKIP_NOT_MEMBER"` (REPT-04.3)
-- [ ] Sem capacitação devolve `"SKIP_NOT_CAPABLE"` (REPT-04.4)
-- [ ] Indisponibilidade devolve `"SKIP_UNAVAILABLE"` (REPT-04.1)
-- [ ] Pessoa sem conta (`sourceUserId: null`) devolve `"OK"` sem checar membership, capacitação nem indisponibilidade
-- [ ] Slot ocupado tem precedência sobre indisponibilidade
-- [ ] Testes em `tests/unit/rotation.test.ts`, 7 testes novos passam (12 no arquivo)
-- [ ] Gate check passa: `npm run test`
+- [x] Slot inativo devolve `"SKIP_SLOT_INACTIVE"` (REPT-04.5)
+- [x] Slot já ocupado devolve `"SKIP_SLOT_TAKEN"` (REPT-04.2)
+- [x] Sem membership ACTIVE devolve `"SKIP_NOT_MEMBER"` (REPT-04.3)
+- [x] Sem capacitação devolve `"SKIP_NOT_CAPABLE"` (REPT-04.4)
+- [x] Indisponibilidade devolve `"SKIP_UNAVAILABLE"` (REPT-04.1)
+- [x] Pessoa sem conta (`sourceUserId: null`) devolve `"OK"` sem checar membership, capacitação nem indisponibilidade
+- [x] Slot ocupado tem precedência sobre indisponibilidade
+- [x] Testes em `tests/unit/rotation.test.ts`, 7 testes novos passam (12 no arquivo)
+- [x] Gate check passa: `npm run test`
 
 **Tests**: unit
 **Gate**: quick

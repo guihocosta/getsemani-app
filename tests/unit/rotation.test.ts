@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { planRotationPairs } from "@/modules/scheduling/domain/rotation";
+import { planRotationPairs, decideCopyAllocation } from "@/modules/scheduling/domain/rotation";
 
 describe("planRotationPairs", () => {
   it("devolve no maximo cycle pares, um por ocorrencia futura (REPT-02.1)", () => {
@@ -34,5 +34,54 @@ describe("planRotationPairs", () => {
   it("sem ocorrencia futura devolve lista vazia", () => {
     const pairs = planRotationPairs({ total: 5, cycle: 2, firstFutureIndex: 5 });
     expect(pairs).toEqual([]);
+  });
+});
+
+describe("decideCopyAllocation", () => {
+  const base = {
+    targetSlotActive: true,
+    targetHasAllocation: false,
+    sourceUserId: "u1",
+    isActiveMember: true,
+    isCapable: true,
+    hasConflict: false,
+  };
+
+  it("slot inativo devolve SKIP_SLOT_INACTIVE (REPT-04.5)", () => {
+    expect(decideCopyAllocation({ ...base, targetSlotActive: false })).toBe("SKIP_SLOT_INACTIVE");
+  });
+
+  it("slot ja ocupado devolve SKIP_SLOT_TAKEN (REPT-04.2)", () => {
+    expect(decideCopyAllocation({ ...base, targetHasAllocation: true })).toBe("SKIP_SLOT_TAKEN");
+  });
+
+  it("sem membership ACTIVE devolve SKIP_NOT_MEMBER (REPT-04.3)", () => {
+    expect(decideCopyAllocation({ ...base, isActiveMember: false })).toBe("SKIP_NOT_MEMBER");
+  });
+
+  it("sem capacitacao devolve SKIP_NOT_CAPABLE (REPT-04.4)", () => {
+    expect(decideCopyAllocation({ ...base, isCapable: false })).toBe("SKIP_NOT_CAPABLE");
+  });
+
+  it("indisponibilidade devolve SKIP_UNAVAILABLE (REPT-04.1)", () => {
+    expect(decideCopyAllocation({ ...base, hasConflict: true })).toBe("SKIP_UNAVAILABLE");
+  });
+
+  it("pessoa sem conta devolve OK sem checar membership, capacitacao nem indisponibilidade", () => {
+    expect(
+      decideCopyAllocation({
+        ...base,
+        sourceUserId: null,
+        isActiveMember: false,
+        isCapable: false,
+        hasConflict: true,
+      }),
+    ).toBe("OK");
+  });
+
+  it("slot ocupado tem precedencia sobre indisponibilidade", () => {
+    expect(
+      decideCopyAllocation({ ...base, targetHasAllocation: true, hasConflict: true }),
+    ).toBe("SKIP_SLOT_TAKEN");
   });
 });

@@ -18,3 +18,31 @@ export function planRotationPairs(params: {
   }
   return pairs;
 }
+
+export type CopyDecision =
+  | "OK"
+  | "SKIP_SLOT_INACTIVE"
+  | "SKIP_SLOT_TAKEN"
+  | "SKIP_UNAVAILABLE"
+  | "SKIP_NOT_MEMBER"
+  | "SKIP_NOT_CAPABLE";
+
+// Decide se a alocacao de origem pode ser copiada pra vaga de destino.
+// Pessoa sem conta (sourceUserId nulo) segue direto pra OK: nao tem membership,
+// capacitacao nem indisponibilidade pra checar (espelha allocateGuest).
+export function decideCopyAllocation(params: {
+  targetSlotActive: boolean;
+  targetHasAllocation: boolean;
+  sourceUserId: string | null;
+  isActiveMember: boolean;
+  isCapable: boolean;
+  hasConflict: boolean;
+}): CopyDecision {
+  if (!params.targetSlotActive) return "SKIP_SLOT_INACTIVE";
+  if (params.targetHasAllocation) return "SKIP_SLOT_TAKEN";
+  if (params.sourceUserId === null) return "OK";
+  if (!params.isActiveMember) return "SKIP_NOT_MEMBER";
+  if (!params.isCapable) return "SKIP_NOT_CAPABLE";
+  if (params.hasConflict) return "SKIP_UNAVAILABLE";
+  return "OK";
+}
