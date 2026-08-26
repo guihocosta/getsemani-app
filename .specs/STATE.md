@@ -40,13 +40,15 @@
 ## Handoff
 
 **Última sessão**: 2026-08-26
-**Branch**: `master`
-**Estado**: specs, designs e tasks escritos e validados. Nenhuma linha de código de produção alterada ainda.
+**Branch**: `feat/capacitacao-vaga-rodizio`
+**Estado**: `capacitacoes` concluída e validada (Verifier PASS, 21/21 ACs, 0 mutantes sobreviventes). 17 commits atômicos na branch, hook `commit-msg` local ativo. Nenhum `git push`.
 
-**Artefatos prontos**:
+**Artefatos**:
 
-- `.specs/features/capacitacoes/` — spec + design + tasks (13 tarefas, 4 fases)
-- `.specs/features/cancelar-vaga-vazia/` — spec (1 tarefa; Tasks pulado por ser trivial)
-- `.specs/features/repetir-escalacao/` — spec + design + tasks (9 tarefas, 3 fases)
+- `.specs/features/capacitacoes/` — spec + design (+ addendum de T13) + tasks (13/13 done) + validation.md (PASS) — **Done**
+- `.specs/features/cancelar-vaga-vazia/` — spec (1 tarefa; Tasks pulado por ser trivial) — **não iniciada**
+- `.specs/features/repetir-escalacao/` — spec + design + tasks (9 tarefas, 3 fases) — **não iniciada**, depende de `capableUserIdsForRole` (já existe, de `capacitacoes`)
 
-**Próximo passo**: Execute da feature `capacitacoes`, começando por T1 (modelo `UserSkill` + migration).
+**Gap descoberto na execução de `capacitacoes`**: T13 original assumia capacidade por vaga, mas `getOccurrenceCandidatesAction` cacheia candidatos por ocorrência (várias funções). Corrigido com `capableUserIdsByRole` + `markCapable` client-side — ver Addendum em `design.md`. Vale reler antes de desenhar `repetir-escalacao`, que toca a mesma área (candidatos/alocação por função).
+
+**Próximo passo**: Execute inline da feature `cancelar-vaga-vazia` (1 tarefa: mover botão "Desativar vaga" pro ramo vazio de `SlotDetailSheet.tsx`), depois Execute de `repetir-escalacao` (T1 primeiro).
