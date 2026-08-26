@@ -138,11 +138,11 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] `enabled: true` faz `upsert` (marcar duas vezes não duplica — CAPA-01.5)
-- [ ] `enabled: false` faz `deleteMany` (desmarcar duas vezes não estoura)
-- [ ] Decisão diferente de `"OK"` lança `new Error("FORBIDDEN")`
-- [ ] Nenhuma `Allocation` é tocada (CAPA-01.3)
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] `enabled: true` faz `upsert` (marcar duas vezes não duplica — CAPA-01.5)
+- [x] `enabled: false` faz `deleteMany` (desmarcar duas vezes não estoura)
+- [x] Decisão diferente de `"OK"` lança `new Error("FORBIDDEN")`
+- [x] Nenhuma `Allocation` é tocada (CAPA-01.3)
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
