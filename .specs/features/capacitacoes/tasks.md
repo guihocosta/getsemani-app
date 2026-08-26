@@ -110,11 +110,11 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Sem membership ACTIVE retorna `"FORBIDDEN"` (CAPA-01.4, CAPA-03.3)
-- [ ] Função inativa retorna `"ROLE_INACTIVE"`
-- [ ] Membership ACTIVE + função ativa retorna `"OK"`
-- [ ] Testes em `tests/unit/capabilities.test.ts`, 3 testes passam
-- [ ] Gate check passa: `npm run test`
+- [x] Sem membership ACTIVE retorna `"FORBIDDEN"` (CAPA-01.4, CAPA-03.3)
+- [x] Função inativa retorna `"ROLE_INACTIVE"`
+- [x] Membership ACTIVE + função ativa retorna `"OK"`
+- [x] Testes em `tests/unit/capabilities.test.ts`, 3 testes passam
+- [x] Gate check passa: `npm run test`
 
 **Tests**: unit
 **Gate**: quick
