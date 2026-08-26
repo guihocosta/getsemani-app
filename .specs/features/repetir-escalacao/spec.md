@@ -119,13 +119,13 @@ ocorrência materializada nasce vazia e o líder repete o trabalho manualmente.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| REPT-01 | P1: Definir o ciclo de rodízio da escala | Design | Pending |
-| REPT-02 | P1: Repetir a escalação no próximo ciclo | Design | Pending |
-| REPT-03 | P1: Repetir a escalação no próximo ciclo | Design | Pending |
-| REPT-04 | P1: Pular quem não pode servir | Design | Pending |
-| REPT-05 | P1: Pular quem não pode servir | Design | Pending |
+| REPT-01 | P1: Definir o ciclo de rodízio da escala | Verified | Verified |
+| REPT-02 | P1: Repetir a escalação no próximo ciclo | Verified | Verified |
+| REPT-03 | P1: Repetir a escalação no próximo ciclo | Verified | Verified |
+| REPT-04 | P1: Pular quem não pode servir | Verified | Verified |
+| REPT-05 | P1: Pular quem não pode servir | Verified | Verified |
 
-**Coverage:** 5 total, 0 mapeados para tarefas, 5 não mapeados.
+**Coverage:** 5 total, 5 mapeados, 0 não mapeados.
 
 ---
 

@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/repetir-escalacao/design.md`
-**Status**: Approved
+**Status**: Done
 **Pré-requisito**: a feature `capacitacoes` precisa estar concluída — T5 consome `capableUserIdsForRole`.
 
 ---
