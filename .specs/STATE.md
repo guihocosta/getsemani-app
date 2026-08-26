@@ -41,14 +41,16 @@
 
 **Última sessão**: 2026-08-26
 **Branch**: `feat/capacitacao-vaga-rodizio`
-**Estado**: `capacitacoes` e `cancelar-vaga-vazia` concluídas e validadas (Verifier PASS nas duas). Commits atômicos na branch, hook `commit-msg` local ativo. Nenhum `git push`.
+**Estado**: as 3 features do pedido original estão concluídas e validadas (Verifier PASS nas 3). Nada foi pushado — tudo local na branch `feat/capacitacao-vaga-rodizio`, hook `commit-msg` ativo.
 
 **Artefatos**:
 
-- `.specs/features/capacitacoes/` — spec + design (+ addendum de T13) + tasks (13/13 done) + validation.md (PASS, 21/21 ACs, 0 mutantes sobreviventes) — **Done**
+- `.specs/features/capacitacoes/` — spec + design (+ addendum de T13) + tasks (13/13) + validation.md (PASS, 21/21 ACs, 0 mutantes sobreviventes) — **Done**
 - `.specs/features/cancelar-vaga-vazia/` — spec (VAGA-01) + validation.md (PASS, 5/5 ACs por inspeção) — **Done**
-- `.specs/features/repetir-escalacao/` — spec + design + tasks (9 tarefas, 3 fases) — **não iniciada**, depende de `capableUserIdsForRole` (já existe, de `capacitacoes`)
+- `.specs/features/repetir-escalacao/` — spec + design + tasks (9/9) + validation.md (PASS, 18/18 ACs após 1 rodada de fix→re-verify) — **Done**
 
-**Gap descoberto na execução de `capacitacoes`**: T13 original assumia capacidade por vaga, mas `getOccurrenceCandidatesAction` cacheia candidatos por ocorrência (várias funções). Corrigido com `capableUserIdsByRole` + `markCapable` client-side — ver Addendum em `design.md`. Vale reler antes de desenhar `repetir-escalacao`, que toca a mesma área (candidatos/alocação por função).
+**Gaps reais corrigidos durante Execute** (ambos com fix→re-verify, Verifier confirmou PASS depois):
+- `capacitacoes` T13: design original assumia capacidade por vaga, mas `getOccurrenceCandidatesAction` cacheia candidatos por ocorrência (várias funções). Corrigido com `capableUserIdsByRole` + `markCapable` client-side — ver Addendum em `capacitacoes/design.md`.
+- `repetir-escalacao`: (1) mutante sobrevivente em `decideCopyAllocation` — faltava teste de precedência membership-antes-de-capacitação (código já estava certo, só o teste faltava); (2) gap funcional — função sem ninguém capacitado bloqueava 100% das cópias, contradizendo AD-002; corrigido em `repeatSchedule.ts` (capacidade só bloqueia se alguém já foi marcado capaz).
 
-**Próximo passo**: Execute de `repetir-escalacao`, começando por T1 (campo `rotationCycle` na `Schedule` + migration).
+**Próximo passo**: nada pendente do pedido original. Falta decidir com o usuário: revisar o diff, abrir PR, ou dar `git push` (nenhum feito ainda — exige autorização explícita separada da aprovação do Execute).
