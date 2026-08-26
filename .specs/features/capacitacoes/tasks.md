@@ -221,10 +221,10 @@ T10 → T11 → T12 → T13
 
 **Done when**:
 
-- [ ] Retorna `{ ok: true }` no caminho feliz
-- [ ] `FORBIDDEN` vira mensagem pt-BR, sem vazar o código
-- [ ] `revalidatePath("/perfil")` chamado no sucesso
-- [ ] Gate check passa: `npm run test && npm run typecheck`
+- [x] Retorna `{ ok: true }` no caminho feliz
+- [x] `FORBIDDEN` vira mensagem pt-BR, sem vazar o código
+- [x] `revalidatePath("/perfil")` chamado no sucesso
+- [x] Gate check passa: `npm run test && npm run typecheck`
 
 **Tests**: none
 **Gate**: full
