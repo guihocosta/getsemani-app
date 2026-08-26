@@ -105,13 +105,13 @@ T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Devolve no máximo `cycle` pares, um por ocorrência futura (REPT-02.1)
-- [ ] `sourceIndex = targetIndex - cycle` (REPT-02.2)
-- [ ] Escala mais nova que o ciclo devolve `sourceIndex: null` no par correspondente
-- [ ] Menos de `cycle` ocorrências futuras devolve só os pares existentes, sem erro
-- [ ] Sem ocorrência futura devolve lista vazia
-- [ ] Testes em `tests/unit/rotation.test.ts`, 5 testes passam
-- [ ] Gate check passa: `npm run test`
+- [x] Devolve no máximo `cycle` pares, um por ocorrência futura (REPT-02.1)
+- [x] `sourceIndex = targetIndex - cycle` (REPT-02.2)
+- [x] Escala mais nova que o ciclo devolve `sourceIndex: null` no par correspondente
+- [x] Menos de `cycle` ocorrências futuras devolve só os pares existentes, sem erro
+- [x] Sem ocorrência futura devolve lista vazia
+- [x] Testes em `tests/unit/rotation.test.ts`, 5 testes passam
+- [x] Gate check passa: `npm run test`
 
 **Tests**: unit
 **Gate**: quick
