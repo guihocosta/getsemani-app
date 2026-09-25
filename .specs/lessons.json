@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 2,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "ac_gap::check que reusa teste pre existente como prova exige assert do valor exato do claim conferir antes de marcar senao verifier reprova",
+      "text": "Check que reusa teste pre-existente como prova exige assert do valor exato do claim; conferir antes de marcar, senao Verifier reprova.",
+      "signal": "ac_gap",
+      "scope": "tests/unit",
+      "status": "candidate",
+      "features": [
+        "judge-fixes-52ec564"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C8 round 1 (tests/unit)"
+      ],
+      "created": "2026-09-25T19:21:32Z",
+      "last_seen": "2026-09-25T19:21:32Z"
+    }
+  ]
+}
