@@ -49,12 +49,13 @@ export function buildCandidateList(params: {
 // e indisponibilidade nao mudam), pra uma funcao (roleId) diferente da que foi
 // usada no fetch original — necessario porque getOccurrenceCandidatesAction
 // busca candidatos 1x por ocorrencia e reusa entre vagas de funcoes diferentes
-// (ver Addendum em .specs/features/capacitacoes/design.md).
+// (ver Addendum em .specs/features/capacitacoes/design.md). null = ninguem
+// declarou a funcao: todos contam como capazes e a ordem fica so por carga.
 export function markCapable(
   candidates: AllocationCandidate[],
-  capableUserIds: Set<string>,
+  capableUserIds: Set<string> | null,
 ): AllocationCandidate[] {
   return candidates
-    .map((c) => ({ ...c, capable: capableUserIds.has(c.userId) }))
+    .map((c) => ({ ...c, capable: capableUserIds === null || capableUserIds.has(c.userId) }))
     .sort(compareCandidates);
 }

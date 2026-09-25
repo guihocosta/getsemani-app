@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCandidateList, markCapable } from "@/modules/scheduling/services/candidateList";
+import { buildCandidateList, markCapable } from "@/modules/scheduling/domain/candidateList";
 
 describe("buildCandidateList", () => {
   it("inclui membro LEADER (nao so VOLUNTEER)", () => {
@@ -149,5 +149,16 @@ describe("markCapable", () => {
     });
     const list = markCapable(base, new Set(["u1", "u2"]));
     expect(list.map((c) => c.userId)).toEqual(["u2", "u1", "u3"]);
+  });
+
+  it("null marca todos capazes e ordena so por carga (ninguem declarou a funcao)", () => {
+    const base = [
+      { userId: "u1", name: "Ana", count30d: 5, unavailable: false, capable: false },
+      { userId: "u2", name: "Bia", count30d: 0, unavailable: false, capable: false },
+      { userId: "u3", name: "Caio", count30d: 2, unavailable: true, capable: false },
+    ];
+    const list = markCapable(base, null);
+    expect(list.map((c) => c.userId)).toEqual(["u2", "u3", "u1"]);
+    expect(list.every((c) => c.capable)).toBe(true);
   });
 });

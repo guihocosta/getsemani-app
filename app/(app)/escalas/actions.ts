@@ -10,7 +10,7 @@ import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/al
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
-import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/services/candidateList";
+import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/domain/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
 import { requireUser, requireLeaderOf, getSessionUser } from "@/modules/identity/services/authz";
@@ -22,7 +22,9 @@ import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actio
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
-import { repeatSchedule } from "@/modules/scheduling/services/repeatSchedule";
+import { repeatSchedule, RepeatPartialFailure } from "@/modules/scheduling/services/repeatSchedule";
+import { logError } from "@/lib/logError";
+import type { RepeatActionResult } from "./repeatOutcome";
 
 export type ScheduleFormState = { ok: boolean; error?: string };
 
@@ -30,7 +32,7 @@ function friendlyError(e: unknown): string {
   const msg = (e as Error)?.message ?? "";
   if (msg.includes("roleIds")) return "Escolha pelo menos uma função.";
   if (msg === "FORBIDDEN") return "Você não tem permissão para essa ação.";
-  if (msg === "INVALID_ROTATION_CYCLE") return "Ciclo de rodízio deve ser entre 1 e 12.";
+  if (msg.includes("INVALID_ROTATION_CYCLE")) return "Ciclo de rodízio deve ser entre 1 e 12.";
   return "Não deu para salvar. Confira os campos e tente de novo.";
 }
 
@@ -253,7 +255,7 @@ export async function getOccurrenceCandidatesAction(
   | {
       ok: true;
       candidates: AllocationCandidate[];
-      capableUserIdsByRole: Record<string, string[]>;
+      capableUserIdsByRole: Record<string, string[] | null>;
       guestNames: string[];
     }
   | { ok: false; code: ActionCode; ref: string }
@@ -286,7 +288,7 @@ export async function getOccurrenceCandidatesAction(
     ]);
     const countByUser = new Map(load.map((l) => [l.userId, l.count]));
     const capableUserIdsByRole = Object.fromEntries(
-      roleIds.map((roleId, i) => [roleId, [...capableSets[i]]]),
+      roleIds.map((roleId, i) => [roleId, capableSets[i] ? [...capableSets[i]] : null]),
     );
 
     // capableUserIds vazio aqui: a base e por ocorrencia (varias funcoes); a
@@ -344,20 +346,31 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
 
 // Repete a escalacao do ciclo anterior nas proximas rotationCycle ocorrencias
 // futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
-// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas).
-export async function repeatScheduleAction(
-  scheduleId: string,
-): Promise<{ ok: true; filled: number; skipped: number } | { ok: false; error: string }> {
+// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas), mas
+// com as mesmas garantias: relanca redirect e loga o inesperado com ref.
+export async function repeatScheduleAction(scheduleId: string): Promise<RepeatActionResult> {
   try {
     const result = await repeatSchedule(scheduleId);
     revalidatePath("/escalas");
     return { ok: true, filled: result.filled, skipped: result.skipped };
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     const msg = (e as Error)?.message ?? "";
     if (msg === "FORBIDDEN") return { ok: false, error: "Você não tem permissão para essa ação." };
     if (msg === "NO_ROTATION_CYCLE") {
       return { ok: false, error: "Defina o ciclo de rodízio ao editar a escala." };
     }
-    return { ok: false, error: "Não deu para repetir a escalação agora." };
+    const ref = logError("escalas.repeatSchedule", e, { scheduleId });
+    if (e instanceof RepeatPartialFailure) {
+      revalidatePath("/escalas");
+      const vagas = e.filled === 1 ? "vaga preenchida" : "vagas preenchidas";
+      return {
+        ok: false,
+        filled: e.filled,
+        error: `${e.filled} ${vagas} antes da falha. Tente de novo para completar.`,
+        ref,
+      };
+    }
+    return { ok: false, error: "Não deu para repetir a escalação agora.", ref };
   }
 }

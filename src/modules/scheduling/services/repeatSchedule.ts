@@ -12,6 +12,17 @@ export class NoRotationCycle extends Error {
   }
 }
 
+// Falha nao-P2002 depois de ja ter gravado copias: as gravadas ficam (repetir e
+// idempotente, vaga preenchida e pulada), e a action diz quantas entraram.
+export class RepeatPartialFailure extends Error {
+  constructor(
+    readonly filled: number,
+    readonly cause: unknown,
+  ) {
+    super("REPEAT_PARTIAL_FAILURE");
+  }
+}
+
 export type RepeatResult = { filled: number; skipped: number };
 
 // Lider repete a escalacao do ciclo anterior nas proximas rotationCycle
@@ -89,14 +100,10 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
     ).map((m) => m.userId),
   );
 
-  // null = ninguem jamais declarou capacitacao nessa funcao (feature nao "existe"
-  // pra ela ainda, REPT-04.4 "WHERE a capacitacao... existe") -> nao bloqueia,
-  // igual a filosofia de capacitacoes (AD-002: orienta, nao trava). So bloqueia
-  // quando ha gente marcada capaz e a pessoa da origem nao esta nesse grupo.
+  // null = ninguem declarou capacitacao nessa funcao (REPT-04.4) -> nao bloqueia.
   const capableByRole = new Map<string, Set<string> | null>();
   for (const roleId of new Set(copies.map((c) => c.roleId))) {
-    const set = await capableUserIdsForRole(roleId);
-    capableByRole.set(roleId, set.size > 0 ? set : null);
+    capableByRole.set(roleId, await capableUserIdsForRole(roleId));
   }
 
   const unavailableByDate = new Map<number, Set<string>>();
@@ -158,6 +165,7 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
         skipped++;
         continue;
       }
+      if (filled > 0) throw new RepeatPartialFailure(filled, e);
       throw e;
     }
   }

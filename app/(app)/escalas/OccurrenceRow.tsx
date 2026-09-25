@@ -18,9 +18,10 @@ import {
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
 import { SlotDetailSheet } from "./SlotDetailSheet";
+import { repeatOutcome } from "./repeatOutcome";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
-import { markCapable } from "@/modules/scheduling/services/candidateList";
+import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -66,16 +67,17 @@ export function OccurrenceRow(props: {
   // em capableUserIdsByRole e e reaplicada por markCapable a cada vaga aberta,
   // sem nova requisicao (ver Addendum em .specs/features/capacitacoes/design.md).
   const [candidates, setCandidates] = useState<AllocationCandidate[] | null>(null);
-  const [capableUserIdsByRole, setCapableUserIdsByRole] = useState<Record<string, string[]>>({});
+  const [capableUserIdsByRole, setCapableUserIdsByRole] = useState<Record<string, string[] | null>>({});
   const [guestNames, setGuestNames] = useState<string[]>([]);
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesFailed, setCandidatesFailed] = useState(false);
   const [candidatesRef, setCandidatesRef] = useState<string | null>(null);
 
   const activeSlot = props.slots.find((s) => s.slotId === activeSlotId) ?? null;
+  const activeCapableIds = activeSlot ? capableUserIdsByRole[activeSlot.roleId] : undefined;
   const sheetCandidates =
     candidates && activeSlot
-      ? markCapable(candidates, new Set(capableUserIdsByRole[activeSlot.roleId] ?? []))
+      ? markCapable(candidates, activeCapableIds ? new Set(activeCapableIds) : null)
       : candidates;
 
   function ensureCandidates() {
@@ -244,18 +246,9 @@ export function OccurrenceRow(props: {
   function repeatSchedule() {
     setRepeatNote(null);
     start(async () => {
-      const res = await repeatScheduleAction(props.scheduleId);
-      if (!res.ok) {
-        setRepeatNote({ message: res.error, isError: true });
-        return;
-      }
-      const vagas = res.filled === 1 ? "vaga preenchida" : "vagas preenchidas";
-      const puladas = res.skipped === 1 ? "pulada" : "puladas";
-      setRepeatNote({
-        message: `${res.filled} ${vagas}, ${res.skipped} ${puladas}`,
-        isError: false,
-      });
-      props.onChanged();
+      const out = repeatOutcome(await repeatScheduleAction(props.scheduleId));
+      setRepeatNote({ message: out.message, isError: out.isError });
+      if (out.refresh) props.onChanged();
     });
   }
 

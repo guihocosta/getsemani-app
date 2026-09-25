@@ -1,3 +1,14 @@
+import { z } from "zod";
+
+// Ciclo de rodizio em ocorrencias (1..12); null = sem rodizio. Unica fonte da
+// regra para criar e editar escala; a mensagem vira o codigo traduzido na action.
+export const rotationCycleSchema = z
+  .number()
+  .int("INVALID_ROTATION_CYCLE")
+  .min(1, "INVALID_ROTATION_CYCLE")
+  .max(12, "INVALID_ROTATION_CYCLE")
+  .nullish();
+
 export type RotationPair = { targetIndex: number; sourceIndex: number | null };
 
 // occurrences ja ordenadas por (date asc, id asc); firstFutureIndex = primeira com date > now.

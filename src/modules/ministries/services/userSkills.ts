@@ -2,10 +2,23 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
 import { decideSetSkill } from "@/modules/ministries/domain/capabilities";
 
+// Idempotente: marcar/desmarcar duas vezes converge sem erro (CAPA-01.5), via
+// upsert/deleteMany em vez de create puro.
+async function applySkill(userId: string, roleId: string, enabled: boolean) {
+  if (enabled) {
+    return prisma.userSkill.upsert({
+      where: { userId_roleId: { userId, roleId } },
+      create: { userId, roleId },
+      update: {},
+    });
+  }
+  await prisma.userSkill.deleteMany({ where: { userId, roleId } });
+  return null;
+}
+
 // Voluntario marca/desmarca uma funcao que sabe executar. So permite se ele
 // tiver Membership ACTIVE no ministerio da funcao (CAPA-01.4) e a funcao
-// estiver ativa. Idempotente: marcar/desmarcar duas vezes converge sem erro
-// (CAPA-01.5), via upsert/deleteMany em vez de create puro.
+// estiver ativa.
 export async function setOwnSkill(params: { roleId: string; enabled: boolean }) {
   const user = await requireUser();
 
@@ -20,17 +33,7 @@ export async function setOwnSkill(params: { roleId: string; enabled: boolean }) 
   });
   if (decision !== "OK") throw new Error(decision);
 
-  if (params.enabled) {
-    return prisma.userSkill.upsert({
-      where: { userId_roleId: { userId: user.id, roleId: params.roleId } },
-      create: { userId: user.id, roleId: params.roleId },
-      update: {},
-    });
-  }
-  await prisma.userSkill.deleteMany({
-    where: { userId: user.id, roleId: params.roleId },
-  });
-  return null;
+  return applySkill(user.id, params.roleId, params.enabled);
 }
 
 // Lider (ou admin, ja liberado por requireLeaderOf/isLeaderOf) marca/desmarca a
@@ -54,17 +57,7 @@ export async function setMemberSkill(params: {
   });
   if (decision !== "OK") throw new Error(decision);
 
-  if (params.enabled) {
-    return prisma.userSkill.upsert({
-      where: { userId_roleId: { userId: params.userId, roleId: params.roleId } },
-      create: { userId: params.userId, roleId: params.roleId },
-      update: {},
-    });
-  }
-  await prisma.userSkill.deleteMany({
-    where: { userId: params.userId, roleId: params.roleId },
-  });
-  return null;
+  return applySkill(params.userId, params.roleId, params.enabled);
 }
 
 // Funcoes ativas dos ministerios onde o usuario tem membership ACTIVE, com
@@ -139,8 +132,10 @@ export async function capableRoleIds(userId: string): Promise<Set<string>> {
 }
 
 // Set de userId capacitados numa funcao, restrito a quem ainda tem membership
-// ACTIVE no ministerio da funcao — consumido pela lista de candidatos do lider.
-export async function capableUserIdsForRole(roleId: string): Promise<Set<string>> {
+// ACTIVE no ministerio da funcao — consumido pela lista de candidatos do lider e
+// pelo rodizio. null = ninguem ativo declarou a funcao ainda: capacitacao so vale
+// depois de declarada (AD-002), entao os consumidores tratam todos como capazes.
+export async function capableUserIdsForRole(roleId: string): Promise<Set<string> | null> {
   const role = await prisma.role.findUniqueOrThrow({ where: { id: roleId } });
   const skills = await prisma.userSkill.findMany({
     where: {
@@ -149,5 +144,5 @@ export async function capableUserIdsForRole(roleId: string): Promise<Set<string>
     },
     select: { userId: true },
   });
-  return new Set(skills.map((s) => s.userId));
+  return skills.length > 0 ? new Set(skills.map((s) => s.userId)) : null;
 }
