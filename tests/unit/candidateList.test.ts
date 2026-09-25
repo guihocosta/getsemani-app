@@ -151,6 +151,17 @@ describe("markCapable", () => {
     expect(list.map((c) => c.userId)).toEqual(["u2", "u1", "u3"]);
   });
 
+  it("Set com declarados: declarado primeiro, demais capable false", () => {
+    const base = [
+      { userId: "u1", name: "Ana", count30d: 0, unavailable: false, capable: true },
+      { userId: "u2", name: "Bia", count30d: 1, unavailable: false, capable: true },
+      { userId: "u3", name: "Caio", count30d: 9, unavailable: false, capable: false },
+    ];
+    const list = markCapable(base, new Set(["u3"]));
+    expect(list.map((c) => c.userId)).toEqual(["u3", "u1", "u2"]);
+    expect(list.map((c) => c.capable)).toEqual([true, false, false]);
+  });
+
   it("null marca todos capazes e ordena so por carga (ninguem declarou a funcao)", () => {
     const base = [
       { userId: "u1", name: "Ana", count30d: 5, unavailable: false, capable: false },
