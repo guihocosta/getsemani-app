@@ -18,7 +18,7 @@ export async function getMySchedule(userId: string, from = startOfDay(new Date()
   const allocs = await prisma.allocation.findMany({
     where: {
       userId,
-      slot: { occurrence: { status: "ACTIVE", date: { gte: from } } },
+      slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: from } } },
     },
     include: {
       swapRequest: true,

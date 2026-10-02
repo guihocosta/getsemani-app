@@ -29,6 +29,7 @@ describe("attendanceRows", () => {
           slot: {
             occurrence: {
               status: "ACTIVE",
+              published: true,
               date: { gte: from, lt: to },
               schedule: { ministryId: { in: ["m1"] } },
             },
@@ -49,7 +50,7 @@ describe("attendanceRows", () => {
       expect.objectContaining({
         where: {
           userId: { not: null },
-          slot: { occurrence: { status: "ACTIVE", date: { gte: from, lt: to } } },
+          slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: from, lt: to } } },
         },
       }),
     );

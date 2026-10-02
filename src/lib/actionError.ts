@@ -4,6 +4,7 @@ export type ActionCode =
   | "FORBIDDEN"
   | "SLOT_TAKEN"
   | "NOT_ELIGIBLE"
+  | "NOT_PUBLISHED"
   | "NOT_OWNER"
   | "UNAVAILABILITY_BLOCKED"
   | "NO_ALLOCATION"
@@ -18,6 +19,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   FORBIDDEN: "Você não tem permissão para essa ação.",
   SLOT_TAKEN: "Vaga já preenchida.",
   NOT_ELIGIBLE: "Você não é membro ativo desse ministério.",
+  NOT_PUBLISHED: "Essa escala ainda não foi publicada.",
   NOT_OWNER: "Essa escala não é sua.",
   UNAVAILABILITY_BLOCKED: "Indisponível nesse horário.",
   NO_ALLOCATION: "Essa vaga não tem ninguém alocado.",

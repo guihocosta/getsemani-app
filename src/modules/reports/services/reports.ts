@@ -57,7 +57,7 @@ export async function loadByPerson(from: Date, to: Date, ministryIds?: string[])
 }
 
 // Presenca: alocacoes com pessoa (convidado sem conta nao faz check-in) em
-// ocorrencias ativas da janela [from, to). Quem chama passa `to` <= inicio de hoje.
+// ocorrencias ativas e publicadas da janela [from, to). Quem chama passa `to` <= inicio de hoje.
 export async function attendanceRows(from: Date, to: Date, ministryIds?: string[]): Promise<AttendanceRow[]> {
   const allocs = await prisma.allocation.findMany({
     where: {
@@ -65,6 +65,7 @@ export async function attendanceRows(from: Date, to: Date, ministryIds?: string[
       slot: {
         occurrence: {
           status: "ACTIVE",
+          published: true,
           date: { gte: from, lt: to },
           ...(ministryIds ? { schedule: { ministryId: { in: ministryIds } } } : {}),
         },

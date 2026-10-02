@@ -8,6 +8,11 @@ export class NotEligible extends Error {
     super("NOT_ELIGIBLE");
   }
 }
+export class NotPublished extends Error {
+  constructor() {
+    super("NOT_PUBLISHED");
+  }
+}
 
 // Voluntario se auto-aloca numa vaga livre. Unique slotId resolve corrida (FR-008).
 // Retorna { warnedUnavailability } quando conflita com a propria indisponibilidade (FR-013).
@@ -33,6 +38,9 @@ export async function selfAllocate(params: { slotId: string; acknowledge?: boole
     });
     if (!member) throw new NotEligible();
   }
+
+  // rascunho: a data ainda nao esta no ar para voluntarios
+  if (!slot.occurrence.published) throw new NotPublished();
 
   if (slot.allocation) throw new SlotTaken();
 

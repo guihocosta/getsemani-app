@@ -8,6 +8,7 @@ const ALL_CODES: ActionCode[] = [
   "FORBIDDEN",
   "SLOT_TAKEN",
   "NOT_ELIGIBLE",
+  "NOT_PUBLISHED",
   "NOT_OWNER",
   "UNAVAILABILITY_BLOCKED",
   "NO_ALLOCATION",
@@ -46,6 +47,11 @@ describe("toActionCode", () => {
 });
 
 describe("MENSAGENS", () => {
+  it("NOT_PUBLISHED avisa que a escala ainda nao foi publicada", () => {
+    expect(toActionCode(new Error("NOT_PUBLISHED"))).toBe("NOT_PUBLISHED");
+    expect(MENSAGENS.NOT_PUBLISHED).toBe("Essa escala ainda não foi publicada.");
+  });
+
   it.each(ALL_CODES)("tem texto pt-BR nao vazio pro codigo %s", (code) => {
     expect(MENSAGENS[code]).toBeTruthy();
     expect(typeof MENSAGENS[code]).toBe("string");
