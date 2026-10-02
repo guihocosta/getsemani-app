@@ -14,6 +14,7 @@ import {
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   repeatScheduleAction,
+  setOccurrencePublishedAction,
   type AllocationCandidate,
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
@@ -23,6 +24,7 @@ import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
+import { publishMenuItem } from "@/modules/scheduling/domain/publish";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -44,6 +46,7 @@ export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
   rotationCycle: number | null;
+  published: boolean;
   title: string;
   when: string;
   slots: Slot[];
@@ -254,6 +257,27 @@ export function OccurrenceRow(props: {
     });
   }
 
+  const publishItem = publishMenuItem(props.published);
+
+  async function togglePublish() {
+    if (publishItem.confirm) {
+      const ok = await confirm({
+        title: "Tornar rascunho?",
+        description: publishItem.confirm,
+        confirmLabel: publishItem.label,
+      });
+      if (!ok) return;
+    }
+    start(async () => {
+      const res = await setOccurrencePublishedAction(props.occurrenceId, publishItem.target);
+      if (!res.ok) {
+        setRepeatNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, isError: true });
+        return;
+      }
+      props.onChanged();
+    });
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -322,7 +346,14 @@ export function OccurrenceRow(props: {
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-sm text-text">{props.title}</p>
+            <p className="text-sm text-text flex items-center gap-1.5 flex-wrap">
+              {props.title}
+              {!props.published && (
+                <Badge tone="muted" className="text-[10px]">
+                  rascunho
+                </Badge>
+              )}
+            </p>
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
           {props.canManage && (
@@ -331,6 +362,8 @@ export function OccurrenceRow(props: {
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
+              publishLabel={publishItem.label}
+              onTogglePublish={togglePublish}
               onRepeat={repeatSchedule}
               rotationCycle={props.rotationCycle}
               onDeleteSingle={() => del("SINGLE")}

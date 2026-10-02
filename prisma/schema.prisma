@@ -167,6 +167,7 @@ model Occurrence {
   date          DateTime // instante concreto (UTC)
   status        OccurrenceStatus @default(ACTIVE)
   cancelledScope CancelScope?
+  published     Boolean          @default(true) // false = rascunho: so quem gerencia ve, sem notificacoes
 
   schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   slots    Slot[]

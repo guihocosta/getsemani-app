@@ -10,6 +10,7 @@ import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/al
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
+import { setOccurrencePublished } from "@/modules/scheduling/services/publishOccurrence";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/domain/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
@@ -231,9 +232,28 @@ export async function deleteOccurrenceAction(occurrenceId: string, scope: "SINGL
 // Troca de mes no calendario sem navegacao de pagina inteira (ver EscalaCalendar).
 export async function loadMonthAction(year: number, month: number) {
   const user = await requireUser();
-  const ministryIds = await visibleMinistryIds(user.id, user.isAdmin);
+  const [ministryIds, manageableIds] = await Promise.all([
+    visibleMinistryIds(user.id, user.isAdmin),
+    ledMinistryIds(user.id, user.isAdmin),
+  ]);
   if (ministryIds.length === 0) return [];
-  return listMonthOccurrences(ministryIds, year, month);
+  return listMonthOccurrences(ministryIds, year, month, manageableIds);
+}
+
+// Lider alterna a data entre rascunho e publicada (publicar avisa os escalados).
+export async function setOccurrencePublishedAction(
+  occurrenceId: string,
+  published: boolean,
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await setOccurrencePublished({ occurrenceId, published });
+    revalidatePath("/escalas");
+    revalidatePath("/vagas");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("escalas.setPublished", e, { occurrenceId, published });
+  }
 }
 
 export type { AllocationCandidate };

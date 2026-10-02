@@ -18,6 +18,7 @@ export type Item = {
   scheduleId: string;
   ministryId: string;
   rotationCycle: number | null;
+  published: boolean;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
