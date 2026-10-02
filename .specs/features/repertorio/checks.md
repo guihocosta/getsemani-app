@@ -5,7 +5,7 @@ Plan: `.specs/features/repertorio/plan.md`
 
 ## Intent
 
-25 checks in 5 slices · 6 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
+28 checks in 6 slices · 6 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -100,13 +100,27 @@ Proof: `grep -q "/repertorio/escala/" "app/(app)/escalas/OccurrenceRow.tsx" && g
 Proof: `npm run test -- tests/unit/updateMinistryModule.test.ts -t "repertoireMinistries"`
 Proof: `grep -q 'href="/repertorio"' "app/(app)/page.tsx" && npm run typecheck`
 
+### S6 - Correções da verificação, rodada 1 · 6 files · 20 KB · ~5k
+
+**C26** - [x] Com o módulo desligado, `updateSong`, `deleteSong`, `saveVersion`, `deleteVersion`, `addToSetlist`, `moveInSetlist` e `removeFromSetlist` rejeitam com `MODULE_DISABLED` e nenhum `create`/`update`/`delete` é chamado (AC 26)
+Proof: `npm run test -- tests/unit/repertoireSongs.test.ts -t "modulo desligado barra updateSong"`
+Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "modulo desligado barra toda escrita"`
+
+**C27** - [x] `isMissingOrDenied` é `true` para `FORBIDDEN`, `MODULE_DISABLED`, `P2025` e `P2023`, e `false` para `Error("db down")`, `P1001`, redirect e `null`; as duas páginas de leitura relançam o que não é `isMissingOrDenied` (AC 27)
+Proof: `npm run test -- tests/unit/repertoireValidation.test.ts -t "isMissingOrDenied"`
+Proof: `test "$(grep -l "if (isMissingOrDenied(e)) return null;" "app/(app)/repertorio/[id]/page.tsx" "app/(app)/repertorio/escala/[occurrenceId]/page.tsx" | wc -l)" -eq 2`
+
+**C28** - [x] `moveInSetlist` para cima da 2ª de duas entradas com `position: 1` e `position: 1` grava `position: 1` na movida e `position: 2` na vizinha (AC 28)
+Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "posicoes empatadas"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | escritas de música/versão sob `FORBIDDEN` (5) | `createSong` C10 · `updateSong` C10 · `deleteSong` C10 · `saveVersion` C10 · `deleteVersion` C10 | - |
 | escritas de setlist sob `FORBIDDEN` (3) | `addToSetlist` C23 · `moveInSetlist` C23 · `removeFromSetlist` C23 | - |
-| serviços sob módulo desligado (4) | `createSong` C3 · `listVersionsForMinistry` C3 · `getSong` C3 · `getSetlist` C3 | - |
+| serviços exportados de `repertoire` sob módulo desligado (12) | `createSong` C3 · `listVersionsForMinistry` C3 · `getSong` C3 · `getSetlist` C3 · `updateSong` C26 · `deleteSong` C26 · `saveVersion` C26 · `deleteVersion` C26 · `addToSetlist` C26 · `moveInSetlist` C26 · `removeFromSetlist` C26 · `listSongs` C12 (filtra por `repertoireMinistries`) | - |
+| classificação de erro de leitura (8) | `FORBIDDEN` C27 · `MODULE_DISABLED` C27 · `P2025` C27 · `P2023` C27 · erro genérico C27 · `P1001` C27 · redirect C27 · `null` C27 | - |
 | bordas de `songSchema` (9) | título vazio C5 · título 120 C5 · título 121 C5 · artista 120 C5 · artista 121 C5 · classificação 40 C5 · classificação 41 C5 · observações 500 C5 · observações 501 C5 | - |
 | bordas de `versionSchema` (11) | nome vazio C7 · nome 41 C7 · tom 11 C7 · BPM 19 C7 · BPM 20 C7 · BPM 400 C7 · BPM 401 C7 · BPM não inteiro C7 · duração 0 C7 · duração 1 e 7200 C7 · duração 7201 C7 | - |
 | esquemas de link (5) | `https` C8 · `http` C8 · `javascript:` C8 · `ftp` C8 · sem esquema C8 | - |
@@ -125,7 +139,7 @@ Proof: `grep -q 'href="/repertorio"' "app/(app)/page.tsx" && npm run typecheck`
 ## Swept
 
 - validation: C5, C7, C8, C9
-- failure modes: existing - `handleActionError` devolve `code` + `ref` nas actions; erro de leitura cai em `app/(app)/error.tsx`
+- failure modes: C27 - erro inesperado de leitura sobe para `app/(app)/error.tsx`; existing - `handleActionError` devolve `code` + `ref` nas actions
 - idempotency: C17 - repetir o mesmo "adicionar" esbarra no unique e vira `ALREADY_IN_SETLIST`
 - authorization: C10, C13, C22, C23
 - concurrency: C17 - duas adições simultâneas da mesma versão: o unique do banco decide; posições iguais em adições simultâneas de versões diferentes são toleradas pelo desempate por `id` (C21)
@@ -135,5 +149,7 @@ Proof: `grep -q 'href="/repertorio"' "app/(app)/page.tsx" && npm run typecheck`
 - observability: existing - `handleActionError` loga com escopo e `ref`
 
 ## Handoff
+
+- **Rodada 1 do Verifier: FAIL** - mover/remover da lista funcionava com o módulo desligado, páginas respondiam 404 para qualquer erro, `getSong` lia `Ministry` direto. Corrigido em S6 (C26-C28); o nome do ministério saiu do cabeçalho da música.
 
 - S1 ~3k + S2 ~6k + S3 ~4k + S4 ~5k + S5 ~10k = ~28k de arquivos existentes tocados, mais ~12k de arquivos novos (telas e serviços) = ~40k, abaixo do budget de 150k - one builder

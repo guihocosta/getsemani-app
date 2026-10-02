@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 4,
+  "next_id": 7,
   "lessons": [
     {
       "id": "L-001",
@@ -29,17 +29,19 @@
       "text": "When a new state gates visibility of an entity, guard every service that accepts that entity's id, not only the ones its list pages link to",
       "signal": "ac_gap",
       "scope": "scheduling",
-      "status": "candidate",
+      "status": "confirmed",
       "features": [
-        "rascunho-publicar"
+        "rascunho-publicar",
+        "repertorio"
       ],
-      "recurrence": 1,
+      "recurrence": 2,
       "harmful": 0,
       "evidence": [
-        "src/modules/scheduling/services/swap.ts:150 (scheduling)"
+        "src/modules/scheduling/services/swap.ts:150 (scheduling)",
+        "C3 - src/modules/repertoire/services/setlist.ts:86 (repertoire)"
       ],
       "created": "2026-10-02T18:32:21Z",
-      "last_seen": "2026-10-02T18:32:21Z"
+      "last_seen": "2026-10-02T18:46:30Z"
     },
     {
       "id": "L-003",
@@ -58,6 +60,60 @@
       ],
       "created": "2026-10-02T18:32:21Z",
       "last_seen": "2026-10-02T18:32:21Z"
+    },
+    {
+      "id": "L-004",
+      "key": "spec_precision_gap::when a criterion says every service of a module rejects under a guard the check enumerates every exported function of the module not a sample",
+      "text": "When a criterion says every service of a module rejects under a guard, the check enumerates every exported function of the module, not a sample",
+      "signal": "spec_precision_gap",
+      "scope": "tests/unit",
+      "status": "candidate",
+      "features": [
+        "repertorio"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C3 - tests/unit/repertoireSongs.test.ts:133 (tests/unit)"
+      ],
+      "created": "2026-10-02T18:46:30Z",
+      "last_seen": "2026-10-02T18:46:30Z"
+    },
+    {
+      "id": "L-005",
+      "key": "spec_deviation::a page that turns a service error into notfound matches only the expected domain codes and rethrows the rest",
+      "text": "A page that turns a service error into notFound() matches only the expected domain codes and rethrows the rest",
+      "signal": "spec_deviation",
+      "scope": "app",
+      "status": "candidate",
+      "features": [
+        "repertorio"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Swept failure modes - app/(app)/repertorio/[id]/page.tsx:15 (app)"
+      ],
+      "created": "2026-10-02T18:46:30Z",
+      "last_seen": "2026-10-02T18:46:30Z"
+    },
+    {
+      "id": "L-006",
+      "key": "spec_deviation::a prisma include of a relation owned by another module is a cross module table read fetch it through that module s service",
+      "text": "A Prisma include of a relation owned by another module is a cross-module table read; fetch it through that module's service",
+      "signal": "spec_deviation",
+      "scope": "modules",
+      "status": "candidate",
+      "features": [
+        "repertorio"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "door 5 - src/modules/repertoire/services/songs.ts:42 (modules)"
+      ],
+      "created": "2026-10-02T18:46:30Z",
+      "last_seen": "2026-10-02T18:46:30Z"
     }
   ]
 }

@@ -8,7 +8,11 @@
 
 Corroborated across multiple features. Safe to apply as guidance.
 
-_none_
+### L-002 - When a new state gates visibility of an entity, guard every service that accepts that entity's id, not only the ones its list pages link to
+- signal: `ac_gap` · recurrence: 2 feature(s) · scope: `scheduling` · harmful: 0
+- features: rascunho-publicar, repertorio
+- evidence: src/modules/scheduling/services/swap.ts:150 (scheduling) (+1 more)
+- last seen: 2026-10-02T18:46:30Z
 
 ## Candidates (under observation - do NOT load as guidance yet)
 
@@ -20,17 +24,29 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C8 round 1 (tests/unit)
 - last seen: 2026-09-25T19:21:32Z
 
-### L-002 - When a new state gates visibility of an entity, guard every service that accepts that entity's id, not only the ones its list pages link to
-- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
-- features: rascunho-publicar
-- evidence: src/modules/scheduling/services/swap.ts:150 (scheduling)
-- last seen: 2026-10-02T18:32:21Z
-
 ### L-003 - Enumerate notifying services by searching for the notify call, not from the list of files the change already touches
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
 - features: rascunho-publicar
 - evidence: src/modules/scheduling/services/swap.ts:87 (scheduling)
 - last seen: 2026-10-02T18:32:21Z
+
+### L-004 - When a criterion says every service of a module rejects under a guard, the check enumerates every exported function of the module, not a sample
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/unit` · harmful: 0
+- features: repertorio
+- evidence: C3 - tests/unit/repertoireSongs.test.ts:133 (tests/unit)
+- last seen: 2026-10-02T18:46:30Z
+
+### L-005 - A page that turns a service error into notFound() matches only the expected domain codes and rethrows the rest
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `app` · harmful: 0
+- features: repertorio
+- evidence: Swept failure modes - app/(app)/repertorio/[id]/page.tsx:15 (app)
+- last seen: 2026-10-02T18:46:30Z
+
+### L-006 - A Prisma include of a relation owned by another module is a cross-module table read; fetch it through that module's service
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `modules` · harmful: 0
+- features: repertorio
+- evidence: door 5 - src/modules/repertoire/services/songs.ts:42 (modules)
+- last seen: 2026-10-02T18:46:30Z
 
 ## Quarantined (failed when applied - ignore)
 

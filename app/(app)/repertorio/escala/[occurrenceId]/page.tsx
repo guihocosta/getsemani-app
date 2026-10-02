@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getSetlist } from "@/modules/repertoire/services/setlist";
 import { listVersionsForMinistry } from "@/modules/repertoire/services/songs";
-import { isRedirectError } from "@/lib/actionError";
+import { isMissingOrDenied } from "@/modules/repertoire/domain/validation";
 import { fmtDateTime } from "@/lib/time";
 import { SetlistEditor } from "./SetlistEditor";
 
@@ -15,8 +15,8 @@ export default async function SetlistPage({ params }: { params: Promise<{ occurr
   // Sem acesso, rascunho para quem nao gerencia, modulo desligado ou id
   // inexistente: mesma resposta, para nao revelar que a data existe.
   const setlist = await getSetlist(occurrenceId).catch((e) => {
-    if (isRedirectError(e)) throw e;
-    return null;
+    if (isMissingOrDenied(e)) return null;
+    throw e;
   });
   if (!setlist) notFound();
 

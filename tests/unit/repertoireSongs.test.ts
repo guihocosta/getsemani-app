@@ -137,6 +137,19 @@ describe("modulo desligado", () => {
   });
 });
 
+describe("modulo desligado nas demais escritas", () => {
+  it("modulo desligado barra updateSong, deleteSong, saveVersion e deleteVersion sem gravar", async () => {
+    vi.mocked(assertRepertoireEnabled).mockRejectedValue(new Error("MODULE_DISABLED"));
+
+    await expect(updateSong({ songId: "s1", title: "A" })).rejects.toThrow("MODULE_DISABLED");
+    await expect(deleteSong({ songId: "s1" })).rejects.toThrow("MODULE_DISABLED");
+    await expect(saveVersion({ songId: "s1", name: "Original" })).rejects.toThrow("MODULE_DISABLED");
+    await expect(deleteVersion({ versionId: "v1" })).rejects.toThrow("MODULE_DISABLED");
+
+    writes().forEach((w) => expect(w).not.toHaveBeenCalled());
+  });
+});
+
 describe("listSongs", () => {
   it("listSongs so consulta ministerios com modulo ligado, em ordem de titulo", async () => {
     vi.mocked(repertoireMinistries).mockResolvedValue([{ id: "m1", name: "Louvor" }]);

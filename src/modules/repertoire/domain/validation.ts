@@ -90,6 +90,14 @@ export function filterSongs<T extends { title: string; artist: string | null; ca
   });
 }
 
+// Erros que uma pagina de leitura trata como "nao encontrado": sem acesso,
+// modulo desligado, id inexistente (P2025) ou malformado (P2023). Qualquer
+// outro (banco fora, bug) tem que subir para o error boundary e ser logado.
+export function isMissingOrDenied(e: unknown): boolean {
+  const { message, code } = (e ?? {}) as { message?: unknown; code?: unknown };
+  return message === "FORBIDDEN" || message === "MODULE_DISABLED" || code === "P2025" || code === "P2023";
+}
+
 export function repertoireEmptyMessage(params: { enabledMinistries: number; songs: number }): string | null {
   if (params.enabledMinistries === 0) return "Repertório não está ativo nos seus ministérios";
   if (params.songs === 0) return "Nenhuma música cadastrada";

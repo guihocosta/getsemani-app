@@ -115,6 +115,20 @@ describe("moveInSetlist", () => {
     expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "e1" }, data: { position: 2 } });
   });
 
+  it("moveInSetlist troca mesmo com posicoes empatadas", async () => {
+    const empatadas = [
+      { id: "e1", occurrenceId: "o1", position: 1 },
+      { id: "e2", occurrenceId: "o1", position: 1 },
+    ];
+    vi.mocked(prisma.occurrenceSong.findMany).mockResolvedValue(empatadas as never);
+    vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(empatadas[1] as never);
+
+    await moveInSetlist({ entryId: "e2", direction: "up" });
+
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "e2" }, data: { position: 1 } });
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "e1" }, data: { position: 2 } });
+  });
+
   it("moveInSetlist na borda nao altera nada", async () => {
     vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(tres[0] as never);
     await moveInSetlist({ entryId: "e1", direction: "up" });
@@ -178,6 +192,19 @@ describe("getSetlist", () => {
   it("modulo desligado barra getSetlist", async () => {
     vi.mocked(assertRepertoireEnabled).mockRejectedValue(new Error("MODULE_DISABLED"));
     await expect(getSetlist("o1")).rejects.toThrow("MODULE_DISABLED");
+  });
+
+  it("modulo desligado barra toda escrita de setlist sem gravar", async () => {
+    vi.mocked(assertRepertoireEnabled).mockRejectedValue(new Error("MODULE_DISABLED"));
+    vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(tres[1] as never);
+
+    await expect(addToSetlist({ occurrenceId: "o1", versionId: "v1" })).rejects.toThrow("MODULE_DISABLED");
+    await expect(moveInSetlist({ entryId: "e2", direction: "up" })).rejects.toThrow("MODULE_DISABLED");
+    await expect(removeFromSetlist({ entryId: "e2" })).rejects.toThrow("MODULE_DISABLED");
+
+    expect(prisma.occurrenceSong.create).not.toHaveBeenCalled();
+    expect(prisma.occurrenceSong.update).not.toHaveBeenCalled();
+    expect(prisma.occurrenceSong.delete).not.toHaveBeenCalled();
   });
 });
 

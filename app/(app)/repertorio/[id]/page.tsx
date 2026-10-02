@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getSong } from "@/modules/repertoire/services/songs";
-import { isRedirectError } from "@/lib/actionError";
+import { isMissingOrDenied } from "@/modules/repertoire/domain/validation";
 import { SongDetail } from "./SongDetail";
 
 export const dynamic = "force-dynamic";
@@ -13,8 +13,8 @@ export default async function SongPage({ params }: { params: Promise<{ id: strin
   // Sem acesso, modulo desligado ou id inexistente: mesma resposta, para nao
   // revelar que a musica existe.
   const song = await getSong(id).catch((e) => {
-    if (isRedirectError(e)) throw e;
-    return null;
+    if (isMissingOrDenied(e)) return null;
+    throw e;
   });
   if (!song) notFound();
 
@@ -31,7 +31,6 @@ export default async function SongPage({ params }: { params: Promise<{ id: strin
           artist: song.artist,
           category: song.category,
           notes: song.notes,
-          ministry: song.ministry.name,
         }}
         versions={song.versions.map((v) => ({
           id: v.id,

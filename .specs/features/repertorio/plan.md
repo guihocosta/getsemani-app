@@ -130,6 +130,16 @@ Repertório só existe onde o admin ligou.
 
 **Independent test:** com o módulo ligado, ver o link "Músicas" na data; desligar e ver o link sumir.
 
+### S6: Correções da verificação, rodada 1 (P1)
+
+**Acceptance Criteria**
+
+26. WHILE o repertório está desligado no ministério, toda escrita de música, versão e lista de músicas SHALL falhar com `MODULE_DISABLED` sem gravar
+27. IF a leitura de uma música ou de uma lista falha por outro motivo que não falta de acesso, módulo desligado ou id inexistente THEN a página SHALL deixar o erro subir para o error boundary em vez de responder "não encontrado"
+28. WHEN duas entradas da lista têm a mesma posição THEN mover uma delas SHALL trocar a ordem das duas
+
+**Independent test:** desligar o módulo com a página da lista aberta e tentar reordenar: recebe "O repertório não está ativo nesse ministério."
+
 ## Out of scope
 
 | Excluded | Why |

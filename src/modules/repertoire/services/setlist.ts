@@ -87,6 +87,7 @@ async function ledEntry(entryId: string) {
   const entry = await prisma.occurrenceSong.findUniqueOrThrow({ where: { id: entryId } });
   const access = await getOccurrenceAccess(entry.occurrenceId);
   await requireLeaderOf(access.ministryId);
+  await assertRepertoireEnabled(access.ministryId);
   return entry;
 }
 
@@ -99,13 +100,15 @@ export async function moveInSetlist(params: { entryId: string; direction: "up" |
     orderBy: [{ position: "asc" }, { id: "asc" }],
   });
   const index = entries.findIndex((e) => e.id === entry.id);
-  const neighbour = entries[params.direction === "up" ? index - 1 : index + 1];
+  const neighbourIndex = params.direction === "up" ? index - 1 : index + 1;
+  const neighbour = entries[neighbourIndex];
   if (!neighbour) return { moved: false as const };
 
-  const current = entries[index];
+  // Grava o lugar na lista ordenada (indice + 1), nao a posicao da vizinha:
+  // assim duas entradas com a mesma posicao (adicoes simultaneas) tambem trocam.
   await prisma.$transaction([
-    prisma.occurrenceSong.update({ where: { id: current.id }, data: { position: neighbour.position } }),
-    prisma.occurrenceSong.update({ where: { id: neighbour.id }, data: { position: current.position } }),
+    prisma.occurrenceSong.update({ where: { id: entry.id }, data: { position: neighbourIndex + 1 } }),
+    prisma.occurrenceSong.update({ where: { id: neighbour.id }, data: { position: index + 1 } }),
   ]);
   return { moved: true as const };
 }

@@ -39,7 +39,7 @@ export async function getSong(songId: string) {
   const user = await requireUser();
   const song = await prisma.song.findUniqueOrThrow({
     where: { id: songId },
-    include: { versions: { orderBy: { createdAt: "asc" } }, ministry: { select: { name: true } } },
+    include: { versions: { orderBy: { createdAt: "asc" } } },
   });
   const visible = await visibleMinistryIds(user.id, user.isAdmin);
   if (!visible.includes(song.ministryId)) throw new Error("FORBIDDEN");

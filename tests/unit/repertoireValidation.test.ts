@@ -6,6 +6,7 @@ import {
   formatDuration,
   filterSongs,
   repertoireEmptyMessage,
+  isMissingOrDenied,
 } from "@/modules/repertoire/domain/validation";
 
 const x = (n: number) => "x".repeat(n);
@@ -89,5 +90,21 @@ describe("repertoireEmptyMessage", () => {
     );
     expect(repertoireEmptyMessage({ enabledMinistries: 1, songs: 0 })).toBe("Nenhuma música cadastrada");
     expect(repertoireEmptyMessage({ enabledMinistries: 1, songs: 3 })).toBeNull();
+  });
+});
+
+describe("isMissingOrDenied", () => {
+  it("isMissingOrDenied reconhece sem acesso, modulo desligado e id inexistente ou malformado", () => {
+    expect(isMissingOrDenied(new Error("FORBIDDEN"))).toBe(true);
+    expect(isMissingOrDenied(new Error("MODULE_DISABLED"))).toBe(true);
+    expect(isMissingOrDenied({ code: "P2025" })).toBe(true);
+    expect(isMissingOrDenied({ code: "P2023" })).toBe(true);
+  });
+
+  it("isMissingOrDenied deixa passar erro inesperado e redirect", () => {
+    expect(isMissingOrDenied(new Error("db down"))).toBe(false);
+    expect(isMissingOrDenied({ code: "P1001" })).toBe(false);
+    expect(isMissingOrDenied({ digest: "NEXT_REDIRECT;replace;/login;307;" })).toBe(false);
+    expect(isMissingOrDenied(null)).toBe(false);
   });
 });

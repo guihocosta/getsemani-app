@@ -24,7 +24,6 @@ type Song = {
   artist: string | null;
   category: string | null;
   notes: string | null;
-  ministry: string;
 };
 
 type Version = {
@@ -226,7 +225,6 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
         <header className="mb-6">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="eyebrow text-primary">{song.ministry}</p>
               <h1 className="text-3xl text-text">{song.title}</h1>
               {song.artist && <p className="text-sm text-text-muted">{song.artist}</p>}
             </div>
