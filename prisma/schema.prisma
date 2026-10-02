@@ -52,6 +52,7 @@ enum NotificationType {
   ASSIGNMENT
   REMINDER
   SWAP
+  ANNOUNCEMENT
 }
 
 model User {
@@ -72,6 +73,7 @@ model User {
   swapRequests      SwapRequest[]      @relation("SwapRequestedBy")
   swapClaims        SwapRequest[]      @relation("SwapClaimedBy")
   skills            UserSkill[]
+  announcements     Announcement[]
 }
 
 model Ministry {
@@ -86,6 +88,7 @@ model Ministry {
   memberships Membership[]
   schedules   Schedule[]
   songs       Song[]
+  announcements Announcement[]
 }
 
 model Membership {
@@ -321,4 +324,20 @@ model OccurrenceSong {
 
   @@unique([occurrenceId, songVersionId])
   @@index([occurrenceId, position])
+}
+
+// Aviso de um lider para o ministerio (modulo `announcements`).
+model Announcement {
+  id         String   @id @default(uuid()) @db.Uuid
+  ministryId String   @db.Uuid
+  authorId   String   @db.Uuid
+  title      String
+  body       String
+  pinned     Boolean  @default(false) // destaque na pagina inicial
+  createdAt  DateTime @default(now())
+
+  ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([ministryId, pinned, createdAt])
 }

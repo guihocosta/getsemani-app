@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Bell, Music } from "lucide-react";
+import { Bell, Megaphone, Music } from "lucide-react";
 import { requireUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { ledMinistryIds, visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { repertoireMinistries } from "@/modules/ministries/services/modules";
+import { listPinnedAnnouncements } from "@/modules/announcements/services/announcements";
 import { prisma } from "@/lib/prisma";
 import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
@@ -29,9 +30,11 @@ export default async function HomePage() {
   const isLeader = await isLeaderOfAny(user.id);
   const showGestaoResumo = user.isAdmin || isLeader;
 
-  const [items, repertoire, pendingCount] = await Promise.all([
+  const memberIds = await visibleMinistryIds(user.id, user.isAdmin);
+  const [items, repertoire, pinned, pendingCount] = await Promise.all([
     getMySchedule(user.id),
-    visibleMinistryIds(user.id, user.isAdmin).then(repertoireMinistries),
+    repertoireMinistries(memberIds),
+    listPinnedAnnouncements(memberIds),
     showGestaoResumo
       ? (async () => {
           const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
@@ -68,11 +71,31 @@ export default async function HomePage() {
         </Card>
       )}
 
-      {repertoire.length > 0 && (
-        <Card className="mb-8">
-          <NavRow href="/repertorio" label="Repertório" subtitle="Músicas, tons e links" Icon={Music} />
-        </Card>
+      {pinned.length > 0 && (
+        <>
+          <h2 className="eyebrow mb-3">Avisos em destaque</h2>
+          <ul className="flex flex-col gap-2 mb-4">
+            {pinned.map((a) => (
+              <li key={a.id}>
+                <Link href="/avisos">
+                  <Card className="py-3">
+                    <p className="eyebrow text-primary">{a.ministry}</p>
+                    <p className="text-text">{a.title}</p>
+                    <p className="text-sm text-text-muted line-clamp-2">{a.body}</p>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
+
+      <Card className="mb-8 divide-y divide-border">
+        <NavRow href="/avisos" label="Avisos" subtitle="Recados dos seus ministérios" Icon={Megaphone} />
+        {repertoire.length > 0 && (
+          <NavRow href="/repertorio" label="Repertório" subtitle="Músicas, tons e links" Icon={Music} />
+        )}
+      </Card>
 
       {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
 
