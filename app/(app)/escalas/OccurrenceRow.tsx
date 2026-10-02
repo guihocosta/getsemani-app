@@ -22,6 +22,7 @@ import { repeatOutcome } from "./repeatOutcome";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
+import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -47,7 +48,8 @@ export function OccurrenceRow(props: {
   when: string;
   slots: Slot[];
   canManage: boolean;
-  isToday: boolean;
+  dayKey: string;
+  todayKey: string;
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
   onActiveChanged: (slotId: string, active: boolean) => void;
@@ -369,9 +371,27 @@ export function OccurrenceRow(props: {
                           aguardando confirmação
                         </Badge>
                       )}
-                      {props.isToday && s.checkedIn && (
-                        <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
-                      )}
+                      {(() => {
+                        const marca = slotAttendanceMark({
+                          dayKey: props.dayKey,
+                          todayKey: props.todayKey,
+                          hasAllocation: true,
+                          isGuest: s.isGuest,
+                          checkedIn: s.checkedIn,
+                          canManage: props.canManage,
+                        });
+                        if (marca === "PRESENTE") {
+                          return <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />;
+                        }
+                        if (marca === "FALTA") {
+                          return (
+                            <Badge tone="danger" className="text-[10px]">
+                              faltou
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })()}
                     </span>
                   ) : (
                     <span
