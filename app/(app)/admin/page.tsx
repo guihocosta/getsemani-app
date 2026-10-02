@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Users2, Bell, ClipboardList, UserRoundPlus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users2, Bell, ClipboardList, UserRoundPlus, ChevronLeft, ChevronRight, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
@@ -103,6 +103,12 @@ export default async function AdminPage({
           label="Pessoas sem conta"
           subtitle={guests.length > 0 ? `${guests.length} pendente(s)` : "Nenhuma pendente"}
           Icon={UserRoundPlus}
+        />
+        <NavRow
+          href="/admin/visao-geral"
+          label="Visão geral"
+          subtitle="Escalas, confirmações e faltas do período"
+          Icon={LayoutDashboard}
         />
       </Card>
 
