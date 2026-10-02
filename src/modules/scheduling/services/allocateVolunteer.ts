@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { hasUnavailabilityConflict } from "@/modules/availability/services/checkConflict";
-import { notifyIfPublished } from "./notifyIfPublished";
+import { notifyIfPublished, notifyRemoval } from "./notifyIfPublished";
 import { fmtDateTime } from "@/lib/time";
 
 export class UnavailabilityBlocked extends Error {
@@ -127,6 +127,7 @@ export async function reassignAllocation(params: {
 
   const previousUserId = slot.allocation!.userId;
   const previousAllocationId = slot.allocation!.id;
+  const previousStatus = slot.allocation!.status;
   const previousSwapRequest = slot.allocation!.swapRequest;
 
   let alloc;
@@ -161,7 +162,7 @@ export async function reassignAllocation(params: {
   }
 
   if (previousUserId) {
-    await notifyIfPublished(slot.occurrence.published, {
+    await notifyRemoval(slot.occurrence.published, { id: previousAllocationId, status: previousStatus }, {
       userId: previousUserId,
       type: "ASSIGNMENT",
       dedupeKey: `unassign:${previousAllocationId}`,

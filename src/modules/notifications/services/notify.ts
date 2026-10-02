@@ -3,6 +3,12 @@ import { sendPush } from "@/lib/push";
 import { logError } from "@/lib/logError";
 import type { NotificationType } from "@prisma/client";
 
+// Verdadeiro se a notificacao com esse dedupeKey ja foi enviada.
+export async function wasNotified(dedupeKey: string): Promise<boolean> {
+  const existing = await prisma.notification.findUnique({ where: { dedupeKey } });
+  return !!existing?.sentAt;
+}
+
 // Envia push para todos os devices do usuario, idempotente por dedupeKey.
 // Nunca lanca: quem chama (alocar, aprovar, pedir troca...) nao pode ser
 // derrubado por uma falha de notificacao — so loga e devolve "failed".

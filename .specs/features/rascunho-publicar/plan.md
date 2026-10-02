@@ -103,6 +103,21 @@ Voluntário não vê, não pega vaga e não é lembrado de data em rascunho.
 
 **Independent test:** abrir o menu de uma data, tornar rascunho, ver o selo e a opção trocar para "Publicar".
 
+### S5: Ações por id não furam o rascunho (P1)
+
+Acrescentado após a verificação (rodada 1): tornar uma data rascunho não fecha pedidos de troca
+abertos nem invalida páginas já carregadas, então todo serviço que aceita o id direto precisa do
+mesmo gate.
+
+**Acceptance Criteria**
+
+16. IF o dono pede troca de uma alocação em data em rascunho THEN `requestSwap` SHALL falhar com `NOT_PUBLISHED` sem criar pedido nem notificar
+17. IF alguém tenta assumir um pedido de troca de data em rascunho THEN `claimSwap` SHALL falhar com `NOT_PUBLISHED` sem reatribuir a alocação nem notificar
+18. IF o voluntário confirma, recusa ou faz check-in de alocação em data em rascunho THEN o sistema SHALL falhar com `NOT_PUBLISHED` sem gravar
+19. WHILE a ocorrência é rascunho, o aviso "Você foi removido de uma escala" SHALL sair só para quem já tinha confirmado ou já tinha recebido o aviso `assign:<allocationId>`; publicada, SHALL sair sempre
+
+**Independent test:** com um pedido de troca aberto, tornar a data rascunho e tentar assumir por `/vagas` aberta antes: recebe "Essa escala ainda não foi publicada."
+
 ## Out of scope
 
 | Excluded | Why |
@@ -110,7 +125,7 @@ Voluntário não vê, não pega vaga e não é lembrado de data em rascunho.
 | Série que já nasce em rascunho (toggle no formulário da escala) | segunda fatia; o default publicado mantém o comportamento atual sem regressão |
 | Publicar/despublicar várias datas de uma vez | sem pedido; uma data por vez cobre o caso de montar o mês |
 | Avisar "sua escala foi retirada" ao voltar para rascunho | rascunho é silencioso por definição; o líder confirma antes |
-| Troca, confirmação e recusa em data em rascunho | inalcançável: o voluntário não vê a alocação enquanto rascunho |
+| Cancelar o próprio pedido de troca em data em rascunho | inofensivo: só fecha o pedido, não notifica nem expõe a data. Troca, confirmação, recusa e check-in viraram AC 16-18 |
 
 ## Assumptions
 
@@ -138,7 +153,7 @@ Voluntário não vê, não pega vaga e não é lembrado de data em rascunho.
 | screen `OccurrenceRow` | error state | existing - `handleActionError` devolve `code` e a linha mostra `MENSAGENS[code]` |
 | screen `OccurrenceRow` | unauthorised | AC 4 |
 | screen `OccurrenceRow` | destructive action confirms | AC 15 |
-| screen `/vagas` | error state de vaga em rascunho | AC 12 |
+| screen `/vagas` | error state de vaga em rascunho | AC 12, AC 17 |
 | screen calendário, `/vagas`, início | density and ordering | n/a - só some o que é rascunho; ordenação inalterada |
 
 ## Sources

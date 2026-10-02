@@ -5,7 +5,7 @@ Plan: `.specs/features/rascunho-publicar/plan.md`
 
 ## Intent
 
-15 checks in 4 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
+19 checks in 5 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -65,13 +65,30 @@ Proof: `grep -q "rascunho" "app/(app)/escalas/OccurrenceRow.tsx" && grep -q "pub
 **C15** - [x] `publishMenuItem(true).confirm` é "Voluntários deixam de ver esta data até você publicar de novo." e `publishMenuItem(false).confirm` é `null` (AC 15)
 Proof: `npm run test -- tests/unit/publishMenuItem.test.ts -t "confirmacao so ao tornar rascunho"`
 
+### S5 - Ações por id não furam o rascunho · 6 files · 24 KB · ~6k
+
+**C16** - [x] `requestSwap` de alocação em ocorrência com `published: false` rejeita com `NOT_PUBLISHED`, sem `swapRequest.create` e sem `notifyUser` (AC 16)
+Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "requestSwap em rascunho"`
+
+**C17** - [x] `claimSwap` de pedido `OPEN` em ocorrência com `published: false` rejeita com `NOT_PUBLISHED`, sem `allocation.update`, sem `swapRequest.update` e sem `notifyUser` (AC 17)
+Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "claimSwap em rascunho"`
+
+**C18** - [x] `confirmAllocation`, `declineAllocation` e `checkInAllocation` em ocorrência com `published: false` rejeitam com `NOT_PUBLISHED` sem `allocation.update` / `allocation.delete` (AC 18)
+Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "resposta em rascunho"`
+
+**C19** - [x] `notifyRemoval(false, { status: "PENDING" })` sem aviso `assign:al1` enviado devolve `"skipped"`; com aviso enviado, ou com `status: "CONFIRMED"`, ou com `published: true`, chama `notifyUser`; e os três pontos de remoção usam `notifyRemoval` (AC 19)
+Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "notifyRemoval"`
+Proof: `test "$(cat src/modules/scheduling/services/allocateVolunteer.ts src/modules/scheduling/services/allocateGuest.ts src/modules/scheduling/services/setSlotActive.ts | grep -c "notifyRemoval(")" -eq 3`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | direção da alternância (2) | para rascunho C1 · para publicada C2 | - |
 | alocação na publicação (2) | com conta C2 · convidado C3 | - |
-| serviços que notificam em `scheduling` (5) | `allocateVolunteer.ts` C7, C8 · `allocateGuest.ts` C8 · `linkGuestAllocation.ts` C8 · `repeatSchedule.ts` C8 · `setSlotActive.ts` C8 | - |
+| serviços que notificam em `scheduling` (8) | `allocateVolunteer.ts` C7, C8 · `allocateGuest.ts` C8 · `linkGuestAllocation.ts` C8 · `repeatSchedule.ts` C8 · `setSlotActive.ts` C8 · `publishOccurrence.ts` C2 · `swap.ts` C16, C17 (barrado antes de notificar) · `respondAllocation.ts` C18 (barrado antes de notificar) | - |
+| serviços que aceitam id de vaga/alocação/troca vindos do voluntário (7) | `selfAllocate` C12 · `requestSwap` C16 · `claimSwap` C17 · `confirmAllocation` C18 · `declineAllocation` C18 · `checkInAllocation` C18 · `cancelSwap` fora de escopo no plano (só fecha o próprio pedido) | - |
+| decisão do aviso de remoção (4) | rascunho + nunca soube C19 · rascunho + já avisado C19 · rascunho + confirmado C19 · publicada C19 | - |
 | leituras que escondem rascunho (6) | `listMonthOccurrences` C9 · `getMySchedule` C10 · `/vagas` livres C11 · `/vagas` trocas C11 · cron `reminders` C13 · `attendanceRows` C13 | - |
 | estado do helper (2) | rascunho C6 · publicada C6 | - |
 | item do menu (2) | publicada C14, C15 · rascunho C14, C15 | - |
@@ -85,13 +102,15 @@ Proof: `npm run test -- tests/unit/publishMenuItem.test.ts -t "confirmacao so ao
 - validation: n/a - a única entrada é um booleano vindo de botão; id inexistente cai em `findUniqueOrThrow`
 - failure modes: existing - `notifyUser` nunca lança (`notify.ts`), então falha de push não desfaz a publicação
 - idempotency: C2 - republicar reusa `dedupeKey` `assign:<allocationId>`; existing - `notifyUser` devolve `"duplicate"` se já enviado
-- authorization: C4, C9
+- authorization: C4, C9, C16, C17, C18
 - concurrency: n/a - alternância é um `update` de uma coluna; último a gravar vence, sem invariante entre linhas
 - data lifecycle: C5 - default `true` mantém as ocorrências existentes publicadas
 - dependency failure: existing - falha de push é logada e engolida em `notifyUser`
-- state transitions: C1, C2
+- state transitions: C1, C2, C19
 - observability: existing - `handleActionError` loga com `ref` nas actions de `escalas`
 
 ## Handoff
+
+- **Rodada 1 do Verifier: FAIL** - C1-C15 verdes, mas troca/confirmação/check-in por id ignoravam o rascunho e o aviso de remoção se perdia. Corrigido em S5 (C16-C19).
 
 - S1 ~6k + S2 ~8k + S3 ~7k + S4 ~7k = ~28k (wc -c / 4 dos arquivos tocados), abaixo do budget de 150k - one builder

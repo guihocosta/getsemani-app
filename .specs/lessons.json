@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 2,
+  "next_id": 4,
   "lessons": [
     {
       "id": "L-001",
@@ -22,6 +22,42 @@
       ],
       "created": "2026-09-25T19:21:32Z",
       "last_seen": "2026-09-25T19:21:32Z"
+    },
+    {
+      "id": "L-002",
+      "key": "ac_gap::when a new state gates visibility of an entity guard every service that accepts that entity s id not only the ones its list pages link to",
+      "text": "When a new state gates visibility of an entity, guard every service that accepts that entity's id, not only the ones its list pages link to",
+      "signal": "ac_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "rascunho-publicar"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/modules/scheduling/services/swap.ts:150 (scheduling)"
+      ],
+      "created": "2026-10-02T18:32:21Z",
+      "last_seen": "2026-10-02T18:32:21Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::enumerate notifying services by searching for the notify call not from the list of files the change already touches",
+      "text": "Enumerate notifying services by searching for the notify call, not from the list of files the change already touches",
+      "signal": "ac_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "rascunho-publicar"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/modules/scheduling/services/swap.ts:87 (scheduling)"
+      ],
+      "created": "2026-10-02T18:32:21Z",
+      "last_seen": "2026-10-02T18:32:21Z"
     }
   ]
 }

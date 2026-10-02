@@ -20,6 +20,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C8 round 1 (tests/unit)
 - last seen: 2026-09-25T19:21:32Z
 
+### L-002 - When a new state gates visibility of an entity, guard every service that accepts that entity's id, not only the ones its list pages link to
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: rascunho-publicar
+- evidence: src/modules/scheduling/services/swap.ts:150 (scheduling)
+- last seen: 2026-10-02T18:32:21Z
+
+### L-003 - Enumerate notifying services by searching for the notify call, not from the list of files the change already touches
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: rascunho-publicar
+- evidence: src/modules/scheduling/services/swap.ts:87 (scheduling)
+- last seen: 2026-10-02T18:32:21Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
