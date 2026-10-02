@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyIfPublished } from "./notifyIfPublished";
 import { fmtDateTime } from "@/lib/time";
 import { SlotTaken, NoAllocation } from "./allocateVolunteer";
 
@@ -77,7 +77,7 @@ export async function reassignToGuest(params: { slotId: string; guestName: strin
   }
 
   if (previousUserId && previousSwapRequest?.status === "OPEN") {
-    await notifyUser({
+    await notifyIfPublished(slot.occurrence.published, {
       userId: previousUserId,
       type: "SWAP",
       dedupeKey: `swap-ended:${previousSwapRequest.id}`,
@@ -89,7 +89,7 @@ export async function reassignToGuest(params: { slotId: string; guestName: strin
   }
 
   if (previousUserId) {
-    await notifyUser({
+    await notifyIfPublished(slot.occurrence.published, {
       userId: previousUserId,
       type: "ASSIGNMENT",
       dedupeKey: `unassign:${previousAllocationId}`,

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyIfPublished } from "./notifyIfPublished";
 import { fmtDateTime } from "@/lib/time";
 
 // Lider ativa/desativa uma vaga (funcao) so nesta ocorrencia, sem tocar a
@@ -21,7 +21,7 @@ export async function setSlotActive(params: { slotId: string; active: boolean })
   if (!params.active && slot.allocation) {
     await prisma.allocation.delete({ where: { id: slot.allocation.id } });
     if (slot.allocation.userId && slot.allocation.swapRequest?.status === "OPEN") {
-      await notifyUser({
+      await notifyIfPublished(slot.occurrence.published, {
         userId: slot.allocation.userId,
         type: "SWAP",
         dedupeKey: `swap-ended:${slot.allocation.swapRequest.id}`,
@@ -32,7 +32,7 @@ export async function setSlotActive(params: { slotId: string; active: boolean })
       });
     }
     if (slot.allocation.userId) {
-      await notifyUser({
+      await notifyIfPublished(slot.occurrence.published, {
         userId: slot.allocation.userId,
         type: "ASSIGNMENT",
         dedupeKey: `unassign:${slot.allocation.id}`,
