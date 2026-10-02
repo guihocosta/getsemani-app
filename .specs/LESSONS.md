@@ -48,6 +48,48 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: door 5 - src/modules/repertoire/services/songs.ts:42 (modules)
 - last seen: 2026-10-02T18:46:30Z
 
+### L-007 - Test reordering on lists whose positions have gaps and ties, not only on contiguous positions starting at 1
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `repertoire` · harmful: 0
+- features: repertorio
+- evidence: C19 - src/modules/repertoire/services/setlist.ts:110 (repertoire)
+- last seen: 2026-10-02T19:01:24Z
+
+### L-008 - A greedy assignment criterion says whether its ordering key is recomputed after each pick, and its check includes a case where every slot ties
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: sugestao-automatica
+- evidence: C5 - src/modules/scheduling/domain/suggest.ts:42 (scheduling)
+- last seen: 2026-10-02T19:02:45Z
+
+### L-009 - A service that writes to an occurrence by id rejects a cancelled occurrence, because list pages hide it but a stale tab still sends the id
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: sugestao-automatica
+- evidence: src/modules/scheduling/services/suggestAllocations.ts:30 (scheduling)
+- last seen: 2026-10-02T19:02:45Z
+
+### L-010 - A deterministic automatic pick states what happens to a person who just refused the same slot, since refusal deletes the allocation and lowers their load
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: sugestao-automatica
+- evidence: src/modules/scheduling/services/respondAllocation.ts:45 (scheduling)
+- last seen: 2026-10-02T19:02:45Z
+
+### L-011 - When a column that must stay on the server is added to a model, give a select to every query that passes that model's rows to a client component
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `modules` · harmful: 0
+- features: aniversariantes
+- evidence: src/modules/ministries/services/userSkills.ts:112 (modules)
+- last seen: 2026-10-02T19:05:02Z
+
+### L-012 - A check for a never-leaves-the-server invariant enumerates every query that loads the model, not only the new feature's return value
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/unit` · harmful: 0
+- features: aniversariantes
+- evidence: C4 - tests/unit/birthday.test.ts:85 (tests/unit)
+- last seen: 2026-10-02T19:05:02Z
+
+### L-013 - When a gate's scope is derived from a lookup, assert the argument the authorization function receives, not only that it rejects
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/unit` · harmful: 0
+- features: avisos
+- evidence: C3 - tests/unit/announcements.test.ts:116 (tests/unit)
+- last seen: 2026-10-02T19:05:02Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

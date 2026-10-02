@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 7,
+  "next_id": 14,
   "lessons": [
     {
       "id": "L-001",
@@ -114,6 +114,132 @@
       ],
       "created": "2026-10-02T18:46:30Z",
       "last_seen": "2026-10-02T18:46:30Z"
+    },
+    {
+      "id": "L-007",
+      "key": "ac_gap::test reordering on lists whose positions have gaps and ties not only on contiguous positions starting at 1",
+      "text": "Test reordering on lists whose positions have gaps and ties, not only on contiguous positions starting at 1",
+      "signal": "ac_gap",
+      "scope": "repertoire",
+      "status": "candidate",
+      "features": [
+        "repertorio"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C19 - src/modules/repertoire/services/setlist.ts:110 (repertoire)"
+      ],
+      "created": "2026-10-02T19:01:24Z",
+      "last_seen": "2026-10-02T19:01:24Z"
+    },
+    {
+      "id": "L-008",
+      "key": "spec_precision_gap::a greedy assignment criterion says whether its ordering key is recomputed after each pick and its check includes a case where every slot ties",
+      "text": "A greedy assignment criterion says whether its ordering key is recomputed after each pick, and its check includes a case where every slot ties",
+      "signal": "spec_precision_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "sugestao-automatica"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C5 - src/modules/scheduling/domain/suggest.ts:42 (scheduling)"
+      ],
+      "created": "2026-10-02T19:02:45Z",
+      "last_seen": "2026-10-02T19:02:45Z"
+    },
+    {
+      "id": "L-009",
+      "key": "ac_gap::a service that writes to an occurrence by id rejects a cancelled occurrence because list pages hide it but a stale tab still sends the id",
+      "text": "A service that writes to an occurrence by id rejects a cancelled occurrence, because list pages hide it but a stale tab still sends the id",
+      "signal": "ac_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "sugestao-automatica"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/modules/scheduling/services/suggestAllocations.ts:30 (scheduling)"
+      ],
+      "created": "2026-10-02T19:02:45Z",
+      "last_seen": "2026-10-02T19:02:45Z"
+    },
+    {
+      "id": "L-010",
+      "key": "ac_gap::a deterministic automatic pick states what happens to a person who just refused the same slot since refusal deletes the allocation and lowers their load",
+      "text": "A deterministic automatic pick states what happens to a person who just refused the same slot, since refusal deletes the allocation and lowers their load",
+      "signal": "ac_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "sugestao-automatica"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/modules/scheduling/services/respondAllocation.ts:45 (scheduling)"
+      ],
+      "created": "2026-10-02T19:02:45Z",
+      "last_seen": "2026-10-02T19:02:45Z"
+    },
+    {
+      "id": "L-011",
+      "key": "spec_deviation::when a column that must stay on the server is added to a model give a select to every query that passes that model s rows to a client component",
+      "text": "When a column that must stay on the server is added to a model, give a select to every query that passes that model's rows to a client component",
+      "signal": "spec_deviation",
+      "scope": "modules",
+      "status": "candidate",
+      "features": [
+        "aniversariantes"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/modules/ministries/services/userSkills.ts:112 (modules)"
+      ],
+      "created": "2026-10-02T19:05:02Z",
+      "last_seen": "2026-10-02T19:05:02Z"
+    },
+    {
+      "id": "L-012",
+      "key": "spec_precision_gap::a check for a never leaves the server invariant enumerates every query that loads the model not only the new feature s return value",
+      "text": "A check for a never-leaves-the-server invariant enumerates every query that loads the model, not only the new feature's return value",
+      "signal": "spec_precision_gap",
+      "scope": "tests/unit",
+      "status": "candidate",
+      "features": [
+        "aniversariantes"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C4 - tests/unit/birthday.test.ts:85 (tests/unit)"
+      ],
+      "created": "2026-10-02T19:05:02Z",
+      "last_seen": "2026-10-02T19:05:02Z"
+    },
+    {
+      "id": "L-013",
+      "key": "spec_precision_gap::when a gate s scope is derived from a lookup assert the argument the authorization function receives not only that it rejects",
+      "text": "When a gate's scope is derived from a lookup, assert the argument the authorization function receives, not only that it rejects",
+      "signal": "spec_precision_gap",
+      "scope": "tests/unit",
+      "status": "candidate",
+      "features": [
+        "avisos"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C3 - tests/unit/announcements.test.ts:116 (tests/unit)"
+      ],
+      "created": "2026-10-02T19:05:02Z",
+      "last_seen": "2026-10-02T19:05:02Z"
     }
   ]
 }
