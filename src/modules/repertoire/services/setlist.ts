@@ -91,7 +91,9 @@ async function ledEntry(entryId: string) {
   return entry;
 }
 
-// Troca a posicao com a vizinha; na borda nao faz nada.
+// Troca de lugar com a vizinha; na borda nao faz nada. Renumera a lista
+// inteira (1..n) na mesma transacao: remover deixa buracos e adicoes
+// simultaneas deixam empates, e trocar so as duas posicoes quebraria a ordem.
 export async function moveInSetlist(params: { entryId: string; direction: "up" | "down" }) {
   const entry = await ledEntry(params.entryId);
 
@@ -104,12 +106,18 @@ export async function moveInSetlist(params: { entryId: string; direction: "up" |
   const neighbour = entries[neighbourIndex];
   if (!neighbour) return { moved: false as const };
 
-  // Grava o lugar na lista ordenada (indice + 1), nao a posicao da vizinha:
-  // assim duas entradas com a mesma posicao (adicoes simultaneas) tambem trocam.
-  await prisma.$transaction([
-    prisma.occurrenceSong.update({ where: { id: entry.id }, data: { position: neighbourIndex + 1 } }),
-    prisma.occurrenceSong.update({ where: { id: neighbour.id }, data: { position: index + 1 } }),
-  ]);
+  const reordered = [...entries];
+  reordered[index] = neighbour;
+  reordered[neighbourIndex] = entries[index];
+
+  // As duas trocadas sempre gravam; as demais so se estavam fora do lugar.
+  await prisma.$transaction(
+    reordered.flatMap((e, i) =>
+      i === index || i === neighbourIndex || e.position !== i + 1
+        ? [prisma.occurrenceSong.update({ where: { id: e.id }, data: { position: i + 1 } })]
+        : [],
+    ),
+  );
   return { moved: true as const };
 }
 

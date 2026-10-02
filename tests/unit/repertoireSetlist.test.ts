@@ -129,6 +129,43 @@ describe("moveInSetlist", () => {
     expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "e1" }, data: { position: 2 } });
   });
 
+  it("moveInSetlist renumera lista com buraco (2,3,4)", async () => {
+    // ids fora de ordem alfabetica: empate de posicao cairia no desempate por id
+    const comBuraco = [
+      { id: "m", occurrenceId: "o1", position: 2 },
+      { id: "q", occurrenceId: "o1", position: 3 },
+      { id: "c", occurrenceId: "o1", position: 4 },
+    ];
+    vi.mocked(prisma.occurrenceSong.findMany).mockResolvedValue(comBuraco as never);
+    vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(comBuraco[2] as never);
+
+    await moveInSetlist({ entryId: "c", direction: "up" });
+
+    // ordem final m, c, q com posicoes 1, 2, 3 - nenhuma repetida
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledTimes(3);
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "m" }, data: { position: 1 } });
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "c" }, data: { position: 2 } });
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "q" }, data: { position: 3 } });
+  });
+
+  it("moveInSetlist renumera lista com empate triplo (1,1,2)", async () => {
+    const empate = [
+      { id: "a", occurrenceId: "o1", position: 1 },
+      { id: "b", occurrenceId: "o1", position: 1 },
+      { id: "c", occurrenceId: "o1", position: 2 },
+    ];
+    vi.mocked(prisma.occurrenceSong.findMany).mockResolvedValue(empate as never);
+    vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(empate[0] as never);
+
+    await moveInSetlist({ entryId: "a", direction: "down" });
+
+    // ordem final b, a, c com posicoes 1, 2, 3
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledTimes(3);
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "b" }, data: { position: 1 } });
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "a" }, data: { position: 2 } });
+    expect(prisma.occurrenceSong.update).toHaveBeenCalledWith({ where: { id: "c" }, data: { position: 3 } });
+  });
+
   it("moveInSetlist na borda nao altera nada", async () => {
     vi.mocked(prisma.occurrenceSong.findUniqueOrThrow).mockResolvedValue(tres[0] as never);
     await moveInSetlist({ entryId: "e1", direction: "up" });

@@ -5,7 +5,7 @@ Plan: `.specs/features/repertorio/plan.md`
 
 ## Intent
 
-28 checks in 6 slices · 6 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
+29 checks in 6 slices · 6 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -113,6 +113,9 @@ Proof: `test "$(grep -l "if (isMissingOrDenied(e)) return null;" "app/(app)/repe
 **C28** - [x] `moveInSetlist` para cima da 2ª de duas entradas com `position: 1` e `position: 1` grava `position: 1` na movida e `position: 2` na vizinha (AC 28)
 Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "posicoes empatadas"`
 
+**C29** - [x] Lista com posições `2,3,4`: mover a 3ª para cima grava `1,2,3` na ordem 1ª, movida, 2ª (3 `update`); lista `1,1,2`: mover a 1ª para baixo grava `1,2,3` na ordem 2ª, movida, 3ª (AC 29)
+Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "renumera lista"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -128,6 +131,7 @@ Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "posicoes empata
 | duração digitada (5) | `m:ss` C9 · só segundos C9 · vazio C9 · segundos ≥ 60 C9 · não numérico C9 | - |
 | estados vazios de `/repertorio` (3) | sem módulo C15 · sem músicas C15 · com músicas C15 | - |
 | movimento na lista (3) | meio para cima C19 · primeira para cima C19 · última para baixo C19 | - |
+| estado das posições antes de mover (4) | contíguas C19 · empate de duas C28 · buraco C29 · empate triplo C29 | - |
 | leitura da lista por estado da data (3) | publicada C21 · rascunho não gerente C22 · rascunho gerente C22 | - |
 | pontos de entrada do link "Músicas" (3) | `OccurrenceRow` C24 · página inicial C24 · `TodayCheckInCard` C24 | - |
 | doors do schema (4) | door 1 C1 · door 2 C11 · door 3 C17 · door 4/6 C4, C6 | - |
@@ -150,6 +154,7 @@ Proof: `npm run test -- tests/unit/repertoireSetlist.test.ts -t "posicoes empata
 
 ## Handoff
 
+- **Rodada 2 do Verifier: FAIL** - a correção de C28 gravava só as duas posições trocadas e quebrava a ordem em lista com buraco (remoção não renumera). Corrigido: mover renumera a lista inteira na transação (C29).
 - **Rodada 1 do Verifier: FAIL** - mover/remover da lista funcionava com o módulo desligado, páginas respondiam 404 para qualquer erro, `getSong` lia `Ministry` direto. Corrigido em S6 (C26-C28); o nome do ministério saiu do cabeçalho da música.
 
 - S1 ~3k + S2 ~6k + S3 ~4k + S4 ~5k + S5 ~10k = ~28k de arquivos existentes tocados, mais ~12k de arquivos novos (telas e serviços) = ~40k, abaixo do budget de 150k - one builder
