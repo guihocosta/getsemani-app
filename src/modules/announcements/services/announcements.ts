@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { activeMemberIds } from "@/modules/identity/services/memberships";
 import { notifyUser } from "@/modules/notifications/services/notify";
+import { logError } from "@/lib/logError";
 import { announcementSchema, type AnnouncementInput } from "@/modules/announcements/domain/validation";
 
 // Lider publica um aviso para o ministerio e avisa por push os membros ativos
@@ -15,19 +16,24 @@ export async function createAnnouncement(params: { ministryId: string } & Announ
     data: { ...parsed.data, ministryId: params.ministryId, authorId: author.id },
   });
 
-  const recipients = (await activeMemberIds(params.ministryId)).filter((id) => id !== author.id);
-  await Promise.all(
-    recipients.map((userId) =>
-      notifyUser({
-        userId,
-        type: "ANNOUNCEMENT",
-        dedupeKey: `announcement:${announcement.id}:${userId}`,
-        title: announcement.title,
-        body: announcement.body.slice(0, 120),
-        url: "/avisos",
-      }),
-    ),
-  );
+  // O aviso ja esta gravado: falhar aqui faria o lider tentar de novo e duplicar.
+  try {
+    const recipients = (await activeMemberIds(params.ministryId)).filter((id) => id !== author.id);
+    await Promise.all(
+      recipients.map((userId) =>
+        notifyUser({
+          userId,
+          type: "ANNOUNCEMENT",
+          dedupeKey: `announcement:${announcement.id}:${userId}`,
+          title: announcement.title,
+          body: announcement.body.slice(0, 120),
+          url: "/avisos",
+        }),
+      ),
+    );
+  } catch (err) {
+    logError("avisos.notificar", err, { announcementId: announcement.id });
+  }
 
   return announcement;
 }

@@ -98,6 +98,28 @@ describe("createAnnouncement", () => {
   });
 });
 
+describe("falha ao avisar", () => {
+  it("falha ao buscar membros nao desfaz nem relanca: o aviso gravado e devolvido", async () => {
+    vi.mocked(activeMemberIds).mockRejectedValueOnce(new Error("db down"));
+
+    const saved = await createAnnouncement({ ministryId: "m1", title: "Ensaio", body: "Quinta 20h" });
+
+    expect(saved).toMatchObject({ id: "an1" });
+    expect(prisma.announcement.create).toHaveBeenCalledTimes(1);
+    expect(notifyUser).not.toHaveBeenCalled();
+  });
+
+  it("requireLeaderOf recebe o ministerio do proprio aviso ao destacar e apagar", async () => {
+    vi.mocked(prisma.announcement.findUniqueOrThrow).mockResolvedValue({ id: "an1", ministryId: "m7" } as never);
+
+    await setAnnouncementPinned({ announcementId: "an1", pinned: true });
+    await deleteAnnouncement({ announcementId: "an1" });
+
+    expect(requireLeaderOf).toHaveBeenNthCalledWith(1, "m7");
+    expect(requireLeaderOf).toHaveBeenNthCalledWith(2, "m7");
+  });
+});
+
 describe("gerenciar aviso", () => {
   it("setAnnouncementPinned grava o destaque", async () => {
     await setAnnouncementPinned({ announcementId: "an1", pinned: true });

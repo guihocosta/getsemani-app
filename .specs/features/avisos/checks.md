@@ -5,7 +5,7 @@ Plan: `.specs/features/avisos/plan.md`
 
 ## Intent
 
-10 checks in 2 slices · 3 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
+12 checks in 3 slices · 3 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -46,6 +46,14 @@ Proof: `grep -q "Nenhum aviso por aqui" "app/(app)/avisos/page.tsx" && npm run t
 **C10** - [x] A página inicial tem a entrada `href="/avisos"` e o bloco "Avisos em destaque" alimentado por `listPinnedAnnouncements` (AC 10)
 Proof: `grep -q 'href="/avisos"' "app/(app)/page.tsx" && grep -q "Avisos em destaque" "app/(app)/page.tsx" && grep -q "listPinnedAnnouncements(" "app/(app)/page.tsx" && npm run typecheck`
 
+### S3 - Ajustes após a verificação · 3 files · 9 KB · ~2k
+
+**C11** - [x] Com `activeMemberIds` rejeitando, `createAnnouncement` resolve com o aviso gravado (`id: "an1"`), `announcement.create` foi chamado 1 vez e `notifyUser` nenhuma (AC 11)
+Proof: `npm run test -- tests/unit/announcements.test.ts -t "falha ao buscar membros"`
+
+**C12** - [x] Para um aviso do ministério `m7`, `setAnnouncementPinned` e `deleteAnnouncement` chamam `requireLeaderOf("m7")` (AC 12)
+Proof: `npm run test -- tests/unit/announcements.test.ts -t "requireLeaderOf recebe o ministerio"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -73,5 +81,7 @@ Proof: `grep -q 'href="/avisos"' "app/(app)/page.tsx" && grep -q "Avisos em dest
 - observability: existing - `handleActionError` loga com escopo e `ref`
 
 ## Handoff
+
+- **Rodada 1 do Verifier: PASS**, com notas não bloqueantes. Aplicadas: falha ao avisar não relança (C11), gate recebe o ministério do aviso (C12, antes só por leitura), título longo quebra linha. Não aplicadas: leitura de `Ministry`/`User` por `include` (mesmo padrão do código existente) e consulta antes do gate.
 
 - S1 ~4k + S2 ~4k = ~8k de arquivos existentes tocados, mais ~5k de arquivos novos = ~13k, abaixo do budget de 150k - one builder

@@ -82,6 +82,15 @@ None - nothing consumed outside; páginas e Server Actions só deste repo
 
 **Independent test:** como voluntário, abrir a página inicial, ver o aviso em destaque e abrir `/avisos`.
 
+### S3: Ajustes após a verificação (P2)
+
+**Acceptance Criteria**
+
+11. IF a busca dos membros falha depois que o aviso foi gravado THEN `createAnnouncement` SHALL devolver o aviso gravado sem lançar, e registrar o erro
+12. WHEN o líder destaca ou apaga um aviso THEN `requireLeaderOf` SHALL receber o ministério do próprio aviso, não um valor vindo do cliente
+
+**Independent test:** nenhum visível ao usuário; coberto por teste de unidade.
+
 ## Out of scope
 
 | Excluded | Why |

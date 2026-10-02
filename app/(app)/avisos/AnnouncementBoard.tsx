@@ -129,7 +129,7 @@ export function AnnouncementBoard({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="eyebrow text-primary">{a.ministry}</p>
-                  <p className="text-lg text-text flex items-center gap-1.5 flex-wrap">
+                  <p className="text-lg text-text flex items-center gap-1.5 flex-wrap break-all">
                     {a.title}
                     {a.pinned && (
                       <Badge tone="info" className="text-[10px]">

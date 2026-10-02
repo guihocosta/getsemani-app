@@ -85,7 +85,7 @@ export default async function HomePage() {
                 <Link href="/avisos">
                   <Card className="py-3">
                     <p className="eyebrow text-primary">{a.ministry}</p>
-                    <p className="text-text">{a.title}</p>
+                    <p className="text-text break-all">{a.title}</p>
                     <p className="text-sm text-text-muted line-clamp-2">{a.body}</p>
                   </Card>
                 </Link>
