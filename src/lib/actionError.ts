@@ -13,6 +13,9 @@ export type ActionCode =
   | "NOT_GUEST"
   | "NO_GUESTS_FOUND"
   | "SWAP_NOT_OPEN"
+  | "MODULE_DISABLED"
+  | "INVALID_INPUT"
+  | "ALREADY_IN_SETLIST"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -28,6 +31,9 @@ export const MENSAGENS: Record<ActionCode, string> = {
   NOT_GUEST: "Essa vaga já está com um usuário cadastrado.",
   NO_GUESTS_FOUND: "Nenhuma alocação encontrada para essa pessoa sem conta.",
   SWAP_NOT_OPEN: "Esse pedido de troca não está mais aberto.",
+  MODULE_DISABLED: "O repertório não está ativo nesse ministério.",
+  INVALID_INPUT: "Confira os campos e tente de novo.",
+  ALREADY_IN_SETLIST: "Essa música já está na escala.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 
