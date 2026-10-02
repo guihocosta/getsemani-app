@@ -1,121 +1,147 @@
 # Rascunho e publicação de escala verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: light
-**Diff range**: e22a947..8e20029
-**Round**: 1 - full
+**Diff range**: e22a947..9d6dc96 (fix da rodada 2: 8e20029..9d6dc96)
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-Os 15 checks estão provados em `HEAD` (8e20029) com evidência localizada. O veredito é FAIL por
-um vazamento fora do conjunto de checks, achado na leitura adversarial do diff: o fluxo de troca
-(`swap.ts`) não conhece `published`, então quem não gerencia o ministério ainda consegue entrar
-numa data em rascunho e disparar notificação sobre ela. Detalhe em `## Gaps`.
+Os 19 checks estão provados em `HEAD` (9d6dc96) com evidência localizada, e os dois vazamentos
+que reprovaram a rodada 1 (troca e pedido de troca em data em rascunho) estão fechados no código.
+A releitura adversarial do diff do fix não achou caminho restante em que quem não gerencia o
+ministério veja, seja avisado de data nova ou aja sobre uma ocorrência em rascunho. Sobram
+observações não bloqueantes em `## Residual notes`.
 
 Passo 5 (percorrer o fluxo com o usuário): não executado - o verificador não alcança o usuário.
 
 ## Checks
 
+verified at 9d6dc96 - todas as provas C1..C19 rodaram de novo neste commit. As citações de C1-C7 e
+C9-C15 apontam para arquivos de teste que o fix não tocou (linhas conferidas, inalteradas desde
+8e20029); C8 e C16-C19 foram relocalizadas.
+
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | tornar rascunho grava `published: false` e não notifica | `npm run test -- tests/unit/publishOccurrence.test.ts ...` exit 0; caso "tornar rascunho nao notifica" rodou e passou | `tests/unit/publishOccurrence.test.ts:36` - `expect(prisma.occurrence.update).toHaveBeenCalledWith({ where: { id: "o1" }, data: { published: false } })`; `:37` - `expect(notifyUser).not.toHaveBeenCalled()` | PASS |
-| C2 | publicar grava `published: true` e notifica 2x com `ASSIGNMENT` e `assign:al1` / `assign:al2` | mesmo run; caso "publicar notifica cada alocado com conta" passou | `tests/unit/publishOccurrence.test.ts:50` - `expect(notifyUser).toHaveBeenCalledTimes(2)`; `:52` - `expect.objectContaining({ userId: "u1", type: "ASSIGNMENT", dedupeKey: "assign:al1" })`; `:55` idem `assign:al2`; `:49` update com `data: { published: true }` | PASS |
-| C3 | convidado (`userId: null`) não gera `notifyUser` ao publicar | mesmo run; caso "convidado nao e notificado ao publicar" passou | `tests/unit/publishOccurrence.test.ts:65` - `expect(notifyUser).not.toHaveBeenCalled()` | PASS |
+| C1 | tornar rascunho grava `published: false` e não notifica | vitest em lote, exit 0; caso "tornar rascunho nao notifica" rodou e passou | `tests/unit/publishOccurrence.test.ts:36` - `expect(prisma.occurrence.update).toHaveBeenCalledWith({ where: { id: "o1" }, data: { published: false } })`; `:37` - `expect(notifyUser).not.toHaveBeenCalled()` | PASS |
+| C2 | publicar grava `published: true` e notifica 2x com `ASSIGNMENT` e `assign:al1` / `assign:al2` | mesmo run; caso "publicar notifica cada alocado com conta" passou | `tests/unit/publishOccurrence.test.ts:50` - `expect(notifyUser).toHaveBeenCalledTimes(2)`; `:52` - `expect.objectContaining({ userId: "u1", type: "ASSIGNMENT", dedupeKey: "assign:al1" })`; `:55` idem `assign:al2` | PASS |
+| C3 | convidado não gera `notifyUser` ao publicar | mesmo run; caso "convidado nao e notificado ao publicar" passou | `tests/unit/publishOccurrence.test.ts:65` - `expect(notifyUser).not.toHaveBeenCalled()` | PASS |
 | C4 | `FORBIDDEN` rejeita sem `occurrence.update` | mesmo run; caso "FORBIDDEN nao grava" passou | `tests/unit/publishOccurrence.test.ts:74` - `rejects.toThrow("FORBIDDEN")`; `:75` - `expect(prisma.occurrence.update).not.toHaveBeenCalled()` | PASS |
-| C5 | schema e migração declaram `published` com default `true` | `grep -Eq "published +Boolean +@default\(true\)" prisma/schema.prisma && grep -rq 'ADD COLUMN "published" BOOLEAN NOT NULL DEFAULT true' prisma/migrations` exit 0 | `prisma/schema.prisma:170` - `published Boolean @default(true)`; `prisma/migrations/20261002180000_occurrence_published/migration.sql:2` - `ALTER TABLE "Occurrence" ADD COLUMN "published" BOOLEAN NOT NULL DEFAULT true;` | PASS |
-| C6 | `notifyIfPublished(false)` devolve `"skipped"` sem notificar; `(true)` repassa os mesmos params | `npm run test -- tests/unit/notifyIfPublished.test.ts ...` exit 0; 2 casos rodaram e passaram | `tests/unit/notifyIfPublished.test.ts:20` - `expect(await notifyIfPublished(false, params)).toBe("skipped")`; `:21` - `expect(notifyUser).not.toHaveBeenCalled()`; `:26` - `expect(notifyUser).toHaveBeenCalledWith(params)` | PASS |
-| C7 | `allocateVolunteer` em rascunho cria `PENDING` sem notificar; publicada notifica com `assign:al1` | `npm run test -- tests/unit/allocateDraft.test.ts ...` exit 0; 2 casos `allocateVolunteer` passaram | `tests/unit/allocateDraft.test.ts:44` - `data: expect.objectContaining({ slotId: "s1", userId: "u1", status: "PENDING" })`; `:46` - `expect(notifyUser).not.toHaveBeenCalled()`; `:54` - `dedupeKey: "assign:al1"` | PASS |
-| C8 | os cinco serviços não chamam `notifyUser(` direto | `! grep -l "notifyUser(" <5 arquivos>` exit 0 (nenhum arquivo listado) | `src/modules/scheduling/services/allocateVolunteer.ts:85` , `allocateGuest.ts:80`, `linkGuestAllocation.ts:58`, `repeatSchedule.ts:155`, `setSlotActive.ts:24` - todas `notifyIfPublished(...)`; busca `notifyUser\(` em `src/` e `app/` não retorna nenhum dos cinco | PASS |
-| C9 | `listMonthOccurrences` consulta com `OR` publicada/gerenciável e item carrega `published` | `npm run test -- tests/unit/listMonthOccurrences.test.ts ...` exit 0; caso "rascunho so para gerenciaveis e item carrega published" passou | `tests/unit/listMonthOccurrences.test.ts:31` - `OR: [{ published: true }, { schedule: { ministryId: { in: ["m1"] } } }]`; `:35` - `expect(items.map((i) => [i.occurrenceId, i.published])).toEqual([["o1", true], ["o2", false]])` | PASS |
-| C10 | `getMySchedule` filtra `published: true` | `npm run test -- tests/unit/getMySchedule.test.ts ...` exit 0; caso "so ocorrencia publicada entra na agenda do voluntario" passou | `tests/unit/getMySchedule.test.ts:19` - `slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: from } } }` | PASS |
-| C11 | as duas consultas de `/vagas` filtram `published: true` | `test "$(grep -c "published: true" "app/(app)/vagas/page.tsx")" -eq 2` exit 0 | `app/(app)/vagas/page.tsx:36` (dentro de `prisma.slot.findMany`, vagas livres) e `app/(app)/vagas/page.tsx:56` (dentro de `prisma.swapRequest.findMany`, trocas abertas) - `published: true` | PASS |
-| C12 | `selfAllocate` em rascunho rejeita `NOT_PUBLISHED` sem criar; `toActionCode` e `MENSAGENS` corretos | `npm run test -- tests/unit/allocateDraft.test.ts tests/unit/actionError.test.ts ...` exit 0; casos "selfAllocate em rascunho rejeita com NOT_PUBLISHED sem gravar" e "NOT_PUBLISHED avisa que a escala ainda nao foi publicada" passaram | `tests/unit/allocateDraft.test.ts:65` - `rejects.toThrow("NOT_PUBLISHED")`; `:66` - `expect(prisma.allocation.create).not.toHaveBeenCalled()`; `tests/unit/actionError.test.ts:51` - `expect(toActionCode(new Error("NOT_PUBLISHED"))).toBe("NOT_PUBLISHED")`; `:52` - `expect(MENSAGENS.NOT_PUBLISHED).toBe("Essa escala ainda não foi publicada.")` | PASS |
-| C13 | `attendanceRows` e cron `reminders` filtram `published: true` | `npm run test -- tests/unit/attendanceReport.test.ts ...` exit 0 (2 casos `attendanceRows` passaram); `grep -q "published: true" app/api/cron/reminders/route.ts` exit 0 | `tests/unit/attendanceReport.test.ts:32` - `published: true` dentro do `where` exato; `:53` idem sem ministérios; `app/api/cron/reminders/route.ts:26` - `slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: now, lte: until } } }` | PASS |
-| C14 | `publishMenuItem` devolve rótulo e alvo opostos; `OccurrenceRow` mostra selo e usa o helper | `npm run test -- tests/unit/publishMenuItem.test.ts ...` exit 0 (caso "publishMenuItem oferece a acao oposta ao estado atual" passou); `grep -q "rascunho" ... && grep -q "publishMenuItem(" ... && npm run typecheck` exit 0 | `tests/unit/publishMenuItem.test.ts:6` - `expect(publishMenuItem(false)).toMatchObject({ label: "Publicar", target: true })`; `:7` - `toMatchObject({ label: "Tornar rascunho", target: false })`; `app/(app)/escalas/OccurrenceRow.tsx:260` - `publishMenuItem(props.published)`; `app/(app)/escalas/OccurrenceRow.tsx:353` - selo `rascunho` | PASS |
+| C5 | schema e migração declaram `published` com default `true` | `grep -Eq ... prisma/schema.prisma && grep -rq ... prisma/migrations` exit 0 | `prisma/schema.prisma:170` - `published Boolean @default(true)`; `prisma/migrations/20261002180000_occurrence_published/migration.sql:2` - `ADD COLUMN "published" BOOLEAN NOT NULL DEFAULT true` | PASS |
+| C6 | `notifyIfPublished(false)` devolve `"skipped"`; `(true)` repassa os params | mesmo run; 2 casos de `notifyIfPublished` passaram | `tests/unit/notifyIfPublished.test.ts:20` - `expect(await notifyIfPublished(false, params)).toBe("skipped")`; `:21` - `expect(notifyUser).not.toHaveBeenCalled()`; `:26` - `expect(notifyUser).toHaveBeenCalledWith(params)` | PASS |
+| C7 | `allocateVolunteer` em rascunho cria `PENDING` sem notificar; publicada notifica `assign:al1` | mesmo run; 2 casos `allocateVolunteer` passaram | `tests/unit/allocateDraft.test.ts:44` - `data: expect.objectContaining({ slotId: "s1", userId: "u1", status: "PENDING" })`; `:46` - `expect(notifyUser).not.toHaveBeenCalled()`; `:54` - `dedupeKey: "assign:al1"` | PASS |
+| C8 | os cinco serviços não chamam `notifyUser(` direto | `! grep -l "notifyUser(" <5 arquivos>` exit 0 | `src/modules/scheduling/services/allocateVolunteer.ts:85`, `allocateGuest.ts:81`, `linkGuestAllocation.ts:58`, `repeatSchedule.ts:155`, `setSlotActive.ts:24` - `notifyIfPublished(...)`; remoções em `allocateVolunteer.ts:165`, `allocateGuest.ts:93`, `setSlotActive.ts:35` - `notifyRemoval(...)` | PASS |
+| C9 | `listMonthOccurrences` consulta com `OR` publicada/gerenciável e item carrega `published` | mesmo run; caso "rascunho so para gerenciaveis e item carrega published" passou | `tests/unit/listMonthOccurrences.test.ts:31` - `OR: [{ published: true }, { schedule: { ministryId: { in: ["m1"] } } }]`; `:35` - `expect(items.map((i) => [i.occurrenceId, i.published])).toEqual([["o1", true], ["o2", false]])` | PASS |
+| C10 | `getMySchedule` filtra `published: true` | mesmo run; caso "so ocorrencia publicada entra na agenda do voluntario" passou | `tests/unit/getMySchedule.test.ts:19` - `slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: from } } }` | PASS |
+| C11 | as duas consultas de `/vagas` filtram `published: true` | `test "$(grep -c "published: true" "app/(app)/vagas/page.tsx")" -eq 2` exit 0 | `app/(app)/vagas/page.tsx:36` (vagas livres) e `app/(app)/vagas/page.tsx:56` (trocas abertas) - `published: true` | PASS |
+| C12 | `selfAllocate` em rascunho rejeita `NOT_PUBLISHED` sem criar; mapeamento e mensagem corretos | mesmo run; casos "selfAllocate em rascunho rejeita com NOT_PUBLISHED sem gravar" e "NOT_PUBLISHED avisa que a escala ainda nao foi publicada" passaram | `tests/unit/allocateDraft.test.ts:65` - `rejects.toThrow("NOT_PUBLISHED")`; `:66` - `expect(prisma.allocation.create).not.toHaveBeenCalled()`; `tests/unit/actionError.test.ts:51` - `expect(toActionCode(new Error("NOT_PUBLISHED"))).toBe("NOT_PUBLISHED")`; `:52` - `expect(MENSAGENS.NOT_PUBLISHED).toBe("Essa escala ainda não foi publicada.")` | PASS |
+| C13 | `attendanceRows` e cron `reminders` filtram `published: true` | mesmo run (2 casos `attendanceRows` passaram); `grep -q "published: true" app/api/cron/reminders/route.ts` exit 0 | `tests/unit/attendanceReport.test.ts:32` e `:53` - `published: true` no `where` exato; `app/api/cron/reminders/route.ts:26` - `slot: { occurrence: { status: "ACTIVE", published: true, ... } }` | PASS |
+| C14 | `publishMenuItem` devolve rótulo e alvo opostos; `OccurrenceRow` mostra selo e usa o helper | mesmo run (caso "publishMenuItem oferece a acao oposta ao estado atual" passou); `grep -q "rascunho" ... && grep -q "publishMenuItem(" ... && npm run typecheck` exit 0 | `tests/unit/publishMenuItem.test.ts:6` - `toMatchObject({ label: "Publicar", target: true })`; `:7` - `toMatchObject({ label: "Tornar rascunho", target: false })`; `app/(app)/escalas/OccurrenceRow.tsx:260` e `:353` | PASS |
 | C15 | confirmação só ao tornar rascunho, com o texto exato | mesmo run; caso "confirmacao so ao tornar rascunho" passou | `tests/unit/publishMenuItem.test.ts:11` - `expect(publishMenuItem(true).confirm).toBe("Voluntários deixam de ver esta data até você publicar de novo.")`; `:12` - `expect(publishMenuItem(false).confirm).toBeNull()` | PASS |
+| C16 | `requestSwap` em rascunho rejeita `NOT_PUBLISHED`, sem `swapRequest.create` e sem `notifyUser` | mesmo run; caso "requestSwap em rascunho rejeita com NOT_PUBLISHED sem criar pedido nem notificar" passou | `tests/unit/draftGuards.test.ts:71` - `await expect(requestSwap({ allocationId: "al1" })).rejects.toThrow("NOT_PUBLISHED")`; `:72` - `expect(prisma.swapRequest.create).not.toHaveBeenCalled()`; `:73` - `expect(notifyUser).not.toHaveBeenCalled()`; guarda em `src/modules/scheduling/services/swap.ts:62` | PASS |
+| C17 | `claimSwap` em rascunho rejeita `NOT_PUBLISHED`, sem reatribuir, sem fechar o pedido e sem notificar | mesmo run; caso "claimSwap em rascunho rejeita com NOT_PUBLISHED sem reatribuir nem notificar" passou | `tests/unit/draftGuards.test.ts:86` - `await expect(claimSwap({ swapRequestId: "sw1" })).rejects.toThrow("NOT_PUBLISHED")`; `:87` - `expect(tx.allocation.update).not.toHaveBeenCalled()`; `:88` - `expect(tx.swapRequest.update).not.toHaveBeenCalled()`; `:89` - `expect(notifyUser).not.toHaveBeenCalled()`; guarda em `src/modules/scheduling/services/swap.ts:153` | PASS |
+| C18 | confirmar, recusar e check-in em rascunho rejeitam `NOT_PUBLISHED` sem gravar | mesmo run; os 3 casos de "resposta em rascunho" passaram (confirmar, recusar, check-in) | `tests/unit/draftGuards.test.ts:99` - `expect(confirmAllocation(...)).rejects.toThrow("NOT_PUBLISHED")`, `:100` - `expect(prisma.allocation.update).not.toHaveBeenCalled()`; `:104`-`:105` - recusar, `expect(prisma.allocation.delete).not.toHaveBeenCalled()`; `:109`-`:110` - check-in; guarda única em `src/modules/scheduling/services/respondAllocation.ts:23` | PASS |
+| C19 | `notifyRemoval` pula só quem nunca soube; os três pontos de remoção usam o helper | mesmo run (4 casos `notifyRemoval` passaram); 2a prova de `checks.md` (contagem `grep -c "notifyRemoval("` sobre os 3 arquivos concatenados, igual a 3) exit 0 | `tests/unit/draftGuards.test.ts:124` - `expect(await notifyRemoval(false, { id: "al1", status: "PENDING" }, params)).toBe("skipped")`, `:125` - `expect(wasNotified).toHaveBeenCalledWith("assign:al1")`, `:126` - `expect(notifyUser).not.toHaveBeenCalled()`; `:131`-`:132` já avisado; `:136`-`:137` confirmado; `:141`-`:142` publicada sem consultar `wasNotified`; usos em `allocateVolunteer.ts:165`, `allocateGuest.ts:93`, `setSlotActive.ts:35` | PASS |
 
-Como as provas rodaram: uma única invocação do vitest sobre os 8 arquivos de prova com
-`--reporter=verbose` (8 arquivos, 40 testes, 0 falhas), em vez de uma por `-t`; cada caso nomeado
-acima aparece individualmente no output como executado e aprovado. As provas grep/`test` e
-`npm run typecheck` rodaram exatamente como escritas. Todos os arquivos de teste citados estão no
-diff da feature (novos ou alterados), nenhum resolve só para teste intocado.
+Como as provas rodaram: uma invocação do vitest sobre os 9 arquivos de prova com
+`--reporter=verbose` (49 testes, 0 falhas); cada caso nomeado acima aparece individualmente como
+executado e aprovado. As provas grep/`test` e `npm run typecheck` rodaram como escritas (C5, C8,
+C11, C13b, C14b, C19b: exit 0). `tests/unit/draftGuards.test.ts` é novo no fix (a4f7d4c).
 
 ## Level and sampling
 
-- C9, C10, C13 provam a forma do `where` contra Prisma mockado, não o resultado contra banco. É o
-  que o claim afirma ("consulta com ..."), então não é gap de nível; fica registrado que nenhum
-  teste exercita o filtro num Postgres real (`npm run test:local` não cobre `published`).
-- C8, C11, 2a prova de C13 e de C14 são grep, declarado em `checks.md`. Li o código por trás de cada
-  um: os dois `published: true` de `/vagas` estão um em cada consulta (linhas 36 e 56), não os dois
-  na mesma.
-- C12: a parte "a action SHALL mostrar" do AC 12 é provada no mapeamento (`toActionCode` +
-  `MENSAGENS`), não em `selfAllocateAction`. A action usa `handleActionError`
-  (`app/(app)/vagas/actions.ts:23`), lido e conferido; sem teste nesse nível.
-- C14: a oferta do rótulo pelo menu e o selo são provados por grep + typecheck, sem teste de
-  renderização. Li `OccurrenceRow.tsx:349-355` e `:365-366`: selo condicionado a `!props.published`
-  e `publishLabel={publishItem.label}`.
-- Amostragem: nenhum check afirma mais casos do que exercita.
+verified at 9d6dc96 para C16-C19; carried from 8e20029 para C1-C15 (nenhum arquivo dessas provas
+mudou no fix).
+
+- C16-C18 provam só o lado da rejeição. Nenhum teste do repo exercita `requestSwap`, `claimSwap`,
+  `confirmAllocation`, `declineAllocation` ou `checkInAllocation` numa data publicada (busca por
+  esses nomes em `tests/` e `scripts/` retorna só `draftGuards.test.ts` e
+  `selfAllocateEligibility.test.ts`). Os claims afirmam apenas a rejeição, então não é gap de
+  check; a não-regressão em data publicada foi conferida por leitura, ver abaixo.
+- C19: os 4 membros de "decisão do aviso de remoção" têm asserção própria. A 2a prova é contagem
+  por grep; li os três pontos e cada um passa `id` e `status` da alocação removida.
+- C12 (carregado): a mensagem é provada no mapeamento, não na action. Vale agora também para
+  AC 17: `claimSwapAction` usa `handleActionError` (`app/(app)/vagas/actions.ts:62`) e o botão
+  mostra `MENSAGENS[res.code]` (`app/(app)/vagas/buttons.tsx:66`), lido e conferido, sem teste.
+- Demais notas da rodada 1 (C9, C10, C13 contra Prisma mockado; C8, C11, C13b, C14b por grep)
+  seguem valendo.
 
 ## Swept rows marked existing
 
+verified at 9d6dc96 - `notify.ts` mudou no fix, linhas atualizadas.
+
 | Row | Cited constraint | In the code |
 | --- | --- | --- |
-| failure modes | `notifyUser` nunca lança | sim - `src/modules/notifications/services/notify.ts:18` abre `try`, `:57-59` captura, loga e devolve `"failed"` |
-| idempotency | `notifyUser` devolve `"duplicate"` se já enviado | sim - `src/modules/notifications/services/notify.ts:22` - `if (existing?.sentAt) return "duplicate"` |
-| dependency failure | falha de push logada e engolida | sim - `src/modules/notifications/services/notify.ts:40-48` (`try`/`catch` por subscription com `console.error`) |
-| observability | `handleActionError` loga com `ref` nas actions de `escalas` | sim - `src/lib/actionError.ts:61` (`const ref = logError(scope, e, ctx)`), usado em `app/(app)/escalas/actions.ts:255` |
+| failure modes | `notifyUser` nunca lança | sim - `src/modules/notifications/services/notify.ts:24` abre `try`, `:63-65` captura, loga e devolve `"failed"` |
+| idempotency | `notifyUser` devolve `"duplicate"` se já enviado | sim - `src/modules/notifications/services/notify.ts:28` - `if (existing?.sentAt) return "duplicate"` |
+| dependency failure | falha de push logada e engolida | sim - `src/modules/notifications/services/notify.ts:46-54` (`try`/`catch` por subscription) |
+| observability | `handleActionError` loga com `ref` nas actions de `escalas` | sim - `src/lib/actionError.ts:61`, usado em `app/(app)/escalas/actions.ts:255` (carried from 8e20029, arquivos intocados) |
 
-Linhas `existing` do `Observable` do plano, também conferidas: `pending` desabilita o menu
-(`app/(app)/escalas/OccurrenceRow.tsx:371` - `disabled={pending}`); erro mostra `MENSAGENS[res.code]`
-(`OccurrenceRow.tsx`, `togglePublish`).
+## Adversarial read
 
-## Gaps
+verified at 9d6dc96.
 
-Ranqueados. O primeiro sozinho decide o veredito.
+Fechados (gaps 1, 2 e 4 da rodada 1):
 
-1. **Vazamento: troca em data em rascunho (auto-alocação + notificação para quem não gerencia).**
-   `claimSwap` (`src/modules/scheduling/services/swap.ts:122`) só checa `status !== "ACTIVE"` e data
-   (`swap.ts:150`); não lê `published`. Um voluntário com um `swapRequestId` aberto antes de a data
-   virar rascunho (página `/vagas` já carregada, ou chamada direta da Server Action
-   `claimSwapAction`, `app/(app)/vagas/actions.ts:53`) assume a vaga: a `Allocation` é reatribuída a
-   ele como `CONFIRMED` numa ocorrência em rascunho, e saem pushes `notifyUser` direto
-   (`swap.ts:197` para quem pediu a troca, `swap.ts:214` para os líderes). É o mesmo cenário de
-   página obsoleta que o AC 12 fechou para `selfAllocate` com `NOT_PUBLISHED`; o caminho irmão ficou
-   aberto. O plano põe "troca em data em rascunho" fora de escopo por ser "inalcançável", premissa
-   que o código não sustenta: tornar rascunho não fecha `SwapRequest` aberto e a action aceita o id.
-   Pré-condição: precisa existir troca `OPEN` na data antes do rascunho.
-2. **Vazamento: pedido de troca notifica o ministério inteiro sobre data em rascunho.**
-   `requestSwap` (`src/modules/scheduling/services/swap.ts:38`) também só checa `status`/data
-   (`swap.ts:60`) e chama `notifyUser` direto para todo membro ativo (`swap.ts:87`) com função e
-   data da ocorrência. Um voluntário alocado antes do rascunho, com a home já aberta
-   (`app/(app)/RequestSwapButton.tsx:17`), dispara "Vaga disponível para troca" para todos os
-   voluntários sobre uma data que eles não deveriam ver. O conjunto "serviços que notificam em
-   `scheduling` (5)" de `checks.md` está subcontado: `swap.ts` e `respondAllocation.ts`
-   (`respondAllocation.ts:52`, só para líderes) também notificam e não passam por
-   `notifyIfPublished`.
-3. **Remoção silenciosa perdida (não é vazamento; defeito de produto).** Em rascunho,
-   `reassignAllocation` e `setSlotActive` pulam o aviso "Você foi removido"
-   (`src/modules/scheduling/services/allocateVolunteer.ts:164`,
-   `src/modules/scheduling/services/setSlotActive.ts:35`), e `setOccurrencePublished`
-   (`src/modules/scheduling/services/publishOccurrence.ts:22-37`) só avisa quem está alocado na hora.
-   Quem recebeu "Você foi escalado" com a data publicada e foi trocado durante o rascunho nunca é
-   avisado de que saiu. Nenhum AC cobre; o plano só exclui o aviso de "voltar para rascunho".
-4. **Confirmar/recusar/check-in em rascunho por id** (`respondAllocation.ts:25`, `:38`, `:68`) não
-   checam `published`. Alcançável só por página obsoleta, efeito restrito à própria alocação e
-   aviso só a líderes; baixo impacto, registrado por completude.
-5. **Relatórios do líder divergem entre si (não é vazamento).** `attendanceRows` exclui rascunho,
-   mas `openSlots` (`src/modules/reports/services/reports.ts:8`) e `loadByPerson` (`reports.ts:35`)
-   incluem. Só líder/admin enxergam (`app/(app)/admin/page.tsx` redireciona os demais e escopa por
-   `ledMinistryIds`), então é consistência, não exposição.
+- `claimSwap`: `src/modules/scheduling/services/swap.ts:153` lança `NotPublished` dentro da
+  transação, antes de `tx.allocation.update` e dos `notifyUser` de `:202` e `:219`.
+- `requestSwap`: `swap.ts:62` lança antes de criar/reabrir o pedido e antes do `notifyUser` de `:90`.
+- confirmar / recusar / check-in: `src/modules/scheduling/services/respondAllocation.ts:23`, na
+  função `ownedAllocation` que os três usam; o `notifyUser` de `:55` (líderes) fica atrás da guarda.
+- Gap 3 (remoção silenciosa): `notifyRemoval`
+  (`src/modules/scheduling/services/notifyIfPublished.ts:18-27`) avisa em rascunho quem já tinha
+  confirmado ou já tinha recebido `assign:<id>`. Isso manda push sobre data em rascunho a quem não
+  gerencia, mas só a quem já conhecia aquela escala e só para dizer que saiu: decisão do AC 19,
+  não exposição de data nova.
 
-Leituras conferidas e sem vazamento: `listMonthOccurrences` (4 chamadas passam `ledMinistryIds`:
-`app/(app)/escalas/page.tsx:58-60`, `app/(app)/escalas/actions.ts:240`), `getMySchedule` (home),
-`/vagas` (2 consultas), cron `reminders`, `selfAllocate`, `listGuestAllocations` e as actions de
-`escalas` (todas atrás de `requireLeaderOf`/`ledMinistryIds`), `materializeOccurrences` (cria com o
-default publicado), `updateSchedule` e `deleteSchedule` (não tocam `published`).
+Conjunto de ações que aceitam id vindo do voluntário, tirado das Server Actions exportadas em
+`app/` (não de `checks.md`): `selfAllocateAction`, `requestSwapAction`, `claimSwapAction`,
+`cancelSwapAction`, `confirmAllocationAction`, `declineAllocationAction`,
+`checkInAllocationAction`. Seis têm a guarda; `cancelSwap` (`swap.ts:107`) fica sem, e conferi
+que só fecha o próprio pedido, sem `notifyUser` e sem devolver dado da ocorrência. As demais
+actions que tocam ocorrência (`app/(app)/escalas/actions.ts`) passam por `requireLeaderOf` ou
+`ledMinistryIds`. `availability`, `identity`, `ministries` e as páginas de perfil, solicitações,
+onboarding e indisponibilidade não leem `Occurrence`/`Allocation`.
 
-Fora do código: a migração não foi aplicada (decisão do plano, pergunta aberta 1 bloqueia o
-go-live). O verificador não rodou nenhum comando de banco.
+Regressão em data publicada: as três guardas têm a forma `if (!<...>.occurrence.published) throw`
+e leem o escalar da própria ocorrência já incluída na consulta; com `published: true` nenhuma
+delas altera o fluxo. `notifyRemoval(true, ...)` chama `notifyUser` sem consultar `wasNotified`
+(`draftGuards.test.ts:141-142`). A suíte inteira segue verde.
+
+Gap 5 da rodada 1 (`openSlots` e `loadByPerson` incluem rascunho,
+`src/modules/reports/services/reports.ts:8` e `:35`): aceito como está. Os únicos chamadores são
+`app/(app)/admin/page.tsx` (redireciona quem não é admin nem líder e escopa por `ledMinistryIds`)
+e `getOccurrenceCandidatesAction` (atrás de `requireLeaderOf`); quem vê gerencia o ministério.
+
+## Residual notes
+
+verified at 9d6dc96. Nenhuma bloqueia; ordenadas por relevância.
+
+1. `wasNotified` pode lançar (`src/modules/notifications/services/notify.ts:7-10`, sem `try`), e
+   `notifyRemoval` o chama depois que a remoção já foi gravada
+   (`src/modules/scheduling/services/notifyIfPublished.ts:23`). Se o banco falhar nesse ponto, a
+   action devolve erro com a troca já feita e, em `reassignAllocation`, o aviso ao novo escalado
+   (`allocateVolunteer.ts:175`) não sai. Só em rascunho com alocação `PENDING`. Quebra o invariante
+   escrito em `allocateVolunteer.ts:83-84` ("notificacao nunca lanca").
+2. Sem teste do caminho publicado para as cinco funções de S5 (ver Level and sampling): uma guarda
+   que passasse a lançar sempre não seria pega por nenhum teste.
+3. `confirmAllocationAction` e `declineAllocationAction`
+   (`app/(app)/respondAllocationActions.ts:6-15`) não têm `try/catch`: em página obsoleta o
+   `NOT_PUBLISHED` vira erro não tratado em vez da mensagem pt-BR. `checkInAllocationAction`
+   (`:17-25`) devolve o código cru e `TodayCheckInCard` ignora o retorno. `RequestSwapButton`
+   mostra texto genérico (`app/(app)/RequestSwapButton.tsx:18`). Mesmo padrão que `NOT_OWNER` já
+   tinha; AC 16 e AC 18 não exigem mensagem.
+4. `claimSwap` checa `published` (`swap.ts:153`) antes da elegibilidade (`:162` em diante): quem
+   não é membro mas tem o id recebe `NOT_PUBLISHED` em vez de `NOT_ELIGIBLE`. Exige conhecer o
+   UUID do pedido; irrelevante na prática.
+5. Em rascunho o aviso "swap-ended" continua pulado (`allocateVolunteer.ts:153`,
+   `allocateGuest.ts:81`, `setSlotActive.ts:24`); quem tinha troca aberta e foi removido recebe só
+   o "Você foi removido".
+
+Fora do código: a migração segue não aplicada (pergunta aberta 1 do plano bloqueia o go-live). O
+verificador não rodou comando de banco.
 
 ## Gate
 
-`npm run test` - 257 passed, 0 failed (49 arquivos) em 8e20029; `npm run typecheck` - exit 0
+verified at 9d6dc96.
+
+`npm run test` - 277 passed, 0 failed (51 arquivos; inclui `tests/unit/repertoireValidation.test.ts`, não rastreado, da próxima feature); `npm run typecheck` - exit 0
