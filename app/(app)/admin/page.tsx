@@ -5,7 +5,8 @@ import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz
 import { prisma } from "@/lib/prisma";
 import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { listGuestAllocations } from "@/modules/scheduling/services/listGuestAllocations";
-import { openSlots, loadByPerson, volunteersByMinistry } from "@/modules/reports/services/reports";
+import { openSlots, loadByPerson, volunteersByMinistry, attendanceRows } from "@/modules/reports/services/reports";
+import { attendanceWindow, summarizeAttendance, attendanceView } from "@/modules/reports/domain/attendance";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { NavRow } from "@/ui/NavRow";
@@ -52,7 +53,8 @@ export default async function AdminPage({
   const openSlotsFrom = isCurrentMonth ? now : vagasFrom;
 
   const in30 = new Date(now.getTime() + 30 * 864e5);
-  const [open, load, byMinistry, pendingCount, guests] = await Promise.all([
+  const { from: presencaFrom, to: presencaTo } = attendanceWindow(now);
+  const [open, load, byMinistry, pendingCount, guests, presencaLinhas] = await Promise.all([
     openSlots(openSlotsFrom, vagasTo, scopeIds),
     loadByPerson(new Date(now.getTime() - 30 * 864e5), in30, scopeIds),
     volunteersByMinistry(scopeIds),
@@ -60,7 +62,10 @@ export default async function AdminPage({
       where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
     }),
     listGuestAllocations(guestMinistryIds),
+    attendanceRows(presencaFrom, presencaTo, scopeIds),
   ]);
+  const presenca = summarizeAttendance(presencaLinhas);
+  const presencaView = attendanceView(presenca);
 
   const [ministryCount, personCount] = user.isAdmin
     ? await Promise.all([prisma.ministry.count(), prisma.user.count()])
@@ -158,6 +163,28 @@ export default async function AdminPage({
           ))}
           {load.length === 0 && <li className="text-sm text-text-muted">Sem dados no período.</li>}
         </ul>
+      </Card>
+
+      <h3 className="text-sm text-text-muted mb-2">Presença (últimos 30 dias)</h3>
+      <Card className="mb-8">
+        {presenca.taxa !== null && (
+          <p className="text-sm text-text mb-2">
+            <span className="font-title text-primary">{presenca.taxa}%</span> de presença em {presenca.total}{" "}
+            {presenca.total === 1 ? "escalação" : "escalações"}
+          </p>
+        )}
+        {presencaView.mensagem ? (
+          <p className="text-sm text-text-muted">{presencaView.mensagem}</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {presencaView.itens.map((p) => (
+              <li key={p.userId} className="flex justify-between text-sm">
+                <span className="text-text">{p.name}</span>
+                <span className="text-danger">{p.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       <h3 className="text-sm text-text-muted mb-2">Voluntários por ministério</h3>

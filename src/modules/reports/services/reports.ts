@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { AttendanceRow } from "@/modules/reports/domain/attendance";
 
 // FR-019: vagas em aberto (slots sem allocation em ocorrencias ativas), por proximidade.
 // Janela meio-aberta [from, to): from e inclusivo, to e exclusivo (quem chama controla os dois limites).
@@ -53,6 +54,29 @@ export async function loadByPerson(from: Date, to: Date, ministryIds?: string[])
   return grupedComUsuario
     .map((g) => ({ userId: g.userId, name: nameOf.get(g.userId) ?? "?", count: g._count._all }))
     .sort((a, b) => b.count - a.count);
+}
+
+// Presenca: alocacoes com pessoa (convidado sem conta nao faz check-in) em
+// ocorrencias ativas da janela [from, to). Quem chama passa `to` <= inicio de hoje.
+export async function attendanceRows(from: Date, to: Date, ministryIds?: string[]): Promise<AttendanceRow[]> {
+  const allocs = await prisma.allocation.findMany({
+    where: {
+      userId: { not: null },
+      slot: {
+        occurrence: {
+          status: "ACTIVE",
+          date: { gte: from, lt: to },
+          ...(ministryIds ? { schedule: { ministryId: { in: ministryIds } } } : {}),
+        },
+      },
+    },
+    select: { userId: true, checkedInAt: true, user: { select: { name: true } } },
+  });
+  return allocs.map((a) => ({
+    userId: a.userId!,
+    name: a.user?.name ?? "?",
+    checkedIn: a.checkedInAt !== null,
+  }));
 }
 
 // FR-021: voluntarios por ministerio.
