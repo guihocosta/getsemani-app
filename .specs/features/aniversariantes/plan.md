@@ -77,6 +77,14 @@ None - nothing consumed outside; páginas e Server Actions só deste repo
 
 **Independent test:** no dia do aniversário de alguém do ministério, ver o nome na página inicial.
 
+### S4: Correções da verificação, rodada 1 (P1)
+
+**Acceptance Criteria**
+
+10. The system SHALL enviar a client components só `id` e `name` das pessoas na matriz de capacitação de `/admin/ministerios`, nunca a linha `User` inteira
+
+**Independent test:** abrir `/admin/ministerios` como líder e não encontrar `birthDate`, e-mail nem telefone de outros membros no payload da página.
+
 ## Out of scope
 
 | Excluded | Why |

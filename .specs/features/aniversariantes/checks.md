@@ -5,7 +5,7 @@ Plan: `.specs/features/aniversariantes/plan.md`
 
 ## Intent
 
-9 checks in 3 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
+10 checks in 4 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -46,6 +46,12 @@ Proof: `grep -q "isBirthdayToday(" "app/(app)/aniversariantes/page.tsx"`
 **C9** - [x] A página inicial tem a entrada `href="/aniversariantes"` alimentada por `listBirthdays` (AC 9)
 Proof: `grep -q 'href="/aniversariantes"' "app/(app)/page.tsx" && grep -q "listBirthdays(" "app/(app)/page.tsx" && npm run typecheck`
 
+### S4 - Correções da verificação, rodada 1 · 2 files · 7 KB · ~2k
+
+**C10** - [x] `listMinistrySkillMatrix` consulta com `include: { user: { select: { id: true, name: true } } }` e cada `user` devolvido tem só as chaves `id` e `name`; nenhuma outra consulta do repo passa `include: { user: true }` adiante para client component (AC 10)
+Proof: `npm run test -- tests/unit/skillMatrixPrivacy.test.ts -t "listMinistrySkillMatrix"`
+Proof: `! grep -q "user: true" src/modules/ministries/services/userSkills.ts`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -56,6 +62,7 @@ Proof: `grep -q 'href="/aniversariantes"' "app/(app)/page.tsx" && grep -q "listB
 | parâmetro `mes` (7) | 3 C6 · 12 C6 · ausente C6 · 0 C6 · 13 C6 · decimal C6 · texto C6 | - |
 | marca "hoje" (3) | mesmo dia e mês C8 · outro dia C8 · outro mês C8 | - |
 | door 1 (2 lugares) | schema C1 · migração C1 | - |
+| consultas que carregam `User` de outra pessoa e mandam a client component (2) | `listBirthdays` C4, C5 (só dia e nome) · `listMinistrySkillMatrix` C10 (só id e nome) | - |
 
 - C7, C8 (2ª prova) e C9 são grep (+ typecheck) para a ligação com a tela; o repo não tem teste de componente
 - Nenhum outro check afirma mais do que o caso que sua prova exercita
@@ -73,5 +80,7 @@ Proof: `grep -q 'href="/aniversariantes"' "app/(app)/page.tsx" && grep -q "listB
 - observability: n/a - sem requisito de log
 
 ## Handoff
+
+- **Rodada 1 do Verifier: FAIL** - `listMinistrySkillMatrix` (anterior a esta feature) mandava a linha `User` inteira para `MinistryCard`; com a coluna nova, a data de nascimento completa chegava ao navegador de líderes e admins. Corrigido em S4 (C10). As outras consultas com `include: { user: true }` (`reviewMembership`, `listMonthOccurrences`, `swap`, `getOccurrenceCandidatesAction`, `solicitacoes/page`) foram lidas pelo Verifier e só repassam campos escolhidos.
 
 - S1 ~2k + S2 ~3k + S3 ~2k = ~7k (wc -c / 4 dos arquivos tocados), abaixo do budget de 150k - one builder

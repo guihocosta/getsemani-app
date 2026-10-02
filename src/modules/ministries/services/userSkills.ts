@@ -89,7 +89,9 @@ export async function listOwnSkillOptions(userId: string) {
 export async function listMinistrySkillMatrix(ministryId: string) {
   const memberships = await prisma.membership.findMany({
     where: { ministryId, status: "ACTIVE" },
-    include: { user: true },
+    // so id e nome: o resultado vira prop de client component (MinistryCard),
+    // e a linha User inteira levaria e-mail, telefone e data de nascimento junto
+    include: { user: { select: { id: true, name: true } } },
     orderBy: { user: { name: "asc" } },
   });
   const byUserId = new Map<string, (typeof memberships)[number]>();
