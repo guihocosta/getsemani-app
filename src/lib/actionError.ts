@@ -17,6 +17,7 @@ export type ActionCode =
   | "INVALID_INPUT"
   | "ALREADY_IN_SETLIST"
   | "OCCURRENCE_PAST"
+  | "OCCURRENCE_CANCELLED"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -36,6 +37,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   INVALID_INPUT: "Confira os campos e tente de novo.",
   ALREADY_IN_SETLIST: "Essa música já está na escala.",
   OCCURRENCE_PAST: "Essa data já passou.",
+  OCCURRENCE_CANCELLED: "Essa data foi cancelada.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 

@@ -381,6 +381,7 @@ export async function suggestAllocationsAction(occurrenceId: string): Promise<Su
     const failure = handleActionError("escalas.suggest", e, { occurrenceId });
     // falha no meio pode ter gravado vagas: a tela recarrega mesmo com erro
     revalidatePath("/escalas");
+    revalidatePath("/");
     return { ok: false, error: `${MENSAGENS[failure.code]} · cód. ${failure.ref}` };
   }
 }

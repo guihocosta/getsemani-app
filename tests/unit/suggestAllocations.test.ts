@@ -42,9 +42,12 @@ function slot(id: string, roleId: string, over: { active?: boolean; userId?: str
   };
 }
 
-function occurrence(over: { published?: boolean; date?: Date; slots?: ReturnType<typeof slot>[] } = {}) {
+function occurrence(
+  over: { published?: boolean; date?: Date; status?: string; slots?: ReturnType<typeof slot>[] } = {},
+) {
   return {
     id: "o1",
+    status: over.status ?? "ACTIVE",
     date: over.date ?? DATA,
     published: over.published ?? true,
     schedule: { ministryId: "m1" },
@@ -117,6 +120,21 @@ describe("suggestAllocations", () => {
     );
     await expect(suggestAllocations("o1", NOW)).rejects.toThrow("OCCURRENCE_PAST");
     expect(prisma.allocation.create).not.toHaveBeenCalled();
+  });
+
+  it("OCCURRENCE_PAST tambem quando a data e exatamente agora", async () => {
+    vi.mocked(prisma.occurrence.findUniqueOrThrow).mockResolvedValue(occurrence({ date: NOW }) as never);
+    await expect(suggestAllocations("o1", NOW)).rejects.toThrow("OCCURRENCE_PAST");
+    expect(prisma.allocation.create).not.toHaveBeenCalled();
+  });
+
+  it("OCCURRENCE_CANCELLED para data cancelada, sem gravar nem notificar", async () => {
+    vi.mocked(prisma.occurrence.findUniqueOrThrow).mockResolvedValue(
+      occurrence({ status: "CANCELLED" }) as never,
+    );
+    await expect(suggestAllocations("o1", NOW)).rejects.toThrow("OCCURRENCE_CANCELLED");
+    expect(prisma.allocation.create).not.toHaveBeenCalled();
+    expect(notifyUser).not.toHaveBeenCalled();
   });
 
   it("P2002 conta a vaga como nao preenchida e segue", async () => {

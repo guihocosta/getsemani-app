@@ -90,6 +90,16 @@ Função pura: dadas as vagas abertas e os candidatos, devolve quem vai onde.
 
 **Independent test:** tocar em "Sugerir escalação", confirmar e ler a contagem.
 
+### S4: Correções da verificação, rodada 1 (P1)
+
+**Acceptance Criteria**
+
+15. The system SHALL recontar os elegíveis de cada vaga restante depois de cada escolha, sem contar quem já foi usado, antes de decidir qual vaga preencher em seguida
+16. IF a data está cancelada THEN o sistema SHALL falhar com `OCCURRENCE_CANCELLED` sem gravar nem notificar
+17. WHEN a data não tem vaga aberta THEN `OccurrenceRow` SHALL mostrar "Nenhuma vaga aberta nesta data."
+
+**Independent test:** Vocal {a,b}, Violão {b,c}, Teclado {a,c}: as três vagas saem preenchidas.
+
 ## Out of scope
 
 | Excluded | Why |
@@ -99,6 +109,9 @@ Função pura: dadas as vagas abertas e os candidatos, devolve quem vai onde.
 | Preencher músicas automaticamente | item separado da triagem ("N menos tocadas"); não pedido nesta seleção |
 | Sugerir convidado sem conta | convidado não tem carga, indisponibilidade nem capacitação |
 | IA / modelo pago | vetado na triagem: heurística determinística |
+| Garantia de preenchimento máximo (emparelhamento ótimo) | a regra é gulosa com recontagem (AC 15): resolve os casos comuns, mas não prova o máximo em todo arranjo de capacitações; o líder completa à mão |
+| Lembrar quem recusou a data | recusar apaga a alocação (`respondAllocation.ts`), sem registro; a sugestão pode escolher a mesma pessoa de novo. Guardar a recusa pede coluna nova e decisão de produto |
+| Distinguir "perdida em corrida" de "sem candidato" na mensagem | AC 11 conta as duas como não preenchidas; corrida entre dois líderes na mesma data é rara |
 
 ## Assumptions
 

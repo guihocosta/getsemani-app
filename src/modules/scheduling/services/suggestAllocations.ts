@@ -14,6 +14,11 @@ export class OccurrencePast extends Error {
     super("OCCURRENCE_PAST");
   }
 }
+export class OccurrenceCancelled extends Error {
+  constructor() {
+    super("OCCURRENCE_CANCELLED");
+  }
+}
 
 const LOAD_WINDOW_MS = 30 * 864e5;
 
@@ -27,6 +32,8 @@ export async function suggestAllocations(occurrenceId: string, now = new Date())
   });
   const ministryId = occurrence.schedule.ministryId;
   await requireLeaderOf(ministryId);
+  // data cancelada some do calendario, mas uma aba velha ainda pode mandar o id
+  if (occurrence.status === "CANCELLED") throw new OccurrenceCancelled();
   if (occurrence.date <= now) throw new OccurrencePast();
 
   const openSlots = occurrence.slots.filter((s) => s.active && !s.allocation);

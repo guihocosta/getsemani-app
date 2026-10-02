@@ -37,24 +37,27 @@ export function planSuggestions(params: {
     return base.filter((c) => capable === null || capable.has(c.userId));
   };
 
-  // Vaga mais restrita primeiro, para nao gastar o unico capacitado de uma
-  // funcao em outra. sort e estavel: empate mantem a ordem recebida.
-  const ordered = params.slots
-    .map((slot) => ({ slot, eligible: eligibleFor(slot) }))
-    .sort((a, b) => a.eligible.length - b.eligible.length);
-
   const used = new Set<string>();
   const picks: SuggestPlan["picks"] = [];
   const unfilled: string[] = [];
+  let remaining = params.slots.map((slot) => ({ slot, eligible: eligibleFor(slot) }));
 
-  for (const { slot, eligible } of ordered) {
-    const best = eligible.filter((c) => !used.has(c.userId)).sort(compare)[0];
+  // Vaga mais restrita primeiro, para nao gastar o unico capacitado de uma
+  // funcao em outra. A contagem e refeita a cada escolha: quem acabou de ser
+  // usado deixa de contar para as vagas que sobraram. Empate mantem a ordem recebida.
+  while (remaining.length > 0) {
+    const open = remaining.map((r) => ({ slot: r.slot, left: r.eligible.filter((c) => !used.has(c.userId)) }));
+    let next = open[0];
+    for (const o of open) if (o.left.length < next.left.length) next = o;
+    remaining = remaining.filter((r) => r.slot !== next.slot);
+
+    const best = [...next.left].sort(compare)[0];
     if (!best) {
-      unfilled.push(slot.slotId);
+      unfilled.push(next.slot.slotId);
       continue;
     }
     used.add(best.userId);
-    picks.push({ slotId: slot.slotId, userId: best.userId });
+    picks.push({ slotId: next.slot.slotId, userId: best.userId });
   }
 
   return { picks, unfilled };
@@ -67,6 +70,9 @@ export type SuggestActionResult =
 // Texto e efeito na tela depois de "Sugerir escalação".
 export function suggestOutcome(res: SuggestActionResult): { message: string; isError: boolean; refresh: boolean } {
   if (!res.ok) return { message: res.error, isError: true, refresh: false };
+  if (res.filled === 0 && res.unfilled === 0) {
+    return { message: "Nenhuma vaga aberta nesta data.", isError: false, refresh: false };
+  }
   const vagas = res.filled === 1 ? "vaga preenchida" : "vagas preenchidas";
   return {
     message: `${res.filled} ${vagas}, ${res.unfilled} sem candidato`,

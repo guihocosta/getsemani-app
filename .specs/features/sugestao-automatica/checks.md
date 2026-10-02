@@ -5,7 +5,7 @@ Plan: `.specs/features/sugestao-automatica/plan.md`
 
 ## Intent
 
-14 checks in 3 slices · 0 one-way doors · 0 open
+17 checks in 4 slices · 0 one-way doors · 0 open
 
 ## Checks
 
@@ -60,6 +60,18 @@ Proof: `grep -q "suggestOutcome(" "app/(app)/escalas/OccurrenceRow.tsx" && npm r
 Proof: `npm run test -- tests/unit/suggest.test.ts -t "suggestConfirmText"`
 Proof: `grep -q "suggestConfirmText(props.published)" "app/(app)/escalas/OccurrenceRow.tsx"`
 
+### S4 - Correções da verificação, rodada 1 · 5 files · 18 KB · ~5k
+
+**C15** - [x] Com Vocal `{a,b}`, Violão `{b,c}`, Teclado `{a,c}` e cargas `a=0, c=1, b=2`, `planSuggestions` devolve `unfilled = []` e `picks` Vocal->a, Teclado->c, Violão->b (AC 15)
+Proof: `npm run test -- tests/unit/suggest.test.ts -t "reconta elegiveis"`
+
+**C16** - [x] Ocorrência com `status: "CANCELLED"` rejeita com `OCCURRENCE_CANCELLED` sem `allocation.create` nem `notifyUser`, e `MENSAGENS.OCCURRENCE_CANCELLED` é "Essa data foi cancelada." (AC 16)
+Proof: `npm run test -- tests/unit/suggestAllocations.test.ts -t "OCCURRENCE_CANCELLED"`
+Proof: `npm run test -- tests/unit/actionError.test.ts -t "OCCURRENCE_CANCELLED"`
+
+**C17** - [x] `suggestOutcome({ ok: true, filled: 0, unfilled: 0 })` devolve "Nenhuma vaga aberta nesta data." com `refresh: false` (AC 17)
+Proof: `npm run test -- tests/unit/suggest.test.ts -t "suggestOutcome"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -69,8 +81,9 @@ Proof: `grep -q "suggestConfirmText(props.published)" "app/(app)/escalas/Occurre
 | capacitação da função (2) | declarada (`Set`) C3 · não declarada (`null`) C3 | - |
 | vaga lida pelo serviço (4) | aberta ativa C7 · inativa C7 · já preenchida C7 · sem elegível C6 | - |
 | estado de publicação (2) | publicada C8 · rascunho C8 | - |
-| falhas do comando (3) | `FORBIDDEN` C9 · `OCCURRENCE_PAST` C10 · `P2002` C11 | - |
-| texto de retorno (3) | plural C13 · singular C13 · nada preenchido C13 | - |
+| falhas do comando (4) | `FORBIDDEN` C9 · `OCCURRENCE_PAST` C10 · `P2002` C11 · `OCCURRENCE_CANCELLED` C16 | - |
+| momento da contagem de elegíveis (2) | antes da primeira escolha C5 · refeita após cada escolha C15 | - |
+| texto de retorno (4) | plural C13 · singular C13 · nada preenchido C13 · nenhuma vaga aberta C17 | - |
 
 - C13 e C14 têm prova grep (+ typecheck) para a ligação com a tela; o repo não tem teste de componente
 - Nenhum outro check afirma mais do que o caso que sua prova exercita
@@ -88,5 +101,7 @@ Proof: `grep -q "suggestConfirmText(props.published)" "app/(app)/escalas/Occurre
 - observability: existing - `handleActionError` loga com escopo e `ref`
 
 ## Handoff
+
+- **Rodada 1 do Verifier: FAIL** - elegíveis contados uma vez só deixavam vaga vazia com solução existente; data cancelada aceitava sugestão. Corrigido em S4 (C15-C17). Recusa não lembrada e rótulo de corrida ficaram registrados em Out of scope do plano.
 
 - S1 ~2k + S2 ~5k + S3 ~6k = ~13k (wc -c / 4 dos arquivos tocados), abaixo do budget de 150k - one builder

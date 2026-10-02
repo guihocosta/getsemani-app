@@ -13,6 +13,7 @@ const ALL_CODES: ActionCode[] = [
   "INVALID_INPUT",
   "ALREADY_IN_SETLIST",
   "OCCURRENCE_PAST",
+  "OCCURRENCE_CANCELLED",
   "NOT_OWNER",
   "UNAVAILABILITY_BLOCKED",
   "NO_ALLOCATION",
@@ -51,6 +52,11 @@ describe("toActionCode", () => {
 });
 
 describe("MENSAGENS", () => {
+  it("OCCURRENCE_CANCELLED avisa que a data foi cancelada", () => {
+    expect(toActionCode(new Error("OCCURRENCE_CANCELLED"))).toBe("OCCURRENCE_CANCELLED");
+    expect(MENSAGENS.OCCURRENCE_CANCELLED).toBe("Essa data foi cancelada.");
+  });
+
   it("OCCURRENCE_PAST avisa que a data ja passou", () => {
     expect(toActionCode(new Error("OCCURRENCE_PAST"))).toBe("OCCURRENCE_PAST");
     expect(MENSAGENS.OCCURRENCE_PAST).toBe("Essa data já passou.");
