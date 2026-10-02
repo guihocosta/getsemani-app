@@ -57,18 +57,35 @@
 
 ## Handoff
 
-**Última sessão**: 2026-08-26
-**Branch**: `feat/capacitacao-vaga-rodizio`
-**Estado**: as 3 features do pedido original estão concluídas e validadas (Verifier PASS nas 3). Nada foi pushado — tudo local na branch `feat/capacitacao-vaga-rodizio`, hook `commit-msg` ativo.
+**Última sessão**: 2026-10-02
+**Branch**: `feat/backlog-louveapp` (a partir de `master` em `0099754`). Nada foi pushado.
+**Estado**: backlog LouveApp (`docs/discovery/2026-09-21-louveapp.md`) entregue em 8 features, todas com Verifier independente PASS e `validate_verification.py` exit 0. Suíte: 377 testes, typecheck e lint limpos.
 
-**Artefatos**:
+**Artefatos** (`.specs/features/<feature>/` com `plan.md`, `checks.md`, `verification.md`):
 
-- `.specs/features/capacitacoes/` — spec + design (+ addendum de T13) + tasks (13/13) + validation.md (PASS, 21/21 ACs, 0 mutantes sobreviventes) — **Done**
-- `.specs/features/cancelar-vaga-vazia/` — spec (VAGA-01) + validation.md (PASS, 5/5 ACs por inspeção) — **Done**
-- `.specs/features/repetir-escalacao/` — spec + design + tasks (9/9) + validation.md (PASS, 18/18 ACs após 1 rodada de fix→re-verify) — **Done**
+| Feature | Checks | Rodadas do Verifier | Migração |
+| --- | --- | --- | --- |
+| `presenca-faltas` | 12 | 1 | - |
+| `rascunho-publicar` | 19 | 2 (rodada 1: troca/confirmação por id furavam o rascunho) | `20261002180000_occurrence_published` |
+| `repertorio` | 29 | 3 (módulo desligado ainda aceitava mover/remover; reordenar quebrava com buraco) | `20261002190000_repertoire` |
+| `panorama` | 11 | 1 | - |
+| `avisos` | 12 | 2 | `20261002200000_announcements` |
+| `sugestao-automatica` | 17 | 2 (elegíveis contados uma vez só; data cancelada aceitava sugestão) | - |
+| `visao-geral` | 7 | 1 | - |
+| `aniversariantes` | 10 | 2 (matriz de capacitação mandava a linha `User` inteira ao client) | `20261002210000_user_birth_date` |
 
-**Gaps reais corrigidos durante Execute** (ambos com fix→re-verify, Verifier confirmou PASS depois):
-- `capacitacoes` T13: design original assumia capacidade por vaga, mas `getOccurrenceCandidatesAction` cacheia candidatos por ocorrência (várias funções). Corrigido com `capableUserIdsByRole` + `markCapable` client-side — ver Addendum em `capacitacoes/design.md`.
-- `repetir-escalacao`: (1) mutante sobrevivente em `decideCopyAllocation` — faltava teste de precedência membership-antes-de-capacitação (código já estava certo, só o teste faltava); (2) gap funcional — função sem ninguém capacitado bloqueava 100% das cópias, contradizendo AD-002; corrigido em `repeatSchedule.ts` (capacidade só bloqueia se alguém já foi marcado capaz).
+**Bloqueia go-live**: as 4 migrações estão commitadas e NÃO aplicadas (AD-008). `npm run db:deploy` precisa rodar antes de o código subir, senão produção quebra ao ler colunas/tabelas novas. Push e deploy pedem autorização explícita.
 
-**Próximo passo**: nada pendente do pedido original. Falta decidir com o usuário: revisar o diff, abrir PR, ou dar `git push` (nenhum feito ainda — exige autorização explícita separada da aprovação do Execute).
+**Não verificado**: nenhuma tela foi aberta em navegador nem rodada contra banco real (provas são de unidade com Prisma mockado + grep/typecheck para a ligação com a tela). `npm run build` e `npm run test:e2e` não foram rodados.
+
+**Decisões de produto tomadas sem o usuário** (ver `Assumptions` e `Out of scope` de cada plano; todas com `Confirmed? n`):
+- rascunho é por data (`Occurrence.published`), não por série; default publicado
+- falta = sem check-in depois que o dia acabou; selo "faltou" só para quem gerencia
+- repertório é por ministério, ligado pelo admin; classificação é texto livre; uma classificação por música
+- sugestão: capacitação declarada bloqueia; regra gulosa com recontagem (não garante preenchimento máximo: ~1-3% dos arranjos deixam vaga vazia com solução existente); quem recusou pode ser sugerido de novo
+- aniversário: só dia e mês aparecem para quem divide ministério; campo opcional
+- avisos são por ministério; não há aviso para a igreja inteira
+
+**Seguimentos sugeridos**: emparelhamento máximo na sugestão; guardar recusa de escala; líder marcar presença manualmente; série que já nasce em rascunho; itens do discovery fora desta seleção (roteiro do culto, equipes, metrônomo, lixeira).
+
+**Próximo passo**: usuário revisa o diff e as decisões acima, autoriza `db:deploy` e depois push/PR.
