@@ -87,7 +87,7 @@ Proof: `test "$(cat src/modules/scheduling/services/allocateVolunteer.ts src/mod
 | direção da alternância (2) | para rascunho C1 · para publicada C2 | - |
 | alocação na publicação (2) | com conta C2 · convidado C3 | - |
 | serviços que notificam em `scheduling` (8) | `allocateVolunteer.ts` C7, C8 · `allocateGuest.ts` C8 · `linkGuestAllocation.ts` C8 · `repeatSchedule.ts` C8 · `setSlotActive.ts` C8 · `publishOccurrence.ts` C2 · `swap.ts` C16, C17 (barrado antes de notificar) · `respondAllocation.ts` C18 (barrado antes de notificar) | - |
-| serviços que aceitam id de vaga/alocação/troca vindos do voluntário (7) | `selfAllocate` C12 · `requestSwap` C16 · `claimSwap` C17 · `confirmAllocation` C18 · `declineAllocation` C18 · `checkInAllocation` C18 · `cancelSwap` fora de escopo no plano (só fecha o próprio pedido) | - |
+| serviços que aceitam id de vaga/alocação/troca vindos do voluntário que precisam do gate (6) | `selfAllocate` C12 · `requestSwap` C16 · `claimSwap` C17 · `confirmAllocation` C18 · `declineAllocation` C18 · `checkInAllocation` C18 | - |
 | decisão do aviso de remoção (4) | rascunho + nunca soube C19 · rascunho + já avisado C19 · rascunho + confirmado C19 · publicada C19 | - |
 | leituras que escondem rascunho (6) | `listMonthOccurrences` C9 · `getMySchedule` C10 · `/vagas` livres C11 · `/vagas` trocas C11 · cron `reminders` C13 · `attendanceRows` C13 | - |
 | estado do helper (2) | rascunho C6 · publicada C6 | - |
@@ -95,6 +95,7 @@ Proof: `test "$(cat src/modules/scheduling/services/allocateVolunteer.ts src/mod
 | door 1 (2 lugares) | schema C5 · migração C5 | - |
 
 - C8, C11 e a 2ª prova de C13/C14 são grep: a consulta mora inline em página/rota sem teste de unidade no repo; C7 prova o comportamento em um dos cinco serviços no próprio nível
+- `cancelSwap` também aceita id do voluntário e fica sem gate de propósito (Out of scope do plano): só fecha o próprio pedido, não notifica nem expõe a data
 - Nenhum outro check afirma mais do que o caso que sua prova exercita
 
 ## Swept
