@@ -15,6 +15,7 @@ export type MonthOccurrenceItem = {
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  time: string; // HH:mm (APP_TZ)
   title: string;
   when: string;
   slots: {
@@ -67,6 +68,7 @@ export async function listMonthOccurrences(
     published: o.published,
     repertoireEnabled: o.schedule.ministry.repertoireEnabled,
     dayKey: dateKey(o.date),
+    time: fmtTime(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
     slots: o.slots.map((s) => ({

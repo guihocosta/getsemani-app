@@ -21,6 +21,7 @@ export type Item = {
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  time: string; // HH:mm
   title: string;
   when: string;
   slots: Slot[];

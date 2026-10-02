@@ -51,4 +51,14 @@ describe("listMonthOccurrences", () => {
       ["o2", false],
     ]);
   });
+
+  it("time vem em HH:mm no fuso do app", async () => {
+    // 22:00 UTC = 19:00 em America/Sao_Paulo
+    vi.mocked(prisma.occurrence.findMany).mockResolvedValue([row("o1", true)] as never);
+
+    const [item] = await listMonthOccurrences(["m1"], 2026, 10, []);
+
+    expect(item.time).toBe("19:00");
+    expect(item.dayKey).toBe("2026-10-11");
+  });
 });
