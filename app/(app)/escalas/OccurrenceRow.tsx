@@ -15,6 +15,7 @@ import {
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   repeatScheduleAction,
+  suggestAllocationsAction,
   setOccurrencePublishedAction,
   type AllocationCandidate,
 } from "./actions";
@@ -26,6 +27,7 @@ import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
 import { publishMenuItem } from "@/modules/scheduling/domain/publish";
+import { suggestOutcome, suggestConfirmText } from "@/modules/scheduling/domain/suggest";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -259,6 +261,22 @@ export function OccurrenceRow(props: {
     });
   }
 
+  async function suggest() {
+    const ok = await confirm({
+      title: "Sugerir escalação?",
+      description: suggestConfirmText(props.published),
+      confirmLabel: "Sugerir",
+    });
+    if (!ok) return;
+    setRepeatNote(null);
+    start(async () => {
+      const out = suggestOutcome(await suggestAllocationsAction(props.occurrenceId));
+      setRepeatNote({ message: out.message, isError: out.isError });
+      // erro no meio pode ter gravado vagas, entao recarrega tambem
+      if (out.refresh || out.isError) props.onChanged();
+    });
+  }
+
   const publishItem = publishMenuItem(props.published);
 
   async function togglePublish() {
@@ -367,6 +385,7 @@ export function OccurrenceRow(props: {
               publishLabel={publishItem.label}
               onTogglePublish={togglePublish}
               onRepeat={repeatSchedule}
+              onSuggest={suggest}
               rotationCycle={props.rotationCycle}
               onDeleteSingle={() => del("SINGLE")}
               onDeleteFromHere={() => del("FROM_HERE")}

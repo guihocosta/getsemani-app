@@ -16,6 +16,7 @@ export type ActionCode =
   | "MODULE_DISABLED"
   | "INVALID_INPUT"
   | "ALREADY_IN_SETLIST"
+  | "OCCURRENCE_PAST"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -34,6 +35,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   MODULE_DISABLED: "O repertório não está ativo nesse ministério.",
   INVALID_INPUT: "Confira os campos e tente de novo.",
   ALREADY_IN_SETLIST: "Essa música já está na escala.",
+  OCCURRENCE_PAST: "Essa data já passou.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 

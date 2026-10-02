@@ -12,6 +12,7 @@ const ALL_CODES: ActionCode[] = [
   "MODULE_DISABLED",
   "INVALID_INPUT",
   "ALREADY_IN_SETLIST",
+  "OCCURRENCE_PAST",
   "NOT_OWNER",
   "UNAVAILABILITY_BLOCKED",
   "NO_ALLOCATION",
@@ -50,6 +51,11 @@ describe("toActionCode", () => {
 });
 
 describe("MENSAGENS", () => {
+  it("OCCURRENCE_PAST avisa que a data ja passou", () => {
+    expect(toActionCode(new Error("OCCURRENCE_PAST"))).toBe("OCCURRENCE_PAST");
+    expect(MENSAGENS.OCCURRENCE_PAST).toBe("Essa data já passou.");
+  });
+
   it("NOT_PUBLISHED avisa que a escala ainda nao foi publicada", () => {
     expect(toActionCode(new Error("NOT_PUBLISHED"))).toBe("NOT_PUBLISHED");
     expect(MENSAGENS.NOT_PUBLISHED).toBe("Essa escala ainda não foi publicada.");

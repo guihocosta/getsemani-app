@@ -11,6 +11,8 @@ import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllo
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
 import { setOccurrencePublished } from "@/modules/scheduling/services/publishOccurrence";
+import { suggestAllocations } from "@/modules/scheduling/services/suggestAllocations";
+import type { SuggestActionResult } from "@/modules/scheduling/domain/suggest";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/domain/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
@@ -19,7 +21,7 @@ import { visibleMinistryIds, listMonthOccurrences, ledMinistryIds } from "@/modu
 import { prisma } from "@/lib/prisma";
 import { loadByPerson } from "@/modules/reports/services/reports";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
-import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
+import { isRedirectError, handleActionError, MENSAGENS, type ActionCode } from "@/lib/actionError";
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
@@ -368,6 +370,21 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
 // futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
 // porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas), mas
 // com as mesmas garantias: relanca redirect e loga o inesperado com ref.
+// Lider preenche as vagas abertas da data pela regra de sugestao (sem IA).
+export async function suggestAllocationsAction(occurrenceId: string): Promise<SuggestActionResult> {
+  try {
+    const result = await suggestAllocations(occurrenceId);
+    revalidatePath("/escalas");
+    revalidatePath("/");
+    return { ok: true, ...result };
+  } catch (e) {
+    const failure = handleActionError("escalas.suggest", e, { occurrenceId });
+    // falha no meio pode ter gravado vagas: a tela recarrega mesmo com erro
+    revalidatePath("/escalas");
+    return { ok: false, error: `${MENSAGENS[failure.code]} · cód. ${failure.ref}` };
+  }
+}
+
 export async function repeatScheduleAction(scheduleId: string): Promise<RepeatActionResult> {
   try {
     const result = await repeatSchedule(scheduleId);
