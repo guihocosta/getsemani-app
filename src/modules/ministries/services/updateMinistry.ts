@@ -8,6 +8,7 @@ export async function updateMinistry(params: {
   name?: string;
   color?: string;
   description?: string;
+  repertoireEnabled?: boolean;
 }) {
   await requireAdmin();
 
@@ -20,6 +21,7 @@ export async function updateMinistry(params: {
       ...(name !== undefined ? { name } : {}),
       ...(params.color !== undefined ? { color: params.color.trim() || null } : {}),
       ...(params.description !== undefined ? { description: params.description.trim() || null } : {}),
+      ...(params.repertoireEnabled !== undefined ? { repertoireEnabled: params.repertoireEnabled } : {}),
     },
   });
 }

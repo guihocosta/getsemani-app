@@ -18,8 +18,10 @@ export async function updateMinistryAction(params: {
   name?: string;
   color?: string;
   description?: string;
+  repertoireEnabled?: boolean;
 }) {
   await updateMinistry(params);
+  revalidatePath("/repertorio");
   revalidatePath("/admin/ministerios");
 }
 

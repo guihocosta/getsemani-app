@@ -80,10 +80,12 @@ model Ministry {
   description String?
   color       String?
   createdAt   DateTime @default(now())
+  repertoireEnabled Boolean @default(false) // modulo opcional: repertorio de musicas
 
   roles       Role[]
   memberships Membership[]
   schedules   Schedule[]
+  songs       Song[]
 }
 
 model Membership {
@@ -171,6 +173,7 @@ model Occurrence {
 
   schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   slots    Slot[]
+  songs    OccurrenceSong[]
 
   @@unique([scheduleId, date])
   @@index([date])
@@ -265,4 +268,57 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Repertorio (modulo `repertoire`): musica de um ministerio.
+model Song {
+  id         String   @id @default(uuid()) @db.Uuid
+  ministryId String   @db.Uuid
+  title      String
+  artist     String?
+  category   String? // classificacao em texto livre (Louvor, Adoracao, Ceia...)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  ministry Ministry      @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  versions SongVersion[]
+
+  @@index([ministryId, title])
+}
+
+// Um arranjo da musica. E a versao, nao a musica, que entra na escala.
+model SongVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  songId      String   @db.Uuid
+  name        String
+  key         String? // tom
+  bpm         Int?
+  durationSec Int?
+  notes       String?
+  lyricsUrl   String?
+  chordsUrl   String?
+  audioUrl    String?
+  videoUrl    String?
+  createdAt   DateTime @default(now())
+
+  song        Song             @relation(fields: [songId], references: [id], onDelete: Cascade)
+  occurrences OccurrenceSong[]
+
+  @@index([songId])
+}
+
+// Lista de musicas de uma ocorrencia, em ordem.
+model OccurrenceSong {
+  id            String   @id @default(uuid()) @db.Uuid
+  occurrenceId  String   @db.Uuid
+  songVersionId String   @db.Uuid
+  position      Int
+  createdAt     DateTime @default(now())
+
+  occurrence Occurrence  @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  version    SongVersion @relation(fields: [songVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([occurrenceId, songVersionId])
+  @@index([occurrenceId, position])
 }
