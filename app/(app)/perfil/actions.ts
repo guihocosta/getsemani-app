@@ -5,12 +5,29 @@ import { redirect } from "next/navigation";
 import { updateProfile } from "@/modules/identity/services/updateProfile";
 import { setOwnSkill } from "@/modules/ministries/services/userSkills";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { handleActionError, type ActionCode } from "@/lib/actionError";
+import { handleActionError, isRedirectError, type ActionCode } from "@/lib/actionError";
+import { logError } from "@/lib/logError";
 
-export async function updateProfileAction(params: { name: string; phone?: string }) {
-  await updateProfile(params);
-  revalidatePath("/perfil");
-  revalidatePath("/");
+// Devolve o codigo em vez de lancar: mensagem de erro lancada por Server Action
+// nao chega ao client em producao.
+export async function updateProfileAction(params: {
+  name: string;
+  phone?: string;
+  birthDate?: string;
+}): Promise<{ ok: true } | { ok: false; code: "INVALID_NAME" | "INVALID_BIRTH_DATE" | "UNKNOWN" }> {
+  try {
+    await updateProfile(params);
+    revalidatePath("/perfil");
+    revalidatePath("/aniversariantes");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    const msg = (e as Error)?.message;
+    if (msg === "INVALID_NAME" || msg === "INVALID_BIRTH_DATE") return { ok: false, code: msg };
+    logError("perfil.updateProfile", e);
+    return { ok: false, code: "UNKNOWN" };
+  }
 }
 
 export async function setOwnSkillAction(

@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Bell, Megaphone, Music } from "lucide-react";
+import { Bell, Cake, Megaphone, Music } from "lucide-react";
 import { requireUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { ledMinistryIds, visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
 import { repertoireMinistries } from "@/modules/ministries/services/modules";
 import { listPinnedAnnouncements } from "@/modules/announcements/services/announcements";
+import { listBirthdays } from "@/modules/identity/services/birthdays";
+import { isBirthdayToday } from "@/modules/identity/domain/birthday";
 import { prisma } from "@/lib/prisma";
 import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
@@ -31,10 +33,13 @@ export default async function HomePage() {
   const showGestaoResumo = user.isAdmin || isLeader;
 
   const memberIds = await visibleMinistryIds(user.id, user.isAdmin);
-  const [items, repertoire, pinned, pendingCount] = await Promise.all([
+  const todayKey = dateKey(new Date());
+  const todayMonth = Number(todayKey.slice(5, 7));
+  const [items, repertoire, pinned, birthdays, pendingCount] = await Promise.all([
     getMySchedule(user.id),
     repertoireMinistries(memberIds),
     listPinnedAnnouncements(memberIds),
+    listBirthdays(todayMonth, memberIds),
     showGestaoResumo
       ? (async () => {
           const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
@@ -45,7 +50,7 @@ export default async function HomePage() {
       : Promise.resolve(0),
   ]);
 
-  const todayKey = dateKey(new Date());
+  const birthdaysToday = birthdays.filter((b) => isBirthdayToday(b.day, todayMonth, todayKey));
   const pendingItems = items.filter((it) => it.status === "PENDING");
   
   const confirmedItems = items.filter((it) => it.status !== "PENDING");
@@ -95,6 +100,16 @@ export default async function HomePage() {
         {repertoire.length > 0 && (
           <NavRow href="/repertorio" label="Repertório" subtitle="Músicas, tons e links" Icon={Music} />
         )}
+        <NavRow
+          href="/aniversariantes"
+          label="Aniversariantes"
+          subtitle={
+            birthdaysToday.length > 0
+              ? `Hoje: ${birthdaysToday.map((b) => b.name.split(" ")[0]).join(", ")}`
+              : `${birthdays.length} neste mês`
+          }
+          Icon={Cake}
+        />
       </Card>
 
       {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
