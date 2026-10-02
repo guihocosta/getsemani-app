@@ -3,10 +3,16 @@ import { sendPush } from "@/lib/push";
 import { logError } from "@/lib/logError";
 import type { NotificationType } from "@prisma/client";
 
-// Verdadeiro se a notificacao com esse dedupeKey ja foi enviada.
+// Verdadeiro se a notificacao com esse dedupeKey ja foi enviada. Nunca lanca,
+// pelo mesmo motivo de notifyUser: quem chama ja gravou a mudanca de dominio.
 export async function wasNotified(dedupeKey: string): Promise<boolean> {
-  const existing = await prisma.notification.findUnique({ where: { dedupeKey } });
-  return !!existing?.sentAt;
+  try {
+    const existing = await prisma.notification.findUnique({ where: { dedupeKey } });
+    return !!existing?.sentAt;
+  } catch (err) {
+    logError("notify.wasNotified", err, { dedupeKey });
+    return false;
+  }
 }
 
 // Envia push para todos os devices do usuario, idempotente por dedupeKey.

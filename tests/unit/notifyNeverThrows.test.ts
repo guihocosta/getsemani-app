@@ -18,7 +18,7 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/push", () => ({ sendPush: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyUser, wasNotified } from "@/modules/notifications/services/notify";
 
 const base = { userId: "u1", type: "ASSIGNMENT" as const, title: "t", body: "b" };
 
@@ -58,5 +58,22 @@ describe("notifyUser nunca lanca", () => {
 
     const result = await notifyUser({ ...base, dedupeKey: "k4" });
     expect(result).toBe("sent");
+  });
+});
+
+describe("wasNotified nunca lanca", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("resolve false se a consulta falhar", async () => {
+    vi.mocked(prisma.notification.findUnique).mockRejectedValue(new Error("db down"));
+    expect(await wasNotified("assign:al1")).toBe(false);
+  });
+
+  it("resolve true so quando ja foi enviada", async () => {
+    vi.mocked(prisma.notification.findUnique).mockResolvedValue({ sentAt: new Date() } as never);
+    expect(await wasNotified("assign:al1")).toBe(true);
+
+    vi.mocked(prisma.notification.findUnique).mockResolvedValue({ sentAt: null } as never);
+    expect(await wasNotified("assign:al1")).toBe(false);
   });
 });
