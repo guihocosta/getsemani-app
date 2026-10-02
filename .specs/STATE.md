@@ -35,6 +35,24 @@
 **Decisão**: `capacitacoes` → `cancelar-vaga-vazia` → `repetir-escalacao`.
 **Motivo**: `repetir-escalacao` consome `capableUserIdsForRole` para pular quem perdeu a capacitação. `cancelar-vaga-vazia` é independente e entra no meio por ser barata.
 
+### AD-006 — Ocorrência em rascunho: toda leitura e ação de voluntário filtra `published`
+
+**Data**: 2026-10-02
+**Decisão**: `Occurrence.published` (default `true`). Rascunho só aparece para quem gerencia o ministério e não notifica. Toda consulta nova que mostre ocorrência, vaga ou alocação a quem não gerencia filtra `published: true`; todo serviço novo que aceite id de vaga/alocação vindo do voluntário rejeita com `NOT_PUBLISHED`; notificação nova em `scheduling` passa por `notifyIfPublished`.
+**Motivo**: a rodada 1 do Verifier de `rascunho-publicar` achou vazamento exatamente nos serviços que não estavam na lista (troca, confirmação, check-in). A regra vale para as próximas features (panorama, dashboard, sugestão automática).
+
+### AD-007 — Módulo opcional por ministério é um booleano em `Ministry`
+
+**Data**: 2026-10-02
+**Decisão**: `Ministry.repertoireEnabled` (default `false`), ligado pelo admin. Serviço do módulo checa com `assertRepertoireEnabled`; desligar preserva os dados e bloqueia o acesso. Próximo módulo opcional segue o mesmo formato até existir motivo para uma tabela genérica.
+**Motivo**: só existe um módulo opcional; tabela `MinistryModule` seria estrutura sem segundo uso.
+
+### AD-008 — Migração é commitada, não aplicada, pelas features
+
+**Data**: 2026-10-02
+**Decisão**: o SQL sai de `prisma migrate diff --from-schema-datamodel <schema anterior> --to-schema-datamodel prisma/schema.prisma --script` (não precisa de banco) e é commitado em `prisma/migrations/`. Aplicar (`npm run db:deploy`) é ação separada, com autorização explícita, e precisa acontecer antes do deploy do código.
+**Motivo**: `DATABASE_URL` aponta para o banco real; mudança em produção não é coberta pela aprovação do plano.
+
 ---
 
 ## Handoff
