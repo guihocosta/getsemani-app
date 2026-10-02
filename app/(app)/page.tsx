@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
-import { Bell } from "lucide-react";
+import Link from "next/link";
+import { Bell, Music } from "lucide-react";
 import { requireUser, isLeaderOfAny } from "@/modules/identity/services/authz";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds, visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { repertoireMinistries } from "@/modules/ministries/services/modules";
 import { prisma } from "@/lib/prisma";
 import { getMySchedule } from "@/modules/scheduling/services/getMySchedule";
 import { Card } from "@/ui/Card";
@@ -27,8 +29,9 @@ export default async function HomePage() {
   const isLeader = await isLeaderOfAny(user.id);
   const showGestaoResumo = user.isAdmin || isLeader;
 
-  const [items, pendingCount] = await Promise.all([
+  const [items, repertoire, pendingCount] = await Promise.all([
     getMySchedule(user.id),
+    visibleMinistryIds(user.id, user.isAdmin).then(repertoireMinistries),
     showGestaoResumo
       ? (async () => {
           const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
@@ -65,6 +68,12 @@ export default async function HomePage() {
         </Card>
       )}
 
+      {repertoire.length > 0 && (
+        <Card className="mb-8">
+          <NavRow href="/repertorio" label="Repertório" subtitle="Músicas, tons e links" Icon={Music} />
+        </Card>
+      )}
+
       {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
 
       {todayItems.length > 0 && <TodayCheckInCard items={todayItems} />}
@@ -87,7 +96,16 @@ export default async function HomePage() {
               <p className="font-title text-3xl text-primary">{fmtTime(futureItems[0].date)}</p>
             </div>
             <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-              <div />
+              {futureItems[0].repertoireEnabled ? (
+                <Link
+                  href={`/repertorio/escala/${futureItems[0].occurrenceId}`}
+                  className="text-sm text-primary font-medium underline underline-offset-2"
+                >
+                  Músicas
+                </Link>
+              ) : (
+                <div />
+              )}
               <AllocationActions
                 allocationId={futureItems[0].allocationId}
                 status={futureItems[0].status}

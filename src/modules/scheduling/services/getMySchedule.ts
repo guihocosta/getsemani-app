@@ -4,6 +4,8 @@ import type { AllocationStatus } from "@prisma/client";
 
 export type UpcomingItem = {
   allocationId: string;
+  occurrenceId: string;
+  repertoireEnabled: boolean;
   date: Date;
   ministry: string;
   role: string;
@@ -34,6 +36,8 @@ export async function getMySchedule(userId: string, from = startOfDay(new Date()
   return allocs
     .map((a) => ({
       allocationId: a.id,
+      occurrenceId: a.slot.occurrenceId,
+      repertoireEnabled: a.slot.occurrence.schedule.ministry.repertoireEnabled,
       date: a.slot.occurrence.date,
       ministry: a.slot.occurrence.schedule.ministry.name,
       role: a.slot.role.name,

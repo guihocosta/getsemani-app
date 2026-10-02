@@ -7,13 +7,13 @@ vi.mock("@/lib/prisma", () => ({
 import { prisma } from "@/lib/prisma";
 import { listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
 
-function row(id: string, published: boolean) {
+function row(id: string, published: boolean, repertoireEnabled = false) {
   return {
     id,
     scheduleId: "sc1",
     date: new Date("2026-10-11T22:00:00Z"),
     published,
-    schedule: { ministryId: "m1", rotationCycle: null, title: "Culto", ministry: { name: "Louvor" } },
+    schedule: { ministryId: "m1", rotationCycle: null, title: "Culto", ministry: { name: "Louvor", repertoireEnabled } },
     slots: [],
   };
 }
@@ -33,6 +33,20 @@ describe("listMonthOccurrences", () => {
       }),
     );
     expect(items.map((i) => [i.occurrenceId, i.published])).toEqual([
+      ["o1", true],
+      ["o2", false],
+    ]);
+  });
+
+  it("repertoireEnabled acompanha o flag do ministerio da data", async () => {
+    vi.mocked(prisma.occurrence.findMany).mockResolvedValue([
+      row("o1", true, true),
+      row("o2", true, false),
+    ] as never);
+
+    const items = await listMonthOccurrences(["m1"], 2026, 10, []);
+
+    expect(items.map((i) => [i.occurrenceId, i.repertoireEnabled])).toEqual([
       ["o1", true],
       ["o2", false],
     ]);

@@ -13,6 +13,7 @@ export type MonthOccurrenceItem = {
   ministryId: string;
   rotationCycle: number | null;
   published: boolean;
+  repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
   title: string;
   when: string;
@@ -64,6 +65,7 @@ export async function listMonthOccurrences(
     ministryId: o.schedule.ministryId,
     rotationCycle: o.schedule.rotationCycle,
     published: o.published,
+    repertoireEnabled: o.schedule.ministry.repertoireEnabled,
     dayKey: dateKey(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,

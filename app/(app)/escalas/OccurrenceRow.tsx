@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Music, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
@@ -47,6 +48,7 @@ export function OccurrenceRow(props: {
   scheduleId: string;
   rotationCycle: number | null;
   published: boolean;
+  repertoireEnabled: boolean;
   title: string;
   when: string;
   slots: Slot[];
@@ -437,6 +439,16 @@ export function OccurrenceRow(props: {
               </li>
             ))}
         </ul>
+
+        {props.repertoireEnabled && (
+          <Link
+            href={`/repertorio/escala/${props.occurrenceId}`}
+            className="mt-2 min-h-11 inline-flex items-center gap-1.5 text-sm text-primary font-medium"
+          >
+            <Music size={14} strokeWidth={1.8} />
+            Músicas
+          </Link>
+        )}
 
         {props.canManage && props.slots.some((s) => !s.active) && (
           <ul className="flex flex-col gap-1 mt-3 pt-3 border-t border-border">

@@ -8,6 +8,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     ministryId: "min-1",
     rotationCycle: null,
     published: true,
+    repertoireEnabled: false,
     dayKey: "2026-07-27",
     title: "Culto",
     when: "27/07 10:00",

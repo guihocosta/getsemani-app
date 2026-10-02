@@ -21,4 +21,28 @@ describe("getMySchedule", () => {
       }),
     );
   });
+
+  it("repertoireEnabled e occurrenceId acompanham a data", async () => {
+    vi.mocked(prisma.allocation.findMany).mockResolvedValue([
+      {
+        id: "al1",
+        status: "CONFIRMED",
+        checkedInAt: null,
+        swapRequest: null,
+        slot: {
+          occurrenceId: "o1",
+          role: { name: "Som" },
+          occurrence: {
+            date: new Date("2026-10-11T22:00:00Z"),
+            schedule: { ministry: { name: "Louvor", repertoireEnabled: true } },
+          },
+        },
+      },
+    ] as never);
+
+    const [item] = await getMySchedule("u1", new Date("2026-10-02T03:00:00Z"));
+
+    expect(item.occurrenceId).toBe("o1");
+    expect(item.repertoireEnabled).toBe(true);
+  });
 });

@@ -230,6 +230,7 @@ export function EscalaCalendar({
               scheduleId={o.scheduleId}
               rotationCycle={o.rotationCycle}
               published={o.published}
+              repertoireEnabled={o.repertoireEnabled}
               title={o.title}
               when={o.when}
               slots={o.slots}
