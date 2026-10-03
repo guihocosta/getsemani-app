@@ -118,6 +118,17 @@ mesmo gate.
 
 **Independent test:** com um pedido de troca aberto, tornar a data rascunho e tentar assumir por `/vagas` aberta antes: recebe "Essa escala ainda não foi publicada."
 
+### S6: Ajustes do julgamento do PR #1 (P1)
+
+Acrescentado após o julgamento do PR: publicar notificava quem o líder nunca escalou e datas que já não valem.
+
+**Acceptance Criteria**
+
+20. WHEN o líder publica uma data THEN o sistema SHALL notificar só alocações com conta e `source = LEADER`; alocação `SELF` ou `SWAP` SHALL não gerar aviso
+21. WHEN o líder publica uma data cancelada ou já passada THEN o sistema SHALL gravar `published` e SHALL não notificar ninguém
+
+**Independent test:** pegar uma vaga em `/vagas`, tornar a data rascunho e publicar: nenhum push de escalação chega a quem pegou a vaga.
+
 ## Out of scope
 
 | Excluded | Why |
@@ -125,6 +136,7 @@ mesmo gate.
 | Série que já nasce em rascunho (toggle no formulário da escala) | segunda fatia; o default publicado mantém o comportamento atual sem regressão |
 | Publicar/despublicar várias datas de uma vez | sem pedido; uma data por vez cobre o caso de montar o mês |
 | Avisar "sua escala foi retirada" ao voltar para rascunho | rascunho é silencioso por definição; o líder confirma antes |
+| Rejeitar a publicação de data passada ou cancelada | rejeitar prenderia a data em rascunho sem como republicar; o flag muda e o aviso é pulado (AC 21) |
 | Cancelar o próprio pedido de troca em data em rascunho | inofensivo: só fecha o pedido, não notifica nem expõe a data. Troca, confirmação, recusa e check-in viraram AC 16-18 |
 
 ## Assumptions

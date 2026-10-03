@@ -5,7 +5,7 @@ Plan: `.specs/features/rascunho-publicar/plan.md`
 
 ## Intent
 
-19 checks in 5 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
+21 checks in 6 slices · 1 one-way door · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -80,12 +80,22 @@ Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "resposta em rascunho"
 Proof: `npm run test -- tests/unit/draftGuards.test.ts -t "notifyRemoval"`
 Proof: `test "$(cat src/modules/scheduling/services/allocateVolunteer.ts src/modules/scheduling/services/allocateGuest.ts src/modules/scheduling/services/setSlotActive.ts | grep -c "notifyRemoval(")" -eq 3`
 
+### S6 - Ajustes do julgamento do PR #1 · 2 files · 6 KB · ~2k
+
+**C20** - [x] Ao publicar uma data com alocações `LEADER` (u1), `SELF` (u2) e `SWAP` (u3), só u1 recebe `notifyUser`, com `dedupeKey: "assign:al1"` (AC 20)
+Proof: `npm run test -- tests/unit/publishOccurrence.test.ts -t "so alocacao do lider"`
+
+**C21** - [x] Ao publicar uma data `CANCELLED`, ou com `date` no passado, `occurrence.update` grava `published: true` e `notifyUser` não é chamado (AC 21)
+Proof: `npm run test -- tests/unit/publishOccurrence.test.ts -t "data cancelada muda o flag"`
+Proof: `npm run test -- tests/unit/publishOccurrence.test.ts -t "data passada muda o flag"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | direção da alternância (2) | para rascunho C1 · para publicada C2 | - |
-| alocação na publicação (2) | com conta C2 · convidado C3 | - |
+| alocação na publicação (5) | com conta C2 · convidado C3 · `LEADER` C20 · `SELF` C20 · `SWAP` C20 | - |
+| data na publicação (3) | futura ativa C2 · cancelada C21 · passada C21 | - |
 | serviços que notificam em `scheduling` (8) | `allocateVolunteer.ts` C7, C8 · `allocateGuest.ts` C8 · `linkGuestAllocation.ts` C8 · `repeatSchedule.ts` C8 · `setSlotActive.ts` C8 · `publishOccurrence.ts` C2 · `swap.ts` C16, C17 (barrado antes de notificar) · `respondAllocation.ts` C18 (barrado antes de notificar) | - |
 | serviços que aceitam id de vaga/alocação/troca vindos do voluntário que precisam do gate (6) | `selfAllocate` C12 · `requestSwap` C16 · `claimSwap` C17 · `confirmAllocation` C18 · `declineAllocation` C18 · `checkInAllocation` C18 | - |
 | decisão do aviso de remoção (4) | rascunho + nunca soube C19 · rascunho + já avisado C19 · rascunho + confirmado C19 · publicada C19 | - |
@@ -111,6 +121,8 @@ Proof: `test "$(cat src/modules/scheduling/services/allocateVolunteer.ts src/mod
 - observability: existing - `handleActionError` loga com `ref` nas actions de `escalas`
 
 ## Handoff
+
+- **Julgamento do PR #1 (the-judge, rodada 1): COMMENT** com dois 🟠 em `publishOccurrence`: aviso a quem se auto-alocou e publicação sem guarda de data cancelada ou passada. Corrigidos em S6 (C20-C21).
 
 - **Rodada 1 do Verifier: FAIL** - C1-C15 verdes, mas troca/confirmação/check-in por id ignoravam o rascunho e o aviso de remoção se perdia. Corrigido em S5 (C16-C19).
 
