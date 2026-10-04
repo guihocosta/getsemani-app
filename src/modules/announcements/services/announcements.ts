@@ -81,6 +81,8 @@ function toItem(a: Row) {
   };
 }
 
+export const ANNOUNCEMENT_LIST_LIMIT = 50;
+
 const withNames = { ministry: { select: { name: true } }, author: { select: { name: true } } };
 
 // Avisos dos ministerios informados: destaque primeiro, depois os mais novos.
@@ -91,7 +93,7 @@ export async function listAnnouncements(ministryIds: string[]) {
     where: { ministryId: { in: ministryIds } },
     include: withNames,
     orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-    take: 50,
+    take: ANNOUNCEMENT_LIST_LIMIT,
   });
   return rows.map(toItem);
 }

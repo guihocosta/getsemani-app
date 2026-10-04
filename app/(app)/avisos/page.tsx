@@ -1,7 +1,7 @@
 import { requireUser } from "@/modules/identity/services/authz";
 import { listMinistries } from "@/modules/ministries/services/listMinistries";
 import { visibleMinistryIds, ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
-import { listAnnouncements } from "@/modules/announcements/services/announcements";
+import { listAnnouncements, ANNOUNCEMENT_LIST_LIMIT } from "@/modules/announcements/services/announcements";
 import { EmptyState } from "@/ui/EmptyState";
 import { fmtDate } from "@/lib/time";
 import { AnnouncementBoard } from "./AnnouncementBoard";
@@ -36,6 +36,11 @@ export default async function AvisosPage() {
         }))}
         manageable={manageable}
       />
+      {announcements.length >= ANNOUNCEMENT_LIST_LIMIT && (
+        <p className="text-xs text-text-muted mt-4">
+          Mostrando {ANNOUNCEMENT_LIST_LIMIT} avisos: destaques primeiro, depois os mais recentes.
+        </p>
+      )}
       {announcements.length === 0 && (
         <EmptyState
           title="Nenhum aviso por aqui"

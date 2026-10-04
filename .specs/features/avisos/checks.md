@@ -5,7 +5,7 @@ Plan: `.specs/features/avisos/plan.md`
 
 ## Intent
 
-12 checks in 3 slices · 3 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
+13 checks in 3 slices · 3 one-way doors · 1 open, of which 0 block the build (1 blocks go-live)
 
 ## Checks
 
@@ -53,6 +53,10 @@ Proof: `npm run test -- tests/unit/announcements.test.ts -t "falha ao buscar mem
 
 **C12** - [x] Para um aviso do ministério `m7`, `setAnnouncementPinned` e `deleteAnnouncement` chamam `requireLeaderOf("m7")` (AC 12)
 Proof: `npm run test -- tests/unit/announcements.test.ts -t "requireLeaderOf recebe o ministerio"`
+
+**C13** - [x] A lista de avisos usa a constante `ANNOUNCEMENT_LIST_LIMIT` (50) no `take` e `/avisos` mostra o aviso de limite quando a lista a atinge (AC 13)
+Proof: `grep -q "take: ANNOUNCEMENT_LIST_LIMIT" src/modules/announcements/services/announcements.ts && grep -q "announcements.length >= ANNOUNCEMENT_LIST_LIMIT" "app/(app)/avisos/page.tsx" && npm run typecheck`
+Proof: `npm run test -- tests/unit/announcements.test.ts -t "listAnnouncements"`
 
 ## Coverage
 
