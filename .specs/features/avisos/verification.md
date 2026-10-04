@@ -2,22 +2,23 @@
 
 **Verdict**: PASS
 **Profile**: light
-**Diff range**: 6123488..c5f657b mais o commit de correção `6f0f04c` (provas executadas no HEAD `6f0f04c` da branch `feat/backlog-louveapp`)
-**Round**: 2 - scoped
+**Diff range**: 6123488..c5f657b mais as correções `6f0f04c` e `9391e91` (provas executadas no HEAD `cb8748b` da branch `feat/backlog-louveapp`)
+**Round**: 3 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-Rodada 1 foi PASS em `4e1756f` com 6 achados não bloqueantes. Esta rodada tem escopo no diff de
-`6f0f04c` (achados 1, 2 e 3 da rodada 1) e reexecuta todas as provas no HEAD. Os 12 checks estão
-provados; o try/catch novo não engole `FORBIDDEN` nem `INVALID_INPUT`; o aviso é devolvido quando a
-notificação falha. Restam achados não bloqueantes em `## Gaps`.
+Rodada 1 foi PASS em `4e1756f`; a rodada 2 fechou os achados 1, 2 e 3 em `6f0f04c` (carried from
+6f0f04c). Esta rodada 3 tem escopo no diff de `9391e91` (limite de 50 avisos visível na tela) e
+reexecuta todas as provas no HEAD `cb8748b`. Os 13 checks estão provados; a nota de limite usa a
+condição certa, sem erro de uma unidade que quebre algo, e a constante é um export simples importado
+por Server Component. Restam achados não bloqueantes em `## Gaps`.
 
 Passo 5 (percorrer o fluxo com o usuário) não se aplica: o Verifier não alcança o usuário.
 
 ## Checks
 
-verified at 6f0f04c - todas as provas reexecutadas. Uma única invocação verbosa cobriu os três
+verified at cb8748b - todas as provas reexecutadas. Uma única invocação verbosa cobriu os quatro
 arquivos de prova das duas features
-(`npx vitest run tests/unit/announcements.test.ts tests/unit/birthday.test.ts tests/unit/skillMatrixPrivacy.test.ts --reporter=verbose`);
+(`npx vitest run tests/unit/announcements.test.ts tests/unit/birthday.test.ts tests/unit/skillMatrixPrivacy.test.ts tests/unit/actionError.test.ts --reporter=verbose`);
 cada teste citado apareceu individualmente como executado e aprovado. As provas `grep`/`test` foram
 executadas como escritas em `checks.md` (exit 0 cada) e `npm run typecheck` saiu com exit 0. As
 linhas de `tests/unit/announcements.test.ts` abaixo de `:99` mudaram com a correção e foram
@@ -33,12 +34,18 @@ atualizadas.
 | C6 | `deleteAnnouncement` apaga pelo id; duas relações com `onDelete: Cascade` | vitest `deleteAnnouncement apaga pelo id` - passou; contagem de `onDelete: Cascade` no model igual a 2 - exit 0 | `tests/unit/announcements.test.ts:131` - `expect(prisma.announcement.delete).toHaveBeenCalledWith({ where: { id: "an1" } })`; `prisma/schema.prisma:340` e `prisma/schema.prisma:341` | PASS |
 | C7 | `listAnnouncements` filtra ministérios, destaque primeiro, `take: 50`, com nomes de ministério e autor | vitest `listAnnouncements filtra ministerios, destaque primeiro, limite 50` - passou | `tests/unit/announcements.test.ts:165` - `toHaveBeenCalledWith(expect.objectContaining({ where: { ministryId: { in: ["m1"] } }, orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], take: 50 }))`; `:172` - `toMatchObject({ id: "an1", ministry: "Louvor", author: "Ana", pinned: true })` | PASS |
 | C8 | `listPinnedAnnouncements` só destaque, mais novo primeiro, `take: 3`; lista vazia não consulta | vitest `listPinnedAnnouncements traz so destaque, mais novo primeiro, limite 3` e `listPinnedAnnouncements sem ministerios nao consulta` - passaram | `tests/unit/announcements.test.ts:180` - `objectContaining({ where: { ministryId: { in: ["m1"] }, pinned: true }, orderBy: { createdAt: "desc" }, take: 3 })`; `:190` - `expect(await listPinnedAnnouncements([])).toEqual([])`; `:191` - `findMany` com `.not.toHaveBeenCalled()` | PASS |
-| C9 | `/avisos` mostra "Nenhum aviso por aqui" com lista vazia | grep da frase na página - exit 0; `npm run typecheck` - exit 0 | `app/(app)/avisos/page.tsx:41` - `title="Nenhum aviso por aqui"` sob a condição de `app/(app)/avisos/page.tsx:39` (`announcements.length === 0`) | PASS |
+| C9 | `/avisos` mostra "Nenhum aviso por aqui" com lista vazia | grep da frase na página - exit 0; `npm run typecheck` - exit 0 | `app/(app)/avisos/page.tsx:46` - `title="Nenhum aviso por aqui"` sob a condição de `app/(app)/avisos/page.tsx:44` (`announcements.length === 0`) | PASS |
 | C10 | página inicial tem a entrada `/avisos` e o bloco "Avisos em destaque" alimentado por `listPinnedAnnouncements` | três greps na página inicial - exit 0; `npm run typecheck` - exit 0 | `app/(app)/page.tsx:99` - `href="/avisos"`; `app/(app)/page.tsx:81` - "Avisos em destaque" sob `pinned.length > 0` em `:79`; `app/(app)/page.tsx:41` - `listPinnedAnnouncements(memberIds)` | PASS |
 | C11 | com `activeMemberIds` rejeitando, `createAnnouncement` resolve com o aviso gravado, `create` 1 vez, `notifyUser` nenhuma | vitest `falha ao buscar membros nao desfaz nem relanca: o aviso gravado e devolvido` - passou | `tests/unit/announcements.test.ts:107` - `expect(saved).toMatchObject({ id: "an1" })`; `:108` - `expect(prisma.announcement.create).toHaveBeenCalledTimes(1)`; `:109` - `expect(notifyUser).not.toHaveBeenCalled()` | PASS |
 | C12 | para aviso do ministério `m7`, destacar e apagar chamam `requireLeaderOf("m7")` | vitest `requireLeaderOf recebe o ministerio do proprio aviso ao destacar e apagar` - passou | `tests/unit/announcements.test.ts:118` - `expect(requireLeaderOf).toHaveBeenNthCalledWith(1, "m7")`; `:119` - `expect(requireLeaderOf).toHaveBeenNthCalledWith(2, "m7")` | PASS |
+| C13 | a lista usa `ANNOUNCEMENT_LIST_LIMIT` (50) no `take` e `/avisos` mostra o aviso de limite quando a lista a atinge | grep de `take: ANNOUNCEMENT_LIST_LIMIT` no serviço e da condição na página - exit 0; `npm run typecheck` - exit 0; vitest `listAnnouncements filtra ministerios, destaque primeiro, limite 50` - passou | `src/modules/announcements/services/announcements.ts:96` - `take: ANNOUNCEMENT_LIST_LIMIT`; `app/(app)/avisos/page.tsx:39` - `{announcements.length >= ANNOUNCEMENT_LIST_LIMIT && (`; `tests/unit/announcements.test.ts:169` - `take: 50` dentro de `objectContaining` | PASS |
 
-Julgamento de nível e amostragem (verified at 6f0f04c):
+Julgamento de nível e amostragem:
+
+- verified at cb8748b - C13: a prova de comportamento é só o teste de `take: 50` (que fixa o literal
+  50, então não detectaria divergência entre constante e literal); a exibição da nota na página é
+  grep. O repo não tem teste de componente; aceito pelo `checks.md`. Ver achado 0.
+- carried from 6f0f04c:
 
 - C11 e C12 resolvem para testes criados em `6f0f04c`; os nomes casam com os padrões `-t` e existem
   uma única vez. O valor `m7` de C12 difere do `m1` padrão do `beforeEach`, então a asserção só
@@ -58,13 +65,25 @@ carried from 4e1756f, com as linhas conferidas de novo em 6f0f04c (`notify.ts` n
 | failure modes | `notifyUser` nunca lança | `src/modules/notifications/services/notify.ts:69` | sim |
 | idempotency | `notifyUser` devolve `"duplicate"` se já enviado | `src/modules/notifications/services/notify.ts:34` | sim |
 | dependency failure | falha de push é logada e engolida | `src/modules/notifications/services/notify.ts:58` | sim |
-| observability | `handleActionError` loga com escopo e `ref` | `src/lib/actionError.ts:71` | sim |
+| observability | `handleActionError` loga com escopo e `ref` | `src/lib/actionError.ts:73` | sim |
 | Observable: loading, error | `app/(app)/loading.tsx` e `app/(app)/error.tsx` | os dois arquivos existem | sim |
 | Observable: destructive action confirms | `useConfirm` com `tone: "danger"` | `app/(app)/avisos/AnnouncementBoard.tsx:64` | sim |
 
 ## Adversarial read
 
-Escopo da rodada 2: o diff de `6f0f04c` (verified at 6f0f04c).
+verified at cb8748b - escopo da rodada 3, o diff de `9391e91`:
+
+- **Condição da nota**: `announcements.length >= ANNOUNCEMENT_LIST_LIMIT`
+  (`app/(app)/avisos/page.tsx:39`) com `take: ANNOUNCEMENT_LIST_LIMIT` (`announcements.ts:96`). Não há
+  erro de uma unidade que esconda a nota: com 50 itens a nota aparece, com 49 não. O custo é que, com
+  exatamente 50 avisos, a nota diz "Mostrando 50" sem que nada esteja escondido, porque o serviço
+  busca 50 e não 51 (achado 0).
+- **Fronteira cliente/servidor**: `ANNOUNCEMENT_LIST_LIMIT` é um `export const` simples
+  (`announcements.ts:84`), importado só por `app/(app)/avisos/page.tsx`, que é Server Component (sem
+  `"use client"`). `AnnouncementBoard`, o client component, não importa o serviço. Sem problema.
+- **Texto**: pt-BR, token de tema `text-text-muted`, sem cor crua.
+
+Escopo da rodada 2 (carried from 6f0f04c): o diff de `6f0f04c`.
 
 - **O try/catch não engole os caminhos de rejeição**: `requireLeaderOf` está em
   `src/modules/announcements/services/announcements.ts:11` e o `throw new Error("INVALID_INPUT")` em
@@ -91,14 +110,15 @@ de `4e1756f`); sem cor crua do Tailwind, textos em pt-BR.
 ## Gaps
 
 Nenhum bloqueia o veredito. Os achados 1 (falha parcial), 2 (estouro do título) e 3 (precisão de C3)
-da rodada 1 estão fechados em `6f0f04c`.
+da rodada 1 estão fechados desde `6f0f04c`. O achado 3 de `9391e91` não gerou item bloqueante.
 
 | N | Achado | Onde | Origem | Severidade |
 | --- | --- | --- | --- | --- |
+| 0 | A nota do limite aparece também quando existem exatamente 50 avisos (nada escondido) e a prova de C13 não cobre a condição da página nem a igualdade constante e literal; trocar a busca para `LIMIT + 1` e comparar com `>` resolveria o primeiro, um teste com `ANNOUNCEMENT_LIST_LIMIT` no lugar de `50` o segundo | `app/(app)/avisos/page.tsx:39`; `tests/unit/announcements.test.ts:169` | novo em 9391e91 | menor |
 | 1 | `break-all` resolve o estouro, mas quebra palavra comum no meio quando o título passa de uma linha (ex.: "…às 20h n" / "o templo"), porque permite quebra entre quaisquer dois caracteres. Na página inicial `break-words` bastaria; no card de `/avisos`, que é `flex`, `[overflow-wrap:anywhere]` teria o mesmo efeito sem partir palavras normais. Constatado por leitura, sem navegador | `app/(app)/avisos/AnnouncementBoard.tsx:132`; `app/(app)/page.tsx:88` | novo em 6f0f04c | cosmético |
 | 2 | C11 não afirma o registro do erro pedido pelo AC 11 ("e registrar o erro"); a chamada existe, mas sem asserção | `tests/unit/announcements.test.ts:107`; `src/modules/announcements/services/announcements.ts:35` | novo em 6f0f04c | precisão do check |
 | 3 | Lacuna de nível em C7 (Observable "unauthorised"): a ligação da página com `visibleMinistryIds` continua sem prova, nem grep. Correta por leitura | `app/(app)/avisos/page.tsx:14`; `app/(app)/page.tsx:35` | carried from 4e1756f (achado 4) | precisão do check |
-| 4 | Fronteira de módulo: o serviço de `announcements` lê `Ministry` e `User` por `include` do Prisma (só `name`). Deixado como está por decisão do coordenador | `src/modules/announcements/services/announcements.ts:84` | carried from 4e1756f (achado 5) | baixo |
+| 4 | Fronteira de módulo: o serviço de `announcements` lê `Ministry` e `User` por `include` do Prisma (só `name`). Deixado como está por decisão do coordenador | `src/modules/announcements/services/announcements.ts:86` | carried from 4e1756f (achado 5) | baixo |
 | 5 | A busca do aviso acontece antes do gate; id que já não existe devolve a mensagem genérica `UNKNOWN`. Deixado como está por decisão do coordenador | `src/modules/announcements/services/announcements.ts:42` | carried from 4e1756f (achado 6) | baixo |
 
 Observações não medidas da rodada 1 (formulário limpo após erro do servidor, `label` sem `htmlFor`,
@@ -106,8 +126,8 @@ push aguardado dentro da action) seguem como estavam (carried from 4e1756f).
 
 ## Gate
 
-verified at 6f0f04c
+verified at cb8748b
 
-`npx vitest run tests/unit/announcements.test.ts tests/unit/birthday.test.ts tests/unit/skillMatrixPrivacy.test.ts --reporter=verbose` - 23 passed, 0 failed (12 de `announcements.test.ts`)
-`npm run test` (suíte inteira no HEAD) - 377 passed, 0 failed
+`npx vitest run tests/unit/announcements.test.ts tests/unit/birthday.test.ts tests/unit/skillMatrixPrivacy.test.ts tests/unit/actionError.test.ts --reporter=verbose` - 4 arquivos, todos passaram, 0 falhas (12 de `announcements.test.ts`)
+`npm run test` (suíte inteira no HEAD) - 62 arquivos passaram, 0 falhas
 `npm run typecheck` - exit 0

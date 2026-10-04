@@ -60,7 +60,7 @@ Líder vê taxa de presença e quem mais faltou nos últimos 30 dias.
 1. WHEN o resumo recebe uma linha com `checkedIn: false` THEN o sistema SHALL contar 1 falta para aquela pessoa; com `checkedIn: true`, 1 presença
 2. The system SHALL calcular a taxa de presença como `round(presentes / total * 100)` inteiro, e `null` quando `total = 0`
 3. The system SHALL ordenar o ranking por faltas decrescente e, no empate, por nome crescente, incluindo só pessoas com faltas ≥ 1
-4. WHEN o relatório consulta o banco THEN o sistema SHALL filtrar por `userId` não nulo, ocorrência `ACTIVE`, data `>= from` e `< to`, e pelos `ministryIds` recebidos
+4. WHEN o relatório consulta o banco THEN o sistema SHALL filtrar por `userId` não nulo, ocorrência `ACTIVE` e publicada, data `>= from` e `< to`, e pelos `ministryIds` recebidos
 5. WHEN `/admin` abre THEN o sistema SHALL usar a janela `from = início de hoje - 30 dias`, `to = início de hoje` (APP_TZ) e os mesmos `scopeIds` dos outros relatórios
 6. IF `total = 0` THEN `/admin` SHALL mostrar "Sem escalas concluídas no período."
 7. IF `total > 0` e nenhuma falta THEN `/admin` SHALL mostrar "Nenhuma falta no período."

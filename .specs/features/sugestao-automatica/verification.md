@@ -2,36 +2,28 @@
 
 **Verdict**: PASS
 **Profile**: light
-**Diff range**: c5f657b..9a58a2c + fix e8a6482 (provas rodadas em HEAD 6f0f04c)
-**Round**: 2 - scoped
+**Diff range**: c5f657b..9a58a2c + fixes e8a6482 e cb8748b (provas rodadas em HEAD cb8748b)
+**Round**: 3 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-Os dois gaps de código que sustentaram a reprovação da rodada 1 estão fechados: `planSuggestions`
-reconta os elegíveis restantes a cada escolha e o contra-exemplo da rodada 1 agora preenche as três
-vagas; `suggestAllocations` rejeita ocorrência cancelada antes de qualquer escrita. As 17 provas rodam
-verdes em `HEAD` (6f0f04c). Os gaps 5, 6 e 8 também foram fechados. Os gaps 3 e 4 não foram
-corrigidos e viraram linhas de Out of scope no plano; julgo os dois aceitáveis como limitação
-registrada (ver Residual limitations).
-
-A aprovação tem duas ressalvas que o usuário precisa conhecer, nenhuma bloqueante:
-
-1. A regra nova continua gulosa. Ainda existe arranjo realista em que há escalação completa e uma
-   vaga fica vazia com o rótulo "sem candidato" (R1 abaixo, com exemplo e frequência medida). O plano
-   agora declara esse limite; por isso é limitação registrada e não reprovação.
-2. As três linhas novas de Out of scope foram escritas pelo autor do fix, não aprovadas pelo usuário.
-   São decisões de produto e pedem o aceite dele.
+Rodada 3, escopo: o commit `cb8748b` muda `suggestOutcome` para devolver `refresh: true` também no
+resultado de erro, remove o `|| out.isError` de `OccurrenceRow` e move de volta o comentário de
+`repeatScheduleAction`. As 17 provas rodam verdes em `HEAD` (cb8748b), a mudança de C13 está provada e
+nenhum caminho de erro deixa a tela velha. Tudo o que o fix não tocou vem da rodada 2 (verificada em
+6f0f04c) e está marcado `carried from`. O veredicto da rodada 2 se mantém: PASS, com as limitações
+residuais R1 a R3, que continuam pedindo o aceite do usuário porque foram registradas pelo autor do fix.
 
 Passo 5 (percorrer o fluxo com o usuário): não executado - o verificador não alcança o usuário.
 Passos 1 e 4 e o recompute de Coverage não rodam no perfil `light`.
 
 ## Checks
 
-verified at 6f0f04c - todas as provas C1..C17 rodaram de novo neste commit, numa única invocação
+verified at cb8748b - todas as provas C1..C17 rodaram de novo neste commit, numa única invocação
 `npx vitest run tests/unit/suggest.test.ts tests/unit/suggestAllocations.test.ts tests/unit/actionError.test.ts --reporter=verbose -t "<alternação dos 16 padrões>"`
-(exit 0, 24 casos passaram, 31 pulados pelo filtro); cada teste nomeado apareceu individualmente como
+(exit 0, 24 casos passaram, 35 pulados pelo filtro); cada teste nomeado apareceu individualmente como
 executado e aprovado. Provas grep e `npm run typecheck` como escritas, todas exit 0. Citações
-relocalizadas nos três arquivos de teste que o fix tocou. Nenhum arquivo da feature mudou entre
-e8a6482 e HEAD.
+refeitas nos arquivos que `cb8748b` tocou (`suggest.ts`, `suggest.test.ts`, `OccurrenceRow.tsx`,
+`actions.ts`); as demais linhas não se moveram.
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
@@ -47,7 +39,7 @@ e8a6482 e HEAD.
 | C10 | data passada -> `OCCURRENCE_PAST` sem gravar; mensagem "Essa data já passou." | `-t "OCCURRENCE_PAST"` nos dois arquivos - 5 casos passaram | `tests/unit/suggestAllocations.test.ts:121` - `rejects.toThrow("OCCURRENCE_PAST")`; `:122` - `create).not.toHaveBeenCalled()`; limite `date == now` em `:127`; `tests/unit/actionError.test.ts:62` - `expect(MENSAGENS.OCCURRENCE_PAST).toBe("Essa data já passou.")` | PASS |
 | C11 | `P2002` na 1ª de duas -> `{ filled: 1, unfilled: 1 }` | `-t "P2002"` - passou | `tests/unit/suggestAllocations.test.ts:146` - `expect(await suggestAllocations("o1", NOW)).toEqual({ filled: 1, unfilled: 1 })` | PASS |
 | C12 | janelas de carga e de faltas, com `[ministryId]` | `-t "janelas"` - passou | `tests/unit/suggestAllocations.test.ts:153` - `expect(loadByPerson).toHaveBeenCalledWith(new Date(DATA.getTime() - 30 * DIA), new Date(DATA.getTime() + 30 * DIA), ["m1"])`; `:158` - `expect(attendanceRows).toHaveBeenCalledWith(new Date("2026-09-02T03:00:00.000Z"), new Date("2026-10-02T03:00:00.000Z"), ["m1"])` | PASS |
-| C13 | texto de retorno (plural, singular, nada preenchido) e `OccurrenceRow` usa `suggestOutcome` | `-t "suggestOutcome"` - passou; `grep -q "suggestOutcome("` exit 0; `npm run typecheck` exit 0 | `tests/unit/suggest.test.ts:142` - `toEqual({ message: "2 vagas preenchidas, 1 sem candidato", isError: false, refresh: true })`; `:147` - `.toBe("1 vaga preenchida, 0 sem candidato")`; `:148` - `.refresh).toBe(false)`; ligação lida em `app/(app)/escalas/OccurrenceRow.tsx:273` | PASS |
+| C13 | texto de retorno (plural, singular, nada preenchido), erro devolve `refresh: true` e `OccurrenceRow` usa `suggestOutcome` | `-t "suggestOutcome"` - passou; `grep -q "suggestOutcome("` exit 0; `npm run typecheck` exit 0 | `tests/unit/suggest.test.ts:142` - `toEqual({ message: "2 vagas preenchidas, 1 sem candidato", isError: false, refresh: true })`; `:148` - `.refresh).toBe(false)`; erro, `:154-158` - `expect(suggestOutcome({ ok: false, error: "Essa data já passou." })).toEqual({ message: "Essa data já passou.", isError: true, refresh: true })`; ligação lida em `app/(app)/escalas/OccurrenceRow.tsx:273-275` | PASS |
 | C14 | texto de confirmação por estado de publicação; `confirm` antes da action | `-t "suggestConfirmText"` - passou; `grep -q "suggestConfirmText(props.published)"` exit 0 | `tests/unit/suggest.test.ts:164` - `expect(suggestConfirmText(true)).toContain("serão avisados agora")`; `:165` - `toContain("só ao publicar")`; ordem lida em `app/(app)/escalas/OccurrenceRow.tsx:265` (confirm) antes de `:273` (action) | PASS |
 | C15 | Vocal {a,b}, Violão {b,c}, Teclado {a,c}, cargas a=0, c=1, b=2: `unfilled = []`, Vocal->a, Teclado->c, Violão->b | `-t "reconta elegiveis"` - passou | `tests/unit/suggest.test.ts:119` - `expect(p.unfilled).toEqual([])`; `:120` - `expect(p.picks).toEqual([{ slotId: "vocal", userId: "a" }, { slotId: "teclado", userId: "c" }, { slotId: "violao", userId: "b" }])` | PASS |
 | C16 | `CANCELLED` rejeita com `OCCURRENCE_CANCELLED` sem `allocation.create` nem `notifyUser`; mensagem "Essa data foi cancelada." | `-t "OCCURRENCE_CANCELLED"` nos dois arquivos - 4 casos passaram | `tests/unit/suggestAllocations.test.ts:135` - `rejects.toThrow("OCCURRENCE_CANCELLED")`; `:136` - `expect(prisma.allocation.create).not.toHaveBeenCalled()`; `:137` - `expect(notifyUser).not.toHaveBeenCalled()`; `tests/unit/actionError.test.ts:57` - `expect(MENSAGENS.OCCURRENCE_CANCELLED).toBe("Essa data foi cancelada.")` | PASS |
@@ -61,7 +53,7 @@ removido.
 
 ## Round 1 gaps
 
-verified at 6f0f04c contra o diff de e8a6482.
+carried from 6f0f04c (diff de e8a6482); linhas de `actions.ts` refeitas em cb8748b.
 
 | Gap | Status | Where |
 | --- | --- | --- |
@@ -70,13 +62,13 @@ verified at 6f0f04c contra o diff de e8a6482.
 | G3 quem recusou é escalado de novo | não corrigido - Out of scope no plano; aceito como limitação (R2) | `plan.md` Out of scope |
 | G4 corrida rotulada "sem candidato" | não corrigido - Out of scope no plano; aceito como limitação (R3). A metade "0 vagas, 0 sem candidato" foi corrigida (C17) | `src/modules/scheduling/domain/suggest.ts:73-75` |
 | G5 metade do empate de C5 sem prova própria | fechado | `tests/unit/suggest.test.ts:89-101` |
-| G6 erro não revalidava `/` | fechado | `app/(app)/escalas/actions.ts:384` |
+| G6 erro não revalidava `/` | fechado (relocalizado em cb8748b) | `app/(app)/escalas/actions.ts:380` |
 | G7 janelas de carga diferentes entre sugestão e lista manual | carried from 4e1756f - observação, conforme AC 12 | `suggestAllocations.ts`, `actions.ts:300-302` |
 | G8 limite `date == now` sem teste | fechado | `tests/unit/suggestAllocations.test.ts:125-129` |
 
 ## Adversarial read of the new rule
 
-verified at 6f0f04c - snippet em memória, sem banco, fora do repo.
+carried from 6f0f04c - `suggest.ts` só mudou na ramificação de erro de `suggestOutcome` (`:71-73`); `planSuggestions` não foi tocada - snippet em memória, sem banco, fora do repo.
 
 - Contra-exemplo da rodada 1: três vagas preenchidas, `unfilled: []`.
 - Caso do brief (único capacitado de B é o melhor de A): `[B->u1, A->u2]`.
@@ -87,6 +79,15 @@ verified at 6f0f04c - snippet em memória, sem banco, fora do repo.
 - Os claims literais de C1 a C6 continuam valendo sob o laço novo (provas verdes acima).
 - Ocorrência cancelada não grava nada: a checagem (`suggestAllocations.ts:36`) vem antes do primeiro
   `allocation.create` (`:85`) e C16 afirma zero `create` e zero `notifyUser`.
+
+## Round 3 read
+
+verified at cb8748b - leitura de `git show cb8748b` nos arquivos da feature.
+
+- **Fonte única do refresh**: `if (out.refresh) props.onChanged()` em `app/(app)/escalas/OccurrenceRow.tsx:275` é o único gatilho; erro devolve `refresh: true` em `src/modules/scheduling/domain/suggest.ts:73`. Sem `|| out.isError` e sem comentário órfão. Nenhum outro caminho de erro escapa: a action devolve `{ ok: false }` para qualquer exceção (`app/(app)/escalas/actions.ts:376-382`), e uma exceção que não vira resultado (redirect) sai da tela de qualquer forma.
+- **Recarga em falha pura (nada gravado)**: `FORBIDDEN`, `OCCURRENCE_PAST` e `OCCURRENCE_CANCELLED` agora também disparam `refreshCurrentMonth` (`app/(app)/escalas/EscalaCalendar.tsx:60-63`), uma leitura do mês que só troca o cache. Sem dano: o nó `OccurrenceRow` tem `key={o.occurrenceId}` (`:228`) e não desmonta, então o estado `repeatNote` e a nota de erro sobrevivem à recarga. A ressalva é `OCCURRENCE_CANCELLED`: a recarga remove a data cancelada do calendário (`listMonthOccurrences.ts:51`), a linha desmonta e a mensagem "Essa data foi cancelada." some junto. O líder vê a data sumir sem texto. Consequência cosmética, o resultado (data fora da lista) é o correto, e não há como mostrar nota numa linha que já não existe.
+- **Movimento do comentário em `actions.ts`**: o diff de `cb8748b` nesse arquivo remove 4 linhas de comentário de antes de `suggestAllocationsAction` e as readiciona antes de `repeatScheduleAction`; nenhuma linha de código mudou (`suggestAllocationsAction` em `:370-383` idêntica, `repeatScheduleAction` intacta).
+- **Efeito colateral fora da feature**: o mesmo commit removeu o parâmetro `hasAllocation` de `slotAttendanceMark` (`src/modules/scheduling/domain/attendance.ts`) e sua chamada em `OccurrenceRow.tsx`. Não é da feature; typecheck e a suíte inteira (384 testes) passam, e a chamada fica sob o ramo `s.allocatedName`, que já garante pessoa alocada.
 
 ## Residual limitations
 
@@ -127,9 +128,9 @@ citação de `actionError.ts` relocalizada.
 | --- | --- | --- |
 | failure modes - `notifyUser` nunca lança | try/catch em volta de tudo | sim - `src/modules/notifications/services/notify.ts:30` e `:69-72` |
 | dependency failure - push falho logado e engolido | catch por subscription | sim - `src/modules/notifications/services/notify.ts:52-60` |
-| observability - `handleActionError` loga com escopo e `ref` | `logError(scope, e, ctx)` | sim - `src/lib/actionError.ts:64-72`, chamado em `app/(app)/escalas/actions.ts:381` |
-| loading (plan, Observable) - `pending` desabilita o menu | `disabled={pending}` | sim - `app/(app)/escalas/OccurrenceRow.tsx:392` e `app/(app)/escalas/OccurrenceMenu.tsx:75` |
+| observability - `handleActionError` loga com escopo e `ref` | `logError(scope, e, ctx)` | sim - `src/lib/actionError.ts:75`, chamado em `app/(app)/escalas/actions.ts:377` |
+| loading (plan, Observable) - `pending` desabilita o menu | `disabled={pending}` | sim - `app/(app)/escalas/OccurrenceRow.tsx:391` e `app/(app)/escalas/OccurrenceMenu.tsx:75` |
 
 ## Gate
 
-`npm run test` - 377 passed, 0 failed (62 arquivos, exit 0, em 6f0f04c); `npm run typecheck` exit 0
+`npm run test` - 384 passed, 0 failed (62 arquivos, exit 0, em cb8748b); `npm run typecheck` exit 0

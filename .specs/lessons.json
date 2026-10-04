@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 14,
+  "next_id": 15,
   "lessons": [
     {
       "id": "L-001",
@@ -240,6 +240,24 @@
       ],
       "created": "2026-10-02T19:05:02Z",
       "last_seen": "2026-10-02T19:05:02Z"
+    },
+    {
+      "id": "L-014",
+      "key": "spec_precision_gap::update the check claim when a later commit adds a filter to a queried where clause the check asserts by deep equality",
+      "text": "Update the check claim when a later commit adds a filter to a queried where clause the check asserts by deep equality",
+      "signal": "spec_precision_gap",
+      "scope": "repo-layer",
+      "status": "candidate",
+      "features": [
+        "presenca-faltas"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C4 tests/unit/attendanceReport.test.ts:30 (repo-layer)"
+      ],
+      "created": "2026-10-04T00:15:16Z",
+      "last_seen": "2026-10-04T00:15:16Z"
     }
   ]
 }

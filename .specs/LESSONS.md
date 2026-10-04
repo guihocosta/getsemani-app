@@ -90,6 +90,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C3 - tests/unit/announcements.test.ts:116 (tests/unit)
 - last seen: 2026-10-02T19:05:02Z
 
+### L-014 - Update the check claim when a later commit adds a filter to a queried where clause the check asserts by deep equality
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `repo-layer` · harmful: 0
+- features: presenca-faltas
+- evidence: C4 tests/unit/attendanceReport.test.ts:30 (repo-layer)
+- last seen: 2026-10-04T00:15:16Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

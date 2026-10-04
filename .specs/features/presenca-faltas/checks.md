@@ -20,7 +20,7 @@ Proof: `npm run test -- tests/unit/attendanceSummary.test.ts -t "taxa de presenc
 **C3** - [x] O ranking sai ordenado por faltas decrescente, empate por nome crescente, sem quem tem 0 faltas: `[Caio 2, Ana 1, Bia 1]` (AC 3)
 Proof: `npm run test -- tests/unit/attendanceSummary.test.ts -t "ordena ranking"`
 
-**C4** - [x] `attendanceRows(from, to, ["m1"])` chama `allocation.findMany` com `userId: { not: null }`, ocorrência `status: "ACTIVE"`, `date: { gte: from, lt: to }` e `schedule: { ministryId: { in: ["m1"] } }`; sem `ministryIds`, sem filtro de `schedule` (AC 4)
+**C4** - [x] `attendanceRows(from, to, ["m1"])` chama `allocation.findMany` com `userId: { not: null }`, ocorrência `status: "ACTIVE"`, `published: true`, `date: { gte: from, lt: to }` e `schedule: { ministryId: { in: ["m1"] } }`; sem `ministryIds`, sem filtro de `schedule` (AC 4)
 Proof: `npm run test -- tests/unit/attendanceReport.test.ts -t "attendanceRows"`
 
 **C5** - [x] `attendanceWindow(2026-10-02T15:00Z)` devolve `from = 2026-09-02T03:00Z` e `to = 2026-10-02T03:00Z`, e `AdminPage` chama `attendanceRows` com essa janela e `scopeIds` (AC 5)
@@ -58,7 +58,7 @@ Proof: `grep -q "slotAttendanceMark(" "app/(app)/escalas/OccurrenceRow.tsx" && n
 | --- | --- | --- |
 | tabela de decisão da marca (7) | convidado C11 · futuro C11 · hoje sem check-in C11 · hoje com check-in C10 · passado com check-in C10 · passado sem check-in gerente C9 · passado sem check-in não gerente C12 | - |
 | estados do bloco Presença (3) | `total = 0` C6 · sem faltas C7 · com faltas C8 | - |
-| filtros da consulta (5) | `userId` não nulo C4 · `ACTIVE` C4 · `gte from` C4 · `lt to` C4 · `ministryIds` presente e ausente C4 | - |
+| filtros da consulta (6) | `userId` não nulo C4 · `ACTIVE` C4 · publicada C4 · `gte from` C4 · `lt to` C4 · `ministryIds` presente e ausente C4 | - |
 | bordas da taxa (2) | `total = 0` C2 · arredondamento 2/3 C2 | - |
 | regra de ordenação (3) | faltas desc C3 · empate por nome C3 · exclui 0 faltas C3 | - |
 
