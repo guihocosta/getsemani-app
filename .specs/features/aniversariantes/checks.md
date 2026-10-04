@@ -18,10 +18,10 @@ Proof: `grep -Eq "birthDate +DateTime\? +@db\.Date" prisma/schema.prisma && grep
 **C2** - [x] `updateProfile` com `birthDate: ""` grava `birthDate: null`; sem `birthDate`, `data` não contém a chave (AC 2)
 Proof: `npm run test -- tests/unit/birthday.test.ts -t "vazio limpa e ausente nao altera"`
 
-**C3** - [x] `parseBirthDate` lança `INVALID_BIRTH_DATE` para `"1990-02-30"`, `"abc"`, `"1899-12-31"` e para amanhã; aceita `"1900-01-01"` e a data de hoje; `updateProfile` com data inválida não chama `user.update`; e `ProfileForm` mostra "Data de nascimento inválida" (AC 3)
+**C3** - [x] `parseBirthDate` lança `INVALID_BIRTH_DATE` para `"1990-02-30"`, `"abc"`, `"1899-12-31"` e para amanhã; aceita `"1900-01-01"` e a data de hoje; `updateProfile` com data inválida não chama `user.update`; e a mensagem "Data de nascimento inválida" vem de `MENSAGENS` e é a que `ProfileForm` mostra (AC 3)
 Proof: `npm run test -- tests/unit/birthday.test.ts -t "parseBirthDate"`
 Proof: `npm run test -- tests/unit/birthday.test.ts -t "data invalida nao grava"`
-Proof: `grep -q "Data de nascimento inválida" "app/(app)/perfil/ProfileForm.tsx"`
+Proof: `grep -q "Data de nascimento inválida" src/lib/actionError.ts && grep -q "MENSAGENS\[res.code\]" "app/(app)/perfil/ProfileForm.tsx"`
 
 ### S2 - Lista do mês · 4 files · 10 KB · ~3k
 
@@ -70,7 +70,7 @@ Proof: `! grep -q "user: true" src/modules/ministries/services/userSkills.ts`
 ## Swept
 
 - validation: C3, C6
-- failure modes: existing - `app/(app)/error.tsx` cobre falha de leitura; `ProfileForm` mostra "Erro ao salvar" para erro não mapeado
+- failure modes: existing - `app/(app)/error.tsx` cobre falha de leitura; `ProfileForm` mostra a mensagem de erro desconhecido com o código de log para erro não mapeado
 - idempotency: n/a - salvar o perfil duas vezes grava o mesmo valor
 - authorization: C5; existing - `updateProfile` só altera o usuário da sessão (`requireUser`)
 - concurrency: n/a - uma linha, último salvamento vence

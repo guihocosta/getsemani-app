@@ -2,13 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/ui/Button";
+import { MENSAGENS } from "@/lib/actionError";
 import { updateProfileAction } from "./actions";
-
-const ERROS = {
-  INVALID_NAME: "Nome inválido",
-  INVALID_BIRTH_DATE: "Data de nascimento inválida",
-  UNKNOWN: "Erro ao salvar",
-} as const;
 
 export function ProfileForm({ name, phone, birthDate }: { name: string; phone: string; birthDate: string }) {
   const [pending, start] = useTransition();
@@ -21,9 +16,10 @@ export function ProfileForm({ name, phone, birthDate }: { name: string; phone: s
     start(async () => {
       try {
         const res = await updateProfileAction({ name: nameValue, phone: phoneValue, birthDate: birthValue });
-        setMsg(res.ok ? "Salvo!" : ERROS[res.code]);
+        if (res.ok) setMsg("Salvo!");
+        else setMsg(res.code === "UNKNOWN" ? `${MENSAGENS.UNKNOWN} · cód. ${res.ref}` : MENSAGENS[res.code]);
       } catch {
-        setMsg(ERROS.UNKNOWN);
+        setMsg(MENSAGENS.UNKNOWN);
       }
     });
   }

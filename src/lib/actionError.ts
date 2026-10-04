@@ -18,6 +18,8 @@ export type ActionCode =
   | "ALREADY_IN_SETLIST"
   | "OCCURRENCE_PAST"
   | "OCCURRENCE_CANCELLED"
+  | "INVALID_NAME"
+  | "INVALID_BIRTH_DATE"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -38,6 +40,8 @@ export const MENSAGENS: Record<ActionCode, string> = {
   ALREADY_IN_SETLIST: "Essa música já está na escala.",
   OCCURRENCE_PAST: "Essa data já passou.",
   OCCURRENCE_CANCELLED: "Essa data foi cancelada.",
+  INVALID_NAME: "Nome inválido",
+  INVALID_BIRTH_DATE: "Data de nascimento inválida",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 
