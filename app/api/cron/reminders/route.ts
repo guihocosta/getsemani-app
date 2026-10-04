@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const allocs = await prisma.allocation.findMany({
     where: {
       userId: { not: null },
-      slot: { occurrence: { status: "ACTIVE", date: { gte: now, lte: until } } },
+      slot: { occurrence: { status: "ACTIVE", published: true, date: { gte: now, lte: until } } },
     },
     include: {
       swapRequest: true,

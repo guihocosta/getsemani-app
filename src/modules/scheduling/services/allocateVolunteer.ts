@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { hasUnavailabilityConflict } from "@/modules/availability/services/checkConflict";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyIfPublished, notifyRemoval } from "./notifyIfPublished";
 import { fmtDateTime } from "@/lib/time";
 
 export class UnavailabilityBlocked extends Error {
@@ -80,9 +80,9 @@ export async function allocateVolunteer(params: {
     throw e;
   }
 
-  // notifyUser nunca lanca — uma falha de notificacao nao pode reverter uma
+  // notificacao nunca lanca — uma falha de notificacao nao pode reverter uma
   // alocacao ja gravada com sucesso.
-  await notifyUser({
+  await notifyIfPublished(slot.occurrence.published, {
     userId: params.userId,
     type: "ASSIGNMENT",
     dedupeKey: `assign:${alloc.id}`,
@@ -127,6 +127,7 @@ export async function reassignAllocation(params: {
 
   const previousUserId = slot.allocation!.userId;
   const previousAllocationId = slot.allocation!.id;
+  const previousStatus = slot.allocation!.status;
   const previousSwapRequest = slot.allocation!.swapRequest;
 
   let alloc;
@@ -149,7 +150,7 @@ export async function reassignAllocation(params: {
   }
 
   if (previousUserId && previousSwapRequest?.status === "OPEN") {
-    await notifyUser({
+    await notifyIfPublished(slot.occurrence.published, {
       userId: previousUserId,
       type: "SWAP",
       dedupeKey: `swap-ended:${previousSwapRequest.id}`,
@@ -161,7 +162,7 @@ export async function reassignAllocation(params: {
   }
 
   if (previousUserId) {
-    await notifyUser({
+    await notifyRemoval(slot.occurrence.published, { id: previousAllocationId, status: previousStatus }, {
       userId: previousUserId,
       type: "ASSIGNMENT",
       dedupeKey: `unassign:${previousAllocationId}`,
@@ -171,7 +172,7 @@ export async function reassignAllocation(params: {
       occurrenceId: slot.occurrenceId,
     });
   }
-  await notifyUser({
+  await notifyIfPublished(slot.occurrence.published, {
     userId: params.userId,
     type: "ASSIGNMENT",
     dedupeKey: `assign:${alloc.id}`,

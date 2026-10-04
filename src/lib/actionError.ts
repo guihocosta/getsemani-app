@@ -4,6 +4,7 @@ export type ActionCode =
   | "FORBIDDEN"
   | "SLOT_TAKEN"
   | "NOT_ELIGIBLE"
+  | "NOT_PUBLISHED"
   | "NOT_OWNER"
   | "UNAVAILABILITY_BLOCKED"
   | "NO_ALLOCATION"
@@ -12,12 +13,20 @@ export type ActionCode =
   | "NOT_GUEST"
   | "NO_GUESTS_FOUND"
   | "SWAP_NOT_OPEN"
+  | "MODULE_DISABLED"
+  | "INVALID_INPUT"
+  | "ALREADY_IN_SETLIST"
+  | "OCCURRENCE_PAST"
+  | "OCCURRENCE_CANCELLED"
+  | "INVALID_NAME"
+  | "INVALID_BIRTH_DATE"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
   FORBIDDEN: "Você não tem permissão para essa ação.",
   SLOT_TAKEN: "Vaga já preenchida.",
   NOT_ELIGIBLE: "Você não é membro ativo desse ministério.",
+  NOT_PUBLISHED: "Essa escala ainda não foi publicada.",
   NOT_OWNER: "Essa escala não é sua.",
   UNAVAILABILITY_BLOCKED: "Indisponível nesse horário.",
   NO_ALLOCATION: "Essa vaga não tem ninguém alocado.",
@@ -26,6 +35,13 @@ export const MENSAGENS: Record<ActionCode, string> = {
   NOT_GUEST: "Essa vaga já está com um usuário cadastrado.",
   NO_GUESTS_FOUND: "Nenhuma alocação encontrada para essa pessoa sem conta.",
   SWAP_NOT_OPEN: "Esse pedido de troca não está mais aberto.",
+  MODULE_DISABLED: "O repertório não está ativo nesse ministério.",
+  INVALID_INPUT: "Confira os campos e tente de novo.",
+  ALREADY_IN_SETLIST: "Essa música já está na escala.",
+  OCCURRENCE_PAST: "Essa data já passou.",
+  OCCURRENCE_CANCELLED: "Essa data foi cancelada.",
+  INVALID_NAME: "Nome inválido",
+  INVALID_BIRTH_DATE: "Data de nascimento inválida",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 

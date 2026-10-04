@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
 import { SlotTaken } from "./allocateVolunteer";
+import { NotPublished } from "./selfAllocate";
 import { notifyUser } from "@/modules/notifications/services/notify";
 import { fmtDateTime } from "@/lib/time";
 import type { SwapStatus } from "@prisma/client";
@@ -57,6 +58,8 @@ export async function requestSwap(params: { allocationId: string }) {
     },
   });
   if (alloc.userId !== user.id) throw new NotOwner();
+  // rascunho: a data saiu do ar, nao da para oferecer a vaga ao ministerio
+  if (!alloc.slot.occurrence.published) throw new NotPublished();
   if (alloc.slot.occurrence.status !== "ACTIVE" || alloc.slot.occurrence.date <= new Date()) {
     throw new SlotTaken();
   }
@@ -146,6 +149,8 @@ export async function claimSwap(params: { swapRequestId: string }) {
     });
     if (swap.status !== "OPEN") throw new SlotTaken();
     if (swap.requestedBy === user.id) throw new NotOwner();
+    // pedido aberto antes da data virar rascunho nao pode ser assumido enquanto rascunho
+    if (!swap.allocation.slot.occurrence.published) throw new NotPublished();
     if (
       swap.allocation.slot.occurrence.status !== "ACTIVE" ||
       swap.allocation.slot.occurrence.date <= new Date()

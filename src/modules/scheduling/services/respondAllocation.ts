@@ -3,6 +3,7 @@ import { requireUser } from "@/modules/identity/services/authz";
 import { notifyUser } from "@/modules/notifications/services/notify";
 import { fmtDateTime, dateKey } from "@/lib/time";
 import { NotOwner } from "./swap";
+import { NotPublished } from "./selfAllocate";
 
 export class CheckInNotToday extends Error {
   constructor() {
@@ -18,6 +19,8 @@ async function ownedAllocation(allocationId: string, userId: string) {
     },
   });
   if (alloc.userId !== userId) throw new NotOwner();
+  // rascunho: a alocacao nao esta no ar; pagina velha nao pode responder por ela
+  if (!alloc.slot.occurrence.published) throw new NotPublished();
   return alloc;
 }
 

@@ -33,6 +33,7 @@ export default async function VagasPage() {
       allocation: null,
       occurrence: {
         status: "ACTIVE",
+        published: true,
         date: { gte: now, lte: windowEnd },
         schedule: { ministryId: { in: ministryIds } },
       },
@@ -52,6 +53,7 @@ export default async function VagasPage() {
         slot: {
           occurrence: {
             status: "ACTIVE",
+            published: true,
             date: { gte: now },
             schedule: { ministryId: { in: ministryIds } },
           },

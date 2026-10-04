@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/modules/identity/services/authz";
 import { EmptyState } from "@/ui/EmptyState";
 import { dateKey } from "@/lib/time";
@@ -55,13 +56,18 @@ export default async function EscalasPage({
   const [prevYear, prevMonth] = shiftMonth(year, month, -1);
   const [nextYear, nextMonth] = shiftMonth(year, month, 1);
   const [prevItems, currentItems, nextItems] = await Promise.all([
-    listMonthOccurrences(viewMinistryIds, prevYear, prevMonth),
-    listMonthOccurrences(viewMinistryIds, year, month),
-    listMonthOccurrences(viewMinistryIds, nextYear, nextMonth),
+    listMonthOccurrences(viewMinistryIds, prevYear, prevMonth, manageMinistryIds),
+    listMonthOccurrences(viewMinistryIds, year, month, manageMinistryIds),
+    listMonthOccurrences(viewMinistryIds, nextYear, nextMonth, manageMinistryIds),
   ]);
 
   return (
     <div>
+      <div className="flex justify-end mb-2">
+        <Link href="/escalas/panorama" className="min-h-11 inline-flex items-center text-sm text-primary font-medium">
+          Panorama
+        </Link>
+      </div>
       <EscalaCalendar
         year={year}
         month={month}

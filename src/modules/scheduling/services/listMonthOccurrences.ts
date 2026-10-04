@@ -12,7 +12,10 @@ export type MonthOccurrenceItem = {
   scheduleId: string;
   ministryId: string;
   rotationCycle: number | null;
+  published: boolean;
+  repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  time: string; // HH:mm (APP_TZ)
   title: string;
   when: string;
   slots: {
@@ -31,11 +34,13 @@ export type MonthOccurrenceItem = {
 
 // Ocorrencias ativas de um mes, para os ministerios informados.
 // Sem checagem de autorizacao aqui — o chamador (page/action) ja resolveu quais
-// ministryIds o usuario pode ver antes de chamar isso.
+// ministryIds o usuario pode ver antes de chamar isso. Ocorrencia em rascunho
+// so sai para os ministerios que ele gerencia (manageableIds).
 export async function listMonthOccurrences(
   ministryIds: string[],
   year: number,
   month: number,
+  manageableIds: string[] = [],
 ): Promise<MonthOccurrenceItem[]> {
   const monthStart = fromZonedTime(`${year}-${pad(month)}-01T00:00:00`, APP_TZ);
   const nextMonthDate = month === 12 ? [year + 1, 1] : [year, month + 1];
@@ -46,6 +51,7 @@ export async function listMonthOccurrences(
       status: "ACTIVE",
       date: { gte: monthStart, lt: monthEnd },
       schedule: { ministryId: { in: ministryIds } },
+      OR: [{ published: true }, { schedule: { ministryId: { in: manageableIds } } }],
     },
     include: {
       schedule: { include: { ministry: true } },
@@ -59,7 +65,10 @@ export async function listMonthOccurrences(
     scheduleId: o.scheduleId,
     ministryId: o.schedule.ministryId,
     rotationCycle: o.schedule.rotationCycle,
+    published: o.published,
+    repertoireEnabled: o.schedule.ministry.repertoireEnabled,
     dayKey: dateKey(o.date),
+    time: fmtTime(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
     slots: o.slots.map((s) => ({

@@ -16,6 +16,7 @@ type Ministry = {
   name: string;
   color: string | null;
   description: string | null;
+  repertoireEnabled: boolean;
   roles: Role[];
   _count: { memberships: number };
 };
@@ -69,6 +70,7 @@ export function MinistryCard({
           name={m.name}
           color={m.color}
           description={m.description}
+          repertoireEnabled={m.repertoireEnabled}
           onDone={() => setEditing(false)}
         />
       ) : (

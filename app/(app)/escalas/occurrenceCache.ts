@@ -18,7 +18,10 @@ export type Item = {
   scheduleId: string;
   ministryId: string;
   rotationCycle: number | null;
+  published: boolean;
+  repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  time: string; // HH:mm
   title: string;
   when: string;
   slots: Slot[];

@@ -9,10 +9,11 @@ type Props = {
   name: string;
   color: string | null;
   description: string | null;
+  repertoireEnabled: boolean;
   onDone: () => void;
 };
 
-export function EditMinistryForm({ ministryId, name, color, description, onDone }: Props) {
+export function EditMinistryForm({ ministryId, name, color, description, repertoireEnabled, onDone }: Props) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,6 +22,7 @@ export function EditMinistryForm({ ministryId, name, color, description, onDone 
     const newName = String(formData.get("name") ?? "");
     const newColor = String(formData.get("color") ?? "");
     const newDescription = String(formData.get("description") ?? "");
+    const newRepertoireEnabled = formData.get("repertoireEnabled") === "on";
     setError(null);
     start(async () => {
       try {
@@ -29,6 +31,7 @@ export function EditMinistryForm({ ministryId, name, color, description, onDone 
           name: newName,
           color: newColor,
           description: newDescription,
+          repertoireEnabled: newRepertoireEnabled,
         });
         onDone();
       } catch {
@@ -53,6 +56,10 @@ export function EditMinistryForm({ ministryId, name, color, description, onDone 
         <label className="text-xs text-text-muted block mb-1">Descrição</label>
         <input name="description" defaultValue={description ?? ""} className="field w-full" placeholder="Opcional" />
       </div>
+      <label className="flex items-center gap-2 text-sm text-text min-h-11">
+        <input name="repertoireEnabled" type="checkbox" defaultChecked={repertoireEnabled} className="h-4 w-4" />
+        Repertório de músicas
+      </label>
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending} className="py-2 px-4 text-sm">
           Salvar

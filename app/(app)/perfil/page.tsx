@@ -43,7 +43,11 @@ export default async function PerfilPage() {
       <h2 className="eyebrow mb-3">Seus dados</h2>
       <Card className="mb-6 divide-y divide-border">
         <div className="pb-4">
-          <ProfileForm name={user.name} phone={user.phone ?? ""} />
+          <ProfileForm
+            name={user.name}
+            phone={user.phone ?? ""}
+            birthDate={user.birthDate?.toISOString().slice(0, 10) ?? ""}
+          />
         </div>
         <NavRow
           href="/indisponibilidade"

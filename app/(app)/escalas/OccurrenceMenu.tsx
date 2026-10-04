@@ -9,7 +9,10 @@ export function OccurrenceMenu(props: {
   copyLabel: string;
   onCopy: () => void;
   onAddExtra: () => void;
+  publishLabel: string;
+  onTogglePublish: () => void;
   onRepeat?: () => void;
+  onSuggest: () => void;
   rotationCycle?: number | null;
   onDeleteSingle: () => void;
   onDeleteFromHere: () => void;
@@ -55,6 +58,28 @@ export function OccurrenceMenu(props: {
             className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
           >
             Adicionar vaga extra
+          </button>
+          <button
+            type="button"
+            disabled={props.disabled}
+            onClick={() => {
+              setOpen(false);
+              props.onTogglePublish();
+            }}
+            className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+          >
+            {props.publishLabel}
+          </button>
+          <button
+            type="button"
+            disabled={props.disabled}
+            onClick={() => {
+              setOpen(false);
+              props.onSuggest();
+            }}
+            className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+          >
+            Sugerir escalação
           </button>
           <button
             type="button"

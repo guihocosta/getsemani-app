@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, RotateCcw } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Music, RotateCcw } from "lucide-react";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { useConfirm } from "@/ui/ConfirmDialog";
@@ -14,6 +15,8 @@ import {
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   repeatScheduleAction,
+  suggestAllocationsAction,
+  setOccurrencePublishedAction,
   type AllocationCandidate,
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
@@ -22,6 +25,9 @@ import { repeatOutcome } from "./repeatOutcome";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
+import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
+import { publishMenuItem } from "@/modules/scheduling/domain/publish";
+import { suggestOutcome, suggestConfirmText } from "@/modules/scheduling/domain/suggest";
 import type { Slot, SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
@@ -43,11 +49,14 @@ export function OccurrenceRow(props: {
   occurrenceId: string;
   scheduleId: string;
   rotationCycle: number | null;
+  published: boolean;
+  repertoireEnabled: boolean;
   title: string;
   when: string;
   slots: Slot[];
   canManage: boolean;
-  isToday: boolean;
+  dayKey: string;
+  todayKey: string;
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
   onActiveChanged: (slotId: string, active: boolean) => void;
@@ -252,6 +261,42 @@ export function OccurrenceRow(props: {
     });
   }
 
+  async function suggest() {
+    const ok = await confirm({
+      title: "Sugerir escalação?",
+      description: suggestConfirmText(props.published),
+      confirmLabel: "Sugerir",
+    });
+    if (!ok) return;
+    setRepeatNote(null);
+    start(async () => {
+      const out = suggestOutcome(await suggestAllocationsAction(props.occurrenceId));
+      setRepeatNote({ message: out.message, isError: out.isError });
+      if (out.refresh) props.onChanged();
+    });
+  }
+
+  const publishItem = publishMenuItem(props.published);
+
+  async function togglePublish() {
+    if (publishItem.confirm) {
+      const ok = await confirm({
+        title: "Tornar rascunho?",
+        description: publishItem.confirm,
+        confirmLabel: publishItem.label,
+      });
+      if (!ok) return;
+    }
+    start(async () => {
+      const res = await setOccurrencePublishedAction(props.occurrenceId, publishItem.target);
+      if (!res.ok) {
+        setRepeatNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, isError: true });
+        return;
+      }
+      props.onChanged();
+    });
+  }
+
   function copyWhatsAppText() {
     const text = buildWhatsAppText(props.title, props.when, props.slots);
     navigator.clipboard.writeText(text);
@@ -320,7 +365,14 @@ export function OccurrenceRow(props: {
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-sm text-text">{props.title}</p>
+            <p className="text-sm text-text flex items-center gap-1.5 flex-wrap">
+              {props.title}
+              {!props.published && (
+                <Badge tone="muted" className="text-[10px]">
+                  rascunho
+                </Badge>
+              )}
+            </p>
             <p className="text-xs text-text-muted">{props.when}</p>
           </div>
           {props.canManage && (
@@ -329,7 +381,10 @@ export function OccurrenceRow(props: {
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
+              publishLabel={publishItem.label}
+              onTogglePublish={togglePublish}
               onRepeat={repeatSchedule}
+              onSuggest={suggest}
               rotationCycle={props.rotationCycle}
               onDeleteSingle={() => del("SINGLE")}
               onDeleteFromHere={() => del("FROM_HERE")}
@@ -369,9 +424,26 @@ export function OccurrenceRow(props: {
                           aguardando confirmação
                         </Badge>
                       )}
-                      {props.isToday && s.checkedIn && (
-                        <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />
-                      )}
+                      {(() => {
+                        const marca = slotAttendanceMark({
+                          dayKey: props.dayKey,
+                          todayKey: props.todayKey,
+                          isGuest: s.isGuest,
+                          checkedIn: s.checkedIn,
+                          canManage: props.canManage,
+                        });
+                        if (marca === "PRESENTE") {
+                          return <CheckCircle2 size={14} className="text-primary" strokeWidth={1.8} />;
+                        }
+                        if (marca === "FALTA") {
+                          return (
+                            <Badge tone="danger" className="text-[10px]">
+                              faltou
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })()}
                     </span>
                   ) : (
                     <span
@@ -384,6 +456,16 @@ export function OccurrenceRow(props: {
               </li>
             ))}
         </ul>
+
+        {props.repertoireEnabled && (
+          <Link
+            href={`/repertorio/escala/${props.occurrenceId}`}
+            className="mt-2 min-h-11 inline-flex items-center gap-1.5 text-sm text-primary font-medium"
+          >
+            <Music size={14} strokeWidth={1.8} />
+            Músicas
+          </Link>
+        )}
 
         {props.canManage && props.slots.some((s) => !s.active) && (
           <ul className="flex flex-col gap-1 mt-3 pt-3 border-t border-border">

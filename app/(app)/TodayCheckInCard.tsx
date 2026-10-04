@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import Link from "next/link";
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { Badge } from "@/ui/Badge";
@@ -74,6 +75,14 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
                     )}
                   </div>
                   <p className="text-sm text-text-muted mt-1">Hoje</p>
+                  {item.repertoireEnabled && (
+                    <Link
+                      href={`/repertorio/escala/${item.occurrenceId}`}
+                      className="text-sm text-primary font-medium underline underline-offset-2"
+                    >
+                      Músicas
+                    </Link>
+                  )}
                 </div>
                 <p className="font-title text-4xl text-primary">{fmtTime(item.date)}</p>
               </div>

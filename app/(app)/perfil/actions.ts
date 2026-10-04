@@ -7,10 +7,22 @@ import { setOwnSkill } from "@/modules/ministries/services/userSkills";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { handleActionError, type ActionCode } from "@/lib/actionError";
 
-export async function updateProfileAction(params: { name: string; phone?: string }) {
-  await updateProfile(params);
-  revalidatePath("/perfil");
-  revalidatePath("/");
+// Devolve o codigo em vez de lancar: mensagem de erro lancada por Server Action
+// nao chega ao client em producao.
+export async function updateProfileAction(params: {
+  name: string;
+  phone?: string;
+  birthDate?: string;
+}): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await updateProfile(params);
+    revalidatePath("/perfil");
+    revalidatePath("/aniversariantes");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("perfil.updateProfile", e);
+  }
 }
 
 export async function setOwnSkillAction(

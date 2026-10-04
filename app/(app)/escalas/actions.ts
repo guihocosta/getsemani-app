@@ -10,6 +10,9 @@ import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/al
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
+import { setOccurrencePublished } from "@/modules/scheduling/services/publishOccurrence";
+import { suggestAllocations } from "@/modules/scheduling/services/suggestAllocations";
+import type { SuggestActionResult } from "@/modules/scheduling/domain/suggest";
 import { buildCandidateList, type AllocationCandidate } from "@/modules/scheduling/domain/candidateList";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
@@ -18,7 +21,7 @@ import { visibleMinistryIds, listMonthOccurrences, ledMinistryIds } from "@/modu
 import { prisma } from "@/lib/prisma";
 import { loadByPerson } from "@/modules/reports/services/reports";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
-import { isRedirectError, handleActionError, type ActionCode } from "@/lib/actionError";
+import { isRedirectError, handleActionError, MENSAGENS, type ActionCode } from "@/lib/actionError";
 import { getAvailableRoles } from "@/modules/scheduling/services/getAvailableRoles";
 import { addExtraSlot } from "@/modules/scheduling/services/addExtraSlot";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
@@ -231,9 +234,28 @@ export async function deleteOccurrenceAction(occurrenceId: string, scope: "SINGL
 // Troca de mes no calendario sem navegacao de pagina inteira (ver EscalaCalendar).
 export async function loadMonthAction(year: number, month: number) {
   const user = await requireUser();
-  const ministryIds = await visibleMinistryIds(user.id, user.isAdmin);
+  const [ministryIds, manageableIds] = await Promise.all([
+    visibleMinistryIds(user.id, user.isAdmin),
+    ledMinistryIds(user.id, user.isAdmin),
+  ]);
   if (ministryIds.length === 0) return [];
-  return listMonthOccurrences(ministryIds, year, month);
+  return listMonthOccurrences(ministryIds, year, month, manageableIds);
+}
+
+// Lider alterna a data entre rascunho e publicada (publicar avisa os escalados).
+export async function setOccurrencePublishedAction(
+  occurrenceId: string,
+  published: boolean,
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await setOccurrencePublished({ occurrenceId, published });
+    revalidatePath("/escalas");
+    revalidatePath("/vagas");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("escalas.setPublished", e, { occurrenceId, published });
+  }
 }
 
 export type { AllocationCandidate };
@@ -341,6 +363,22 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
     return { ok: true };
   } catch (e) {
     return handleActionError("escalas.addExtraSlot", e, { occurrenceId, roleId });
+  }
+}
+
+// Lider preenche as vagas abertas da data pela regra de sugestao (sem IA).
+export async function suggestAllocationsAction(occurrenceId: string): Promise<SuggestActionResult> {
+  try {
+    const result = await suggestAllocations(occurrenceId);
+    revalidatePath("/escalas");
+    revalidatePath("/");
+    return { ok: true, ...result };
+  } catch (e) {
+    const failure = handleActionError("escalas.suggest", e, { occurrenceId });
+    // falha no meio pode ter gravado vagas: a tela recarrega mesmo com erro
+    revalidatePath("/escalas");
+    revalidatePath("/");
+    return { ok: false, error: `${MENSAGENS[failure.code]} · cód. ${failure.ref}` };
   }
 }
 

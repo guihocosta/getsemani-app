@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { hasUnavailabilityConflict } from "@/modules/availability/services/checkConflict";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyIfPublished } from "./notifyIfPublished";
 import { fmtDateTime } from "@/lib/time";
 import { UnavailabilityBlocked } from "./allocateVolunteer";
 
@@ -55,7 +55,7 @@ export async function linkGuestAllocation(params: {
     },
   });
 
-  await notifyUser({
+  await notifyIfPublished(allocation.slot.occurrence.published, {
     userId: params.userId,
     type: "ASSIGNMENT",
     dedupeKey: `assign:${updated.id}`,

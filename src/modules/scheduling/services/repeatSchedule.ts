@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
-import { notifyUser } from "@/modules/notifications/services/notify";
+import { notifyIfPublished } from "./notifyIfPublished";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
 import { fmtDateTime } from "@/lib/time";
 import { planRotationPairs, decideCopyAllocation } from "@/modules/scheduling/domain/rotation";
@@ -57,6 +57,7 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
     targetHasAllocation: boolean;
     targetOccurrenceId: string;
     targetDate: Date;
+    targetPublished: boolean;
     roleName: string;
     sourceUserId: string | null;
     guestName: string | null;
@@ -80,6 +81,7 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
         targetHasAllocation: !!targetSlot.allocation,
         targetOccurrenceId: target.id,
         targetDate: target.date,
+        targetPublished: target.published,
         roleName: sourceSlot.role.name,
         sourceUserId: sourceSlot.allocation.userId,
         guestName: sourceSlot.allocation.guestName,
@@ -149,8 +151,8 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
       filled++;
 
       if (copy.sourceUserId) {
-        // notifyUser nunca lanca — falha de notificacao nao desfaz a alocacao ja gravada.
-        await notifyUser({
+        // notificacao nunca lanca — falha de notificacao nao desfaz a alocacao ja gravada.
+        await notifyIfPublished(copy.targetPublished, {
           userId: copy.sourceUserId,
           type: "ASSIGNMENT",
           dedupeKey: `assign:${alloc.id}`,
