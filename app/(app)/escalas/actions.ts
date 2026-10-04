@@ -366,10 +366,6 @@ export async function addExtraSlotAction(occurrenceId: string, roleId: string): 
   }
 }
 
-// Repete a escalacao do ciclo anterior nas proximas rotationCycle ocorrencias
-// futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
-// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas), mas
-// com as mesmas garantias: relanca redirect e loga o inesperado com ref.
 // Lider preenche as vagas abertas da data pela regra de sugestao (sem IA).
 export async function suggestAllocationsAction(occurrenceId: string): Promise<SuggestActionResult> {
   try {
@@ -386,6 +382,10 @@ export async function suggestAllocationsAction(occurrenceId: string): Promise<Su
   }
 }
 
+// Repete a escalacao do ciclo anterior nas proximas rotationCycle ocorrencias
+// futuras da escala. Erro traduzido direto pra pt-BR (nao usa handleActionError
+// porque NO_ROTATION_CYCLE nao e um ActionCode conhecido pela UI de vagas), mas
+// com as mesmas garantias: relanca redirect e loga o inesperado com ref.
 export async function repeatScheduleAction(scheduleId: string): Promise<RepeatActionResult> {
   try {
     const result = await repeatSchedule(scheduleId);

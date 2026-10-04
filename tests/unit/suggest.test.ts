@@ -154,7 +154,7 @@ describe("suggestOutcome", () => {
     expect(suggestOutcome({ ok: false, error: "Essa data já passou." })).toEqual({
       message: "Essa data já passou.",
       isError: true,
-      refresh: false,
+      refresh: true,
     });
   });
 });

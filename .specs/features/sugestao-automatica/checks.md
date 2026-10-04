@@ -52,7 +52,7 @@ Proof: `npm run test -- tests/unit/suggestAllocations.test.ts -t "janelas"`
 
 ### S3 - Retorno na tela · 3 files · 22 KB · ~6k
 
-**C13** - [x] `suggestOutcome({ ok: true, filled: 2, unfilled: 1 })` devolve "2 vagas preenchidas, 1 sem candidato" com `refresh: true`; `filled: 1` -> "1 vaga preenchida, ..."; `filled: 0` -> `refresh: false`; e `OccurrenceRow` usa `suggestOutcome` (AC 13)
+**C13** - [x] `suggestOutcome({ ok: true, filled: 2, unfilled: 1 })` devolve "2 vagas preenchidas, 1 sem candidato" com `refresh: true`; `filled: 1` -> "1 vaga preenchida, ..."; `filled: 0` -> `refresh: false`; resultado de erro -> `refresh: true` (a falha no meio pode ter gravado vagas); e `OccurrenceRow` usa `suggestOutcome` (AC 13)
 Proof: `npm run test -- tests/unit/suggest.test.ts -t "suggestOutcome"`
 Proof: `grep -q "suggestOutcome(" "app/(app)/escalas/OccurrenceRow.tsx" && npm run typecheck`
 

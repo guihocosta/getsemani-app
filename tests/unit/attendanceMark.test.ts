@@ -7,7 +7,6 @@ const AMANHA = "2026-10-03";
 
 const base = {
   todayKey: HOJE,
-  hasAllocation: true,
   isGuest: false,
   checkedIn: false,
   canManage: true,
@@ -26,8 +25,7 @@ describe("slotAttendanceMark", () => {
     }
   });
 
-  it("sem marca para vaga aberta, convidado, futuro e hoje sem check-in", () => {
-    expect(slotAttendanceMark({ ...base, dayKey: ONTEM, hasAllocation: false })).toBeNull();
+  it("sem marca para convidado, futuro e hoje sem check-in", () => {
     expect(slotAttendanceMark({ ...base, dayKey: ONTEM, isGuest: true })).toBeNull();
     expect(slotAttendanceMark({ ...base, dayKey: AMANHA })).toBeNull();
     expect(slotAttendanceMark({ ...base, dayKey: HOJE })).toBeNull();

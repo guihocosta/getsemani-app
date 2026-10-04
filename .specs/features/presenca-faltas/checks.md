@@ -45,7 +45,7 @@ Proof: `npm run test -- tests/unit/attendanceMark.test.ts -t "falta em dia passa
 **C10** - [x] `slotAttendanceMark` com check-in devolve `"PRESENTE"` tanto no dia de hoje quanto em dia passado, com `canManage` `true` ou `false` (AC 10)
 Proof: `npm run test -- tests/unit/attendanceMark.test.ts -t "presente com check-in"`
 
-**C11** - [x] `slotAttendanceMark` devolve `null` para vaga aberta, convidado sem conta, dia futuro, e hoje sem check-in (AC 11)
+**C11** - [x] `slotAttendanceMark` devolve `null` para convidado sem conta, dia futuro, e hoje sem check-in (AC 11)
 Proof: `npm run test -- tests/unit/attendanceMark.test.ts -t "sem marca"`
 
 **C12** - [x] `slotAttendanceMark` em dia passado sem check-in com `canManage: false` devolve `null`, e `OccurrenceRow` decide o selo por `slotAttendanceMark` (AC 12)
@@ -56,7 +56,7 @@ Proof: `grep -q "slotAttendanceMark(" "app/(app)/escalas/OccurrenceRow.tsx" && n
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| tabela de decisão da marca (8) | vaga aberta C11 · convidado C11 · futuro C11 · hoje sem check-in C11 · hoje com check-in C10 · passado com check-in C10 · passado sem check-in gerente C9 · passado sem check-in não gerente C12 | - |
+| tabela de decisão da marca (7) | convidado C11 · futuro C11 · hoje sem check-in C11 · hoje com check-in C10 · passado com check-in C10 · passado sem check-in gerente C9 · passado sem check-in não gerente C12 | - |
 | estados do bloco Presença (3) | `total = 0` C6 · sem faltas C7 · com faltas C8 | - |
 | filtros da consulta (5) | `userId` não nulo C4 · `ACTIVE` C4 · `gte from` C4 · `lt to` C4 · `ministryIds` presente e ausente C4 | - |
 | bordas da taxa (2) | `total = 0` C2 · arredondamento 2/3 C2 | - |

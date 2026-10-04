@@ -76,7 +76,7 @@ Quem abre um dia passado vê quem fez check-in; quem gerencia vê também quem f
 
 9. WHILE o dia da ocorrência é anterior a hoje e a vaga tem pessoa sem check-in, a marca SHALL ser `FALTA`
 10. WHILE o dia da ocorrência é hoje ou anterior e a vaga tem pessoa com check-in, a marca SHALL ser `PRESENTE`
-11. The system SHALL devolver marca nula para vaga aberta, convidado sem conta, dia futuro, e dia de hoje sem check-in
+11. The system SHALL devolver marca nula para convidado sem conta, dia futuro, e dia de hoje sem check-in; a tela só chama a função para vaga com pessoa
 12. WHILE o usuário não gerencia o ministério, `OccurrenceRow` SHALL não mostrar o selo "faltou"
 
 **Independent test:** abrir no calendário um dia passado com uma vaga sem check-in, como líder ver "faltou" e como voluntário não ver.

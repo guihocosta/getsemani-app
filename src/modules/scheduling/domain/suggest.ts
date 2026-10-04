@@ -69,7 +69,8 @@ export type SuggestActionResult =
 
 // Texto e efeito na tela depois de "Sugerir escalação".
 export function suggestOutcome(res: SuggestActionResult): { message: string; isError: boolean; refresh: boolean } {
-  if (!res.ok) return { message: res.error, isError: true, refresh: false };
+  // erro no meio pode ja ter gravado vagas, entao a tela recarrega tambem
+  if (!res.ok) return { message: res.error, isError: true, refresh: true };
   if (res.filled === 0 && res.unfilled === 0) {
     return { message: "Nenhuma vaga aberta nesta data.", isError: false, refresh: false };
   }

@@ -272,8 +272,7 @@ export function OccurrenceRow(props: {
     start(async () => {
       const out = suggestOutcome(await suggestAllocationsAction(props.occurrenceId));
       setRepeatNote({ message: out.message, isError: out.isError });
-      // erro no meio pode ter gravado vagas, entao recarrega tambem
-      if (out.refresh || out.isError) props.onChanged();
+      if (out.refresh) props.onChanged();
     });
   }
 
@@ -429,7 +428,6 @@ export function OccurrenceRow(props: {
                         const marca = slotAttendanceMark({
                           dayKey: props.dayKey,
                           todayKey: props.todayKey,
-                          hasAllocation: true,
                           isGuest: s.isGuest,
                           checkedIn: s.checkedIn,
                           canManage: props.canManage,
