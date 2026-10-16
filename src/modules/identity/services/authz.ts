@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { ensureProfile } from "@/modules/identity/services/ensureProfile";
+import { logError } from "@/lib/logError";
 import type { User } from "@prisma/client";
 
 // "anonimo": sem sessao (usuario deslogado). "ok": sessao com perfil, caminho normal.
@@ -30,7 +31,8 @@ export const getSessionUser = cache(async (): Promise<User | null> => {
   try {
     const { data, error } = await supabase.auth.getClaims();
     if (!error) userId = data?.claims?.sub;
-  } catch {
+  } catch (err) {
+    logError("authz.getClaims", err);
     return null;
   }
   if (!userId) return null;
