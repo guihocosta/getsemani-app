@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/services/authz";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
@@ -13,11 +14,8 @@ export default async function SolicitacoesPage() {
 
   let ministryIds: string[] | null = null;
   if (!user.isAdmin) {
-    const leaderships = await prisma.membership.findMany({
-      where: { userId: user.id, role: "LEADER", status: "ACTIVE" },
-    });
-    if (leaderships.length === 0) redirect("/");
-    ministryIds = leaderships.map((m) => m.ministryId);
+    ministryIds = await ledMinistryIds(user.id, false);
+    if (ministryIds.length === 0) redirect("/");
   }
 
   const pending = await prisma.membership.findMany({

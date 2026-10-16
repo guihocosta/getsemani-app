@@ -2,11 +2,8 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { requireUser } from "@/modules/identity/services/authz";
 import { listMinistries } from "@/modules/ministries/services/listMinistries";
-import {
-  ledMinistryIds,
-  visibleMinistryIds,
-  listMonthOccurrences,
-} from "@/modules/scheduling/services/listMonthOccurrences";
+import { listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds, visibleMinistryIds } from "@/modules/identity/services/memberships";
 import { buildPanorama, pickMinistry } from "@/modules/scheduling/domain/panorama";
 import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";

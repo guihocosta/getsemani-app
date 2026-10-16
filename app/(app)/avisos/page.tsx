@@ -1,6 +1,6 @@
 import { requireUser } from "@/modules/identity/services/authz";
 import { listMinistries } from "@/modules/ministries/services/listMinistries";
-import { visibleMinistryIds, ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds, ledMinistryIds } from "@/modules/identity/services/memberships";
 import { listAnnouncements, ANNOUNCEMENT_LIST_LIMIT } from "@/modules/announcements/services/announcements";
 import { EmptyState } from "@/ui/EmptyState";
 import { fmtDate } from "@/lib/time";

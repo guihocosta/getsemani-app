@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
+import { isActiveMember } from "@/modules/identity/services/memberships";
 import { hasUnavailabilityConflict } from "@/modules/availability/services/checkConflict";
 import { SlotTaken } from "./allocateVolunteer";
 
@@ -28,15 +29,8 @@ export async function selfAllocate(params: { slotId: string; acknowledge?: boole
   });
 
   // elegibilidade: membro ativo do ministerio (admin sempre elegivel)
-  if (!user.isAdmin) {
-    const member = await prisma.membership.findFirst({
-      where: {
-        userId: user.id,
-        ministryId: slot.occurrence.schedule.ministryId,
-        status: "ACTIVE",
-      },
-    });
-    if (!member) throw new NotEligible();
+  if (!user.isAdmin && !(await isActiveMember(user.id, slot.occurrence.schedule.ministryId))) {
+    throw new NotEligible();
   }
 
   // rascunho: a data ainda nao esta no ar para voluntarios

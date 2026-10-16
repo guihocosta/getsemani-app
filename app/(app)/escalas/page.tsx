@@ -2,11 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/modules/identity/services/authz";
 import { EmptyState } from "@/ui/EmptyState";
 import { dateKey } from "@/lib/time";
-import {
-  ledMinistryIds,
-  visibleMinistryIds,
-  listMonthOccurrences,
-} from "@/modules/scheduling/services/listMonthOccurrences";
+import { listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds, visibleMinistryIds } from "@/modules/identity/services/memberships";
 import { EscalaCalendar } from "./EscalaCalendar";
 
 export const dynamic = "force-dynamic";

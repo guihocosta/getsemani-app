@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireLeaderOf, isLeaderOf } from "@/modules/identity/services/authz";
 import { assertRepertoireEnabled, repertoireMinistries } from "@/modules/ministries/services/modules";
-import { visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds } from "@/modules/identity/services/memberships";
 import {
   parseOrInvalid,
   songSchema,

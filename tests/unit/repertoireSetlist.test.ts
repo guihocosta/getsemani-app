@@ -20,13 +20,13 @@ vi.mock("@/modules/identity/services/authz", () => ({
   isLeaderOf: vi.fn(),
 }));
 vi.mock("@/modules/ministries/services/modules", () => ({ assertRepertoireEnabled: vi.fn() }));
-vi.mock("@/modules/scheduling/services/listMonthOccurrences", () => ({ visibleMinistryIds: vi.fn() }));
+vi.mock("@/modules/identity/services/memberships", () => ({ visibleMinistryIds: vi.fn() }));
 vi.mock("@/modules/scheduling/services/occurrenceAccess", () => ({ getOccurrenceAccess: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireLeaderOf, isLeaderOf } from "@/modules/identity/services/authz";
 import { assertRepertoireEnabled } from "@/modules/ministries/services/modules";
-import { visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds } from "@/modules/identity/services/memberships";
 import { getOccurrenceAccess } from "@/modules/scheduling/services/occurrenceAccess";
 import { getSetlist, addToSetlist, moveInSetlist, removeFromSetlist } from "@/modules/repertoire/services/setlist";
 

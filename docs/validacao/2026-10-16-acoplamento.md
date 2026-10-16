@@ -10,6 +10,15 @@ CRÍTICOS: 0   MODERADOS: 4   BAIXOS: 2
 SAÚDE GERAL: Atenção
 ```
 
+**Status (2026-10-16), PR "refactor/acoplamento-modulos":**
+- C-01 resolvido: `ledMinistryIds` e `visibleMinistryIds` foram para `identity/services/memberships.ts`. O grafo ficou acíclico.
+- C-02 resolvido: `ACTIVE_LEADER` passou a ser a única definição, e não sobrou nenhum literal.
+- C-03 resolvido: scheduling não lê mais `Membership`. Em ministries, 4 de 5 leituras migraram; a matriz ficou.
+- C-04 resolvido: `getOccurrenceCandidates` virou serviço testado, e a action ficou com 3 linhas.
+- C-05 mantido de propósito: `ministries → scheduling` e `identity → ministries` criariam ciclo.
+- C-06 aceito como exceção no `tests/unit/moduleBoundaries.test.ts`. A emenda formal da constituição fica pendente de decisão.
+- O teste de fronteiras falha em qualquer ciclo novo.
+
 ## Volatilidade (commits em 6 meses, `src/modules`)
 
 | Módulo | Commits | Subdomínio |

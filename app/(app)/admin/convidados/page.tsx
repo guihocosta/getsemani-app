@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { listGuestAllocations } from "@/modules/scheduling/services/listGuestAllocations";
 import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";

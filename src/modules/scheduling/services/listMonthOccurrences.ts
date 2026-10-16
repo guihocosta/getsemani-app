@@ -85,29 +85,3 @@ export async function listMonthOccurrences(
     })),
   }));
 }
-
-// Ministerios que o usuario PODE GERENCIAR (lider ou admin) — controla quem
-// ve os botoes de criar/editar/excluir/alocar no calendario de Escalas.
-export async function ledMinistryIds(userId: string, isAdmin: boolean): Promise<string[]> {
-  if (isAdmin) {
-    return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
-  }
-  const memberships = await prisma.membership.findMany({
-    where: { userId, role: "LEADER", status: "ACTIVE" },
-    select: { ministryId: true },
-  });
-  return memberships.map((m) => m.ministryId);
-}
-
-// Ministerios que o usuario PODE VER no calendario de Escalas (qualquer membership
-// ativa, lider ou voluntario) — admin ve todos. Mais amplo que ledMinistryIds.
-export async function visibleMinistryIds(userId: string, isAdmin: boolean): Promise<string[]> {
-  if (isAdmin) {
-    return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
-  }
-  const memberships = await prisma.membership.findMany({
-    where: { userId, status: "ACTIVE" },
-    select: { ministryId: true },
-  });
-  return [...new Set(memberships.map((m) => m.ministryId))];
-}

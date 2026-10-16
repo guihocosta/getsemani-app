@@ -3,7 +3,7 @@ import { Users2, Bell, ClipboardList, UserRoundPlus, ChevronLeft, ChevronRight, 
 import Link from "next/link";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { prisma } from "@/lib/prisma";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { listGuestAllocations } from "@/modules/scheduling/services/listGuestAllocations";
 import { openSlots, loadByPerson, volunteersByMinistry, attendanceRows } from "@/modules/reports/services/reports";
 import { attendanceWindow, summarizeAttendance, attendanceView } from "@/modules/reports/domain/attendance";

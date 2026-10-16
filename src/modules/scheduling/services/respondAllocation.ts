@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
+import { leaderIdsOf } from "@/modules/identity/services/memberships";
 import { notifyUser } from "@/modules/notifications/services/notify";
 import { fmtDateTime, dateKey } from "@/lib/time";
 import { NotOwner } from "./swap";
@@ -45,17 +46,14 @@ export async function declineAllocation(params: { allocationId: string }) {
   await prisma.allocation.delete({ where: { id: params.allocationId } });
 
   const ministryId = alloc.slot.occurrence.schedule.ministryId;
-  const leaders = await prisma.membership.findMany({
-    where: { ministryId, role: "LEADER", status: "ACTIVE" },
-    select: { userId: true },
-  });
+  const leaderIds = await leaderIdsOf(ministryId);
 
   await Promise.all(
-    leaders.map((l) =>
+    leaderIds.map((leaderId) =>
       notifyUser({
-        userId: l.userId,
+        userId: leaderId,
         type: "SWAP",
-        dedupeKey: `decline:${params.allocationId}:${l.userId}`,
+        dedupeKey: `decline:${params.allocationId}:${leaderId}`,
         title: "Voluntário recusou uma escala",
         body: `${alloc.slot.occurrence.schedule.ministry.name} · ${alloc.slot.role.name} · ${fmtDateTime(alloc.slot.occurrence.date)}`,
         url: "/escalas",
