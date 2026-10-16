@@ -24,7 +24,7 @@ export function Button({
     <button
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-semibold",
-        "transition-[color,background-color,transform] duration-150 hover:scale-[1.01] active:scale-[0.98]",
+        "transition-[color,background-color,scale] duration-150 hover:scale-[1.01] active:scale-[0.98]",
         "disabled:opacity-40 disabled:pointer-events-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
         styles[effectiveVariant] ?? styles.primary,
