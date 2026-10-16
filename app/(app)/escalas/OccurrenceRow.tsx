@@ -61,7 +61,7 @@ export function OccurrenceRow(props: {
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
   onActiveChanged: (slotId: string, active: boolean) => void;
-  onCheckedInChanged: (slotId: string, checkedIn: boolean) => void;
+  onAttendanceChanged: (slotId: string, patch: Pick<Slot, "checkedIn" | "allocatedStatus">) => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
@@ -256,7 +256,10 @@ export function OccurrenceRow(props: {
         setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
         return;
       }
-      props.onCheckedInChanged(slot.slotId, present);
+      props.onAttendanceChanged(slot.slotId, {
+        checkedIn: res.allocation.checkedIn,
+        allocatedStatus: res.allocation.status,
+      });
       closeSheet();
     });
   }
