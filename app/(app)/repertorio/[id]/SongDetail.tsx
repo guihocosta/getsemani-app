@@ -142,8 +142,8 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
     const d = versionDefaults(v);
     return (
       <form data-no-swipe action={(fd) => submitVersion(v?.id ?? null, fd)} className="flex flex-col gap-3">
-        <div>
-          <label className="text-xs text-text-muted block mb-1">Nome da versão</label>
+        <label className="block">
+          <span className="text-xs text-text-muted block mb-1">Nome da versão</span>
           <input
             name="name"
             required
@@ -152,10 +152,10 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
             className="field w-full"
             placeholder="Ex.: Acústica, Ao vivo"
           />
-        </div>
+        </label>
         {VERSION_FIELDS.map((f) => (
-          <div key={f.name}>
-            <label className="text-xs text-text-muted block mb-1">{f.label}</label>
+          <label key={f.name} className="block">
+            <span className="text-xs text-text-muted block mb-1">{f.label}</span>
             <input
               name={f.name}
               type={f.type ?? "text"}
@@ -164,12 +164,12 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
               className="field w-full"
               {...(f.name === "bpm" ? { min: 20, max: 400, step: 1 } : {})}
             />
-          </div>
+          </label>
         ))}
-        <div>
-          <label className="text-xs text-text-muted block mb-1">Observações</label>
+        <label className="block">
+          <span className="text-xs text-text-muted block mb-1">Observações</span>
           <textarea name="notes" maxLength={500} defaultValue={d.notes} rows={2} className="field w-full" />
-        </div>
+        </label>
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={pending} className="py-2 px-4 text-sm">
             Salvar
@@ -189,20 +189,20 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
       {editingSong ? (
         <Card className="mb-6">
           <form data-no-swipe action={submitSong} className="flex flex-col gap-3">
-            <div>
-              <label className="text-xs text-text-muted block mb-1">Título</label>
+            <label className="block">
+              <span className="text-xs text-text-muted block mb-1">Título</span>
               <input name="title" required maxLength={120} defaultValue={song.title} className="field w-full" />
-            </div>
-            <div>
-              <label className="text-xs text-text-muted block mb-1">Artista</label>
+            </label>
+            <label className="block">
+              <span className="text-xs text-text-muted block mb-1">Artista</span>
               <input name="artist" maxLength={120} defaultValue={song.artist ?? ""} className="field w-full" />
-            </div>
-            <div>
-              <label className="text-xs text-text-muted block mb-1">Classificação</label>
+            </label>
+            <label className="block">
+              <span className="text-xs text-text-muted block mb-1">Classificação</span>
               <input name="category" maxLength={40} defaultValue={song.category ?? ""} className="field w-full" />
-            </div>
-            <div>
-              <label className="text-xs text-text-muted block mb-1">Observações</label>
+            </label>
+            <label className="block">
+              <span className="text-xs text-text-muted block mb-1">Observações</span>
               <textarea
                 name="notes"
                 maxLength={500}
@@ -210,7 +210,7 @@ export function SongDetail({ song, versions, canManage }: { song: Song; versions
                 rows={3}
                 className="field w-full"
               />
-            </div>
+            </label>
             <div className="flex items-center gap-3">
               <Button type="submit" disabled={pending} className="py-2 px-4 text-sm">
                 Salvar

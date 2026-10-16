@@ -68,8 +68,8 @@ export function SongList({
           <Card className="mb-6">
             <form data-no-swipe action={submit} className="flex flex-col gap-3">
               {manageable.length > 1 ? (
-                <div>
-                  <label className="text-xs text-text-muted block mb-1">Ministério</label>
+                <label className="block">
+                  <span className="text-xs text-text-muted block mb-1">Ministério</span>
                   <select name="ministryId" className="field w-full">
                     {manageable.map((m) => (
                       <option key={m.id} value={m.id}>
@@ -77,20 +77,20 @@ export function SongList({
                       </option>
                     ))}
                   </select>
-                </div>
+                </label>
               ) : (
                 <input type="hidden" name="ministryId" value={manageable[0].id} />
               )}
-              <div>
-                <label className="text-xs text-text-muted block mb-1">Título</label>
+              <label className="block">
+                <span className="text-xs text-text-muted block mb-1">Título</span>
                 <input name="title" required maxLength={120} className="field w-full" />
-              </div>
-              <div>
-                <label className="text-xs text-text-muted block mb-1">Artista</label>
+              </label>
+              <label className="block">
+                <span className="text-xs text-text-muted block mb-1">Artista</span>
                 <input name="artist" maxLength={120} className="field w-full" placeholder="Opcional" />
-              </div>
-              <div>
-                <label className="text-xs text-text-muted block mb-1">Classificação</label>
+              </label>
+              <label className="block">
+                <span className="text-xs text-text-muted block mb-1">Classificação</span>
                 <input
                   name="category"
                   maxLength={40}
@@ -103,7 +103,7 @@ export function SongList({
                     <option key={c} value={c} />
                   ))}
                 </datalist>
-              </div>
+              </label>
               <div className="flex items-center gap-3">
                 <Button type="submit" disabled={pending} className="py-2 px-4 text-sm">
                   Salvar
