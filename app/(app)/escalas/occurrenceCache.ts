@@ -54,6 +54,22 @@ export function patchOccurrenceSlot(
   });
 }
 
+// Reflete marcar/desmarcar presenca de 1 vaga sem re-buscar o mes.
+export function patchSlotCheckedIn(
+  items: Item[],
+  occurrenceId: string,
+  slotId: string,
+  checkedIn: boolean,
+): Item[] {
+  return items.map((item) => {
+    if (item.occurrenceId !== occurrenceId) return item;
+    return {
+      ...item,
+      slots: item.slots.map((slot) => (slot.slotId === slotId ? { ...slot, checkedIn } : slot)),
+    };
+  });
+}
+
 // Ativa/desativa 1 vaga sem re-buscar o mes. Desativar tambem limpa qualquer
 // alocacao que estivesse ali (o servidor ja removeu) - reativar sempre volta
 // vazia, nunca restaura quem estava antes.

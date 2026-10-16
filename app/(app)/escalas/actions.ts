@@ -10,6 +10,7 @@ import { allocateGuest, reassignToGuest } from "@/modules/scheduling/services/al
 import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllocation";
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
+import { setAttendance } from "@/modules/scheduling/services/setAttendance";
 import { setOccurrencePublished } from "@/modules/scheduling/services/publishOccurrence";
 import { suggestAllocations } from "@/modules/scheduling/services/suggestAllocations";
 import type { SuggestActionResult } from "@/modules/scheduling/domain/suggest";
@@ -175,6 +176,21 @@ export async function setSlotActiveAction(
     return { ok: true };
   } catch (e) {
     return handleActionError("escalas.setSlotActive", e, { slotId, active });
+  }
+}
+
+export async function setAttendanceAction(
+  allocationId: string,
+  present: boolean,
+): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    await setAttendance({ allocationId, present });
+    revalidatePath("/escalas");
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e) {
+    return handleActionError("escalas.setAttendance", e, { allocationId, present });
   }
 }
 

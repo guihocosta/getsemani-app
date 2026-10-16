@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/ui/EmptyState";
 import { OccurrenceRow } from "./OccurrenceRow";
 import { loadMonthAction } from "./actions";
-import { patchOccurrenceSlot, patchSlotActive, type Item, type SlotPatch } from "./occurrenceCache";
+import { patchOccurrenceSlot, patchSlotActive, patchSlotCheckedIn, type Item, type SlotPatch } from "./occurrenceCache";
 
 const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTH_LABELS = [
@@ -69,6 +69,14 @@ export function EscalaCalendar({
       const items = prev.get(key);
       if (!items) return prev;
       return new Map(prev).set(key, patchOccurrenceSlot(items, occurrenceId, slotId, patch));
+    });
+  }
+
+  function patchCheckedIn(occurrenceId: string, slotId: string, checkedIn: boolean) {
+    setCache((prev) => {
+      const items = prev.get(key);
+      if (!items) return prev;
+      return new Map(prev).set(key, patchSlotCheckedIn(items, occurrenceId, slotId, checkedIn));
     });
   }
 
@@ -240,6 +248,9 @@ export function EscalaCalendar({
               onChanged={refreshCurrentMonth}
               onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
               onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
+              onCheckedInChanged={(slotId: string, checkedIn: boolean) =>
+                patchCheckedIn(o.occurrenceId, slotId, checkedIn)
+              }
             />
           ))}
         </ul>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/ui/Badge";
 import { BottomSheet } from "@/ui/BottomSheet";
+import { Button } from "@/ui/Button";
 import type { AllocationCandidate } from "./actions";
 import type { Slot } from "./occurrenceCache";
 
@@ -21,6 +22,8 @@ export function SlotDetailSheet(props: {
   onPickUser: (userId: string) => void;
   onPickGuest: (name: string) => void;
   onDeactivate: () => void;
+  canMarkAttendance: boolean;
+  onToggleAttendance: () => void;
 }) {
   const [picking, setPicking] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
@@ -73,6 +76,7 @@ export function SlotDetailSheet(props: {
                 {!slot.isGuest && slot.allocatedStatus === "PENDING" && (
                   <Badge tone="info">aguardando confirmação</Badge>
                 )}
+                {!slot.isGuest && slot.checkedIn && <Badge tone="muted">presente</Badge>}
               </div>
             )}
           </div>
@@ -203,23 +207,36 @@ export function SlotDetailSheet(props: {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-4 pt-1">
-              <button
-                type="button"
-                disabled={props.pending}
-                onClick={() => setPicking(true)}
-                className="min-h-11 text-sm text-primary font-medium disabled:opacity-40"
-              >
-                Trocar
-              </button>
-              <button
-                type="button"
-                disabled={props.pending}
-                onClick={props.onDeactivate}
-                className="min-h-11 text-sm text-danger disabled:opacity-40"
-              >
-                Desativar vaga
-              </button>
+            <div className="flex flex-col gap-1 pt-1">
+              {props.canMarkAttendance && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={props.pending}
+                  onClick={props.onToggleAttendance}
+                  className="w-full min-h-11 py-2 text-sm"
+                >
+                  {slot.checkedIn ? "Desmarcar presença" : "Marcar presente"}
+                </Button>
+              )}
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  disabled={props.pending}
+                  onClick={() => setPicking(true)}
+                  className="min-h-11 text-sm text-primary font-medium disabled:opacity-40"
+                >
+                  Trocar
+                </button>
+                <button
+                  type="button"
+                  disabled={props.pending}
+                  onClick={props.onDeactivate}
+                  className="min-h-11 text-sm text-danger disabled:opacity-40"
+                >
+                  Desativar vaga
+                </button>
+              </div>
             </div>
           )}
         </div>

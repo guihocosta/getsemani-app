@@ -20,6 +20,7 @@ export type ActionCode =
   | "OCCURRENCE_CANCELLED"
   | "INVALID_NAME"
   | "INVALID_BIRTH_DATE"
+  | "ATTENDANCE_NOT_ALLOWED"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -42,6 +43,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   OCCURRENCE_CANCELLED: "Essa data foi cancelada.",
   INVALID_NAME: "Nome inválido",
   INVALID_BIRTH_DATE: "Data de nascimento inválida",
+  ATTENDANCE_NOT_ALLOWED: "Só dá pra marcar presença de quem tem conta, em dia que já começou.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 
