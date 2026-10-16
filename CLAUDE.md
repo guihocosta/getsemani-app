@@ -47,7 +47,10 @@ src/lib/      infra compartilhada: prisma, supabase/{client,server}, time, push,
 src/ui/       primitivas visuais (AppShell, Button, Card, Badge, ConfirmDialog…)
 ```
 
-Módulos: `identity`, `ministries`, `scheduling`, `availability`, `notifications`, `reports`. Regra da constituição: um módulo só toca as próprias entidades; conversa entre módulos passa por funções de serviço, nunca por acesso cruzado a tabelas. Sem ciclos.
+Módulos: `identity`, `ministries`, `scheduling`, `availability`, `notifications`, `reports`, `repertoire`, `announcements`. Regra da constituição: um módulo só toca as próprias entidades; conversa entre módulos passa por funções de serviço, nunca por acesso cruzado a tabelas. Sem ciclos. `tests/unit/moduleBoundaries.test.ts` falha em ciclo de import entre módulos ou em leitura de `Membership` fora de identity.
+
+- Membership é de identity: quem lidera ou é membro ativo sai de `src/modules/identity/services/memberships.ts` (`ACTIVE_LEADER`, `ledMinistryIds`, `visibleMinistryIds`, `leaderIdsOf`, `isActiveMember`, `activeMemberIds`, `activeMemberIdsAmong`, `activeMembersWithName`). Não reescrever `{ role: "LEADER", status: "ACTIVE" }` à mão.
+- Exceções aceitas, listadas no teste: `reports` (read model só de leitura) e a matriz de capacitação em `ministries/services/userSkills.ts`.
 
 Fluxo padrão de uma feature: página Server Component chama `require*` de authz → chama serviço do módulo → renderiza; mutações vão em `app/**/actions.ts` como Server Action que valida, chama o serviço, e faz `revalidatePath`.
 
