@@ -43,19 +43,19 @@ export function EditMinistryForm({ ministryId, name, color, description, reperto
   return (
     <form data-no-swipe ref={formRef} action={submit} className="flex flex-col gap-3 border-t border-border pt-3 mt-3">
       <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="text-xs text-text-muted block mb-1">Nome</label>
+        <label className="block flex-1">
+          <span className="text-xs text-text-muted block mb-1">Nome</span>
           <input name="name" required minLength={2} defaultValue={name} className="field w-full" />
-        </div>
-        <div>
-          <label className="text-xs text-text-muted block mb-1">Cor</label>
+        </label>
+        <label className="block">
+          <span className="text-xs text-text-muted block mb-1">Cor</span>
           <input name="color" type="color" defaultValue={color ?? "#6d28d9"} className="field h-[42px] w-16 p-1" />
-        </div>
+        </label>
       </div>
-      <div>
-        <label className="text-xs text-text-muted block mb-1">Descrição</label>
+      <label className="block">
+        <span className="text-xs text-text-muted block mb-1">Descrição</span>
         <input name="description" defaultValue={description ?? ""} className="field w-full" placeholder="Opcional" />
-      </div>
+      </label>
       <label className="flex items-center gap-2 text-sm text-text min-h-11">
         <input name="repertoireEnabled" type="checkbox" defaultChecked={repertoireEnabled} className="h-4 w-4" />
         Repertório de músicas

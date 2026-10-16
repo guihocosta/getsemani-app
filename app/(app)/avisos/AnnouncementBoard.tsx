@@ -79,8 +79,8 @@ export function AnnouncementBoard({
           <Card className="mb-6">
             <form data-no-swipe action={submit} className="flex flex-col gap-3">
               {manageable.length > 1 ? (
-                <div>
-                  <label className="text-xs text-text-muted block mb-1">Ministério</label>
+                <label className="block">
+                  <span className="text-xs text-text-muted block mb-1">Ministério</span>
                   <select name="ministryId" className="field w-full">
                     {manageable.map((m) => (
                       <option key={m.id} value={m.id}>
@@ -88,18 +88,18 @@ export function AnnouncementBoard({
                       </option>
                     ))}
                   </select>
-                </div>
+                </label>
               ) : (
                 <input type="hidden" name="ministryId" value={manageable[0].id} />
               )}
-              <div>
-                <label className="text-xs text-text-muted block mb-1">Título</label>
+              <label className="block">
+                <span className="text-xs text-text-muted block mb-1">Título</span>
                 <input name="title" required maxLength={80} className="field w-full" />
-              </div>
-              <div>
-                <label className="text-xs text-text-muted block mb-1">Mensagem</label>
+              </label>
+              <label className="block">
+                <span className="text-xs text-text-muted block mb-1">Mensagem</span>
                 <textarea name="body" required maxLength={1000} rows={4} className="field w-full" />
-              </div>
+              </label>
               <label className="flex items-center gap-2 text-sm text-text min-h-11">
                 <input name="pinned" type="checkbox" className="h-4 w-4" />
                 Destacar na página inicial

@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Bell, Cake, Megaphone, Music } from "lucide-react";
 import { requireUser, isLeaderOfAny } from "@/modules/identity/services/authz";
-import { ledMinistryIds, visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { pendingMembershipCount } from "@/modules/identity/services/memberships";
 import { repertoireMinistries } from "@/modules/ministries/services/modules";
 import { listPinnedAnnouncements } from "@/modules/announcements/services/announcements";
 import { listBirthdays } from "@/modules/identity/services/birthdays";
@@ -24,30 +25,24 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const user = await requireUser();
 
-  const activeMembership = await prisma.membership.findFirst({
-    where: { userId: user.id, status: "ACTIVE" },
-  });
+  // Tudo aqui so depende de user: uma rodada ao banco em vez de quatro em serie.
+  // pendingMembershipCount e cache(): o layout ja pediu o mesmo numero.
+  const [activeMembership, isLeader, memberIds, pendingCount] = await Promise.all([
+    prisma.membership.findFirst({ where: { userId: user.id, status: "ACTIVE" } }),
+    isLeaderOfAny(user.id),
+    visibleMinistryIds(user.id, user.isAdmin),
+    pendingMembershipCount(user.id, user.isAdmin),
+  ]);
   if (!activeMembership) redirect("/onboarding");
-
-  const isLeader = await isLeaderOfAny(user.id);
   const showGestaoResumo = user.isAdmin || isLeader;
 
-  const memberIds = await visibleMinistryIds(user.id, user.isAdmin);
   const todayKey = dateKey(new Date());
   const todayMonth = Number(todayKey.slice(5, 7));
-  const [items, repertoire, pinned, birthdays, pendingCount] = await Promise.all([
+  const [items, repertoire, pinned, birthdays] = await Promise.all([
     getMySchedule(user.id),
     repertoireMinistries(memberIds),
     listPinnedAnnouncements(memberIds),
     listBirthdays(todayMonth, memberIds),
-    showGestaoResumo
-      ? (async () => {
-          const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
-          return prisma.membership.count({
-            where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
-          });
-        })()
-      : Promise.resolve(0),
   ]);
 
   const birthdaysToday = birthdays.filter((b) => isBirthdayToday(b.day, todayMonth, todayKey));
