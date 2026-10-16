@@ -96,6 +96,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C4 tests/unit/attendanceReport.test.ts:30 (repo-layer)
 - last seen: 2026-10-04T00:15:16Z
 
+### L-015 - Prova por grep deve casar só o trecho novo: confirme 0 ocorrências na base com git show <base>:<arquivo> | grep -c antes de aceitá-la.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: presenca-confirma
+- evidence: checks.md C6 (tests)
+- last seen: 2026-10-16T21:33:38Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -240,9 +240,7 @@ export function EscalaCalendar({
               onChanged={refreshCurrentMonth}
               onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
               onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
-              onCheckedInChanged={(slotId: string, checkedIn: boolean) =>
-                patchSlot(o.occurrenceId, slotId, { checkedIn })
-              }
+              onAttendanceChanged={(slotId: string, patch: Partial<Slot>) => patchSlot(o.occurrenceId, slotId, patch)}
             />
           ))}
         </ul>

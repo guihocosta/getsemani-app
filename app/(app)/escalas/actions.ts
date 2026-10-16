@@ -182,13 +182,16 @@ export async function setSlotActiveAction(
 export async function setAttendanceAction(
   allocationId: string,
   present: boolean,
-): Promise<{ ok: true } | { ok: false; code: ActionCode; ref: string }> {
+): Promise<
+  | { ok: true; allocation: { status: AllocationStatus; checkedIn: boolean } }
+  | { ok: false; code: ActionCode; ref: string }
+> {
   try {
-    await setAttendance({ allocationId, present });
+    const allocation = await setAttendance({ allocationId, present });
     revalidatePath("/escalas");
     revalidatePath("/admin");
     revalidatePath("/");
-    return { ok: true };
+    return { ok: true, allocation: { status: allocation.status, checkedIn: allocation.checkedInAt !== null } };
   } catch (e) {
     return handleActionError("escalas.setAttendance", e, { allocationId, present });
   }

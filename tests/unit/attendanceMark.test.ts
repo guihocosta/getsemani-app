@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
+import { slotAttendanceMark, canMarkAttendance, attendanceUpdate } from "@/modules/scheduling/domain/attendance";
 
 const HOJE = "2026-10-02";
 const ONTEM = "2026-10-01";
@@ -11,6 +11,29 @@ const base = {
   checkedIn: false,
   canManage: true,
 };
+
+describe("attendanceUpdate", () => {
+  const now = new Date("2026-10-16T22:00:00Z");
+  const t0 = new Date("2026-10-16T21:30:00Z");
+
+  it("presente em PENDING confirma", () => {
+    expect(attendanceUpdate({ status: "PENDING", checkedInAt: null }, true, now)).toEqual({
+      checkedInAt: now,
+      status: "CONFIRMED",
+      respondedAt: now,
+    });
+  });
+
+  it("presente em CONFIRMED so mantem check-in", () => {
+    expect(attendanceUpdate({ status: "CONFIRMED", checkedInAt: t0 }, true, now)).toStrictEqual({ checkedInAt: t0 });
+  });
+
+  it("desmarcar nao mexe no status", () => {
+    for (const status of ["PENDING", "CONFIRMED"] as const) {
+      expect(attendanceUpdate({ status, checkedInAt: t0 }, false, now)).toStrictEqual({ checkedInAt: null });
+    }
+  });
+});
 
 describe("canMarkAttendance", () => {
   it("permite hoje e dia passado, com conta", () => {

@@ -12,10 +12,13 @@ import { setAttendance } from "@/modules/scheduling/services/setAttendance";
 const ONTEM = new Date(Date.now() - 24 * 60 * 60 * 1000);
 const AMANHA = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
 
-function allocation(over: { userId?: string | null; date?: Date; checkedInAt?: Date | null } = {}) {
+function allocation(
+  over: { userId?: string | null; date?: Date; checkedInAt?: Date | null; status?: "PENDING" | "CONFIRMED" } = {},
+) {
   return {
     id: "a1",
     userId: over.userId === undefined ? "u1" : over.userId,
+    status: over.status ?? "CONFIRMED",
     checkedInAt: over.checkedInAt ?? null,
     slot: { occurrence: { date: over.date ?? ONTEM, schedule: { ministryId: "m1" } } },
   };
@@ -42,6 +45,18 @@ describe("setAttendance", () => {
     await setAttendance({ allocationId: "a1", present: true });
 
     expect(prisma.allocation.update).toHaveBeenCalledWith({ where: { id: "a1" }, data: { checkedInAt: feito } });
+  });
+
+  it("presente em PENDING confirma a escala", async () => {
+    vi.mocked(prisma.allocation.findUniqueOrThrow).mockResolvedValue(allocation({ status: "PENDING" }) as never);
+    await setAttendance({ allocationId: "a1", present: true });
+
+    const data = vi.mocked(prisma.allocation.update).mock.calls[0][0].data as {
+      status: string;
+      respondedAt: Date;
+    };
+    expect(data.status).toBe("CONFIRMED");
+    expect(data.respondedAt).toBeInstanceOf(Date);
   });
 
   it("desmarcar zera checkedInAt", async () => {

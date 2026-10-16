@@ -29,7 +29,7 @@ import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
 import { publishMenuItem } from "@/modules/scheduling/domain/publish";
 import { suggestOutcome, suggestConfirmText } from "@/modules/scheduling/domain/suggest";
-import type { Slot, SlotPatch } from "./occurrenceCache";
+import { attendancePatch, type Slot, type SlotPatch } from "./occurrenceCache";
 
 type NoteMode = "assign" | "reassign";
 
@@ -61,7 +61,7 @@ export function OccurrenceRow(props: {
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
   onActiveChanged: (slotId: string, active: boolean) => void;
-  onCheckedInChanged: (slotId: string, checkedIn: boolean) => void;
+  onAttendanceChanged: (slotId: string, patch: Pick<Slot, "checkedIn" | "allocatedStatus">) => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
@@ -256,7 +256,7 @@ export function OccurrenceRow(props: {
         setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
         return;
       }
-      props.onCheckedInChanged(slot.slotId, present);
+      props.onAttendanceChanged(slot.slotId, attendancePatch(res.allocation));
       closeSheet();
     });
   }

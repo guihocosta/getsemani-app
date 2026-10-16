@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
 import { dateKey } from "@/lib/time";
-import { canMarkAttendance } from "../domain/attendance";
+import { canMarkAttendance, attendanceUpdate } from "../domain/attendance";
 
 export class AttendanceNotAllowed extends Error {
   constructor() {
@@ -10,7 +10,8 @@ export class AttendanceNotAllowed extends Error {
 }
 
 // Lider marca ou desmarca presenca de uma vaga (hoje ou dia passado), sem depender
-// do check-in do voluntario. Reusa checkedInAt como unica fonte de presenca.
+// do check-in do voluntario. Reusa checkedInAt como unica fonte de presenca; marcar
+// presente em escala PENDING tambem confirma (ver attendanceUpdate).
 export async function setAttendance(params: { allocationId: string; present: boolean }) {
   const alloc = await prisma.allocation.findUniqueOrThrow({
     where: { id: params.allocationId },
@@ -27,6 +28,6 @@ export async function setAttendance(params: { allocationId: string; present: boo
 
   return prisma.allocation.update({
     where: { id: params.allocationId },
-    data: { checkedInAt: params.present ? (alloc.checkedInAt ?? new Date()) : null },
+    data: attendanceUpdate(alloc, params.present, new Date()),
   });
 }
