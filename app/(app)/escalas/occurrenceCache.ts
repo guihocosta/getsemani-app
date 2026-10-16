@@ -37,13 +37,13 @@ export type SlotPatch = {
 };
 
 // Atualiza uma vaga especifica dentro da lista de ocorrencias do mes, sem
-// tocar o banco — usado apos allocate/reassign pra refletir 1 vaga na tela
-// sem re-buscar o mes inteiro (que era a 2a requisicao por selecao).
+// tocar o banco — usado apos allocate/reassign e marcar presenca pra refletir
+// 1 vaga na tela sem re-buscar o mes inteiro (que era a 2a requisicao por selecao).
 export function patchOccurrenceSlot(
   items: Item[],
   occurrenceId: string,
   slotId: string,
-  patch: SlotPatch,
+  patch: Partial<Slot>,
 ): Item[] {
   return items.map((item) => {
     if (item.occurrenceId !== occurrenceId) return item;

@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "@/ui/EmptyState";
 import { OccurrenceRow } from "./OccurrenceRow";
 import { loadMonthAction } from "./actions";
-import { patchOccurrenceSlot, patchSlotActive, type Item, type SlotPatch } from "./occurrenceCache";
+import { patchOccurrenceSlot, patchSlotActive, type Item, type Slot, type SlotPatch } from "./occurrenceCache";
 
 const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTH_LABELS = [
@@ -63,8 +63,8 @@ export function EscalaCalendar({
   }
 
   // Atualiza 1 vaga no cache local sem re-buscar o mes — usado apos
-  // allocate/reassign, que ja devolvem o resultado da propria Server Action.
-  function patchSlot(occurrenceId: string, slotId: string, patch: SlotPatch) {
+  // allocate/reassign e marcar presenca, que ja devolvem o resultado da propria Server Action.
+  function patchSlot(occurrenceId: string, slotId: string, patch: Partial<Slot>) {
     setCache((prev) => {
       const items = prev.get(key);
       if (!items) return prev;
@@ -240,6 +240,9 @@ export function EscalaCalendar({
               onChanged={refreshCurrentMonth}
               onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
               onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
+              onCheckedInChanged={(slotId: string, checkedIn: boolean) =>
+                patchSlot(o.occurrenceId, slotId, { checkedIn })
+              }
             />
           ))}
         </ul>

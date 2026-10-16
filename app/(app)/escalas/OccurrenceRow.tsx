@@ -12,6 +12,7 @@ import {
   allocateGuestAction,
   reassignGuestAction,
   setSlotActiveAction,
+  setAttendanceAction,
   deleteOccurrenceAction,
   getOccurrenceCandidatesAction,
   repeatScheduleAction,
@@ -25,7 +26,7 @@ import { repeatOutcome } from "./repeatOutcome";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
-import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
+import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
 import { publishMenuItem } from "@/modules/scheduling/domain/publish";
 import { suggestOutcome, suggestConfirmText } from "@/modules/scheduling/domain/suggest";
 import type { Slot, SlotPatch } from "./occurrenceCache";
@@ -60,6 +61,7 @@ export function OccurrenceRow(props: {
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
   onActiveChanged: (slotId: string, active: boolean) => void;
+  onCheckedInChanged: (slotId: string, checkedIn: boolean) => void;
 }) {
   const [pending, start] = useTransition();
   const [note, setNote] = useState<Note | null>(null);
@@ -244,6 +246,21 @@ export function OccurrenceRow(props: {
     });
   }
 
+  function toggleAttendance(slot: Slot) {
+    const allocationId = slot.allocationId;
+    if (!allocationId) return;
+    const present = !slot.checkedIn;
+    start(async () => {
+      const res = await setAttendanceAction(allocationId, present);
+      if (!res.ok) {
+        setNote({ message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, mode: "assign" });
+        return;
+      }
+      props.onCheckedInChanged(slot.slotId, present);
+      closeSheet();
+    });
+  }
+
   function reactivateSlot(slotId: string) {
     start(async () => {
       const res = await setSlotActiveAction(slotId, true);
@@ -355,6 +372,11 @@ export function OccurrenceRow(props: {
         onPickUser={handlePickUser}
         onPickGuest={handlePickGuest}
         onDeactivate={() => activeSlot && deactivateSlot(activeSlot)}
+        canMarkAttendance={
+          !!activeSlot &&
+          canMarkAttendance({ dayKey: props.dayKey, todayKey: props.todayKey, isGuest: activeSlot.isGuest })
+        }
+        onToggleAttendance={() => activeSlot && toggleAttendance(activeSlot)}
       />
       <AddExtraSlotSheet
         open={addExtraOpen}

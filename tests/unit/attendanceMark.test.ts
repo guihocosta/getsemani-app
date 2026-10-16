@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slotAttendanceMark } from "@/modules/scheduling/domain/attendance";
+import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
 
 const HOJE = "2026-10-02";
 const ONTEM = "2026-10-01";
@@ -11,6 +11,18 @@ const base = {
   checkedIn: false,
   canManage: true,
 };
+
+describe("canMarkAttendance", () => {
+  it("permite hoje e dia passado, com conta", () => {
+    expect(canMarkAttendance({ todayKey: HOJE, dayKey: HOJE, isGuest: false })).toBe(true);
+    expect(canMarkAttendance({ todayKey: HOJE, dayKey: ONTEM, isGuest: false })).toBe(true);
+  });
+
+  it("bloqueia futuro e convidado", () => {
+    expect(canMarkAttendance({ todayKey: HOJE, dayKey: AMANHA, isGuest: false })).toBe(false);
+    expect(canMarkAttendance({ todayKey: HOJE, dayKey: ONTEM, isGuest: true })).toBe(false);
+  });
+});
 
 describe("slotAttendanceMark", () => {
   it("falta em dia passado sem check-in, para quem gerencia", () => {
