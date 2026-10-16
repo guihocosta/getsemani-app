@@ -30,6 +30,12 @@ export async function visibleMinistryIds(userId: string, isAdmin: boolean): Prom
   if (isAdmin) {
     return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
   }
+  return activeMinistryIdsOf(userId);
+}
+
+// Ministerios em que o usuario tem membership ACTIVE (sem atalho de admin).
+// Regra de pertencimento, separada da de visibilidade acima.
+export async function activeMinistryIdsOf(userId: string): Promise<string[]> {
   const memberships = await prisma.membership.findMany({
     where: { userId, status: "ACTIVE" },
     select: { ministryId: true },

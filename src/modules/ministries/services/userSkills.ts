@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
-import { isActiveMember, visibleMinistryIds } from "@/modules/identity/services/memberships";
+import { activeMinistryIdsOf, isActiveMember } from "@/modules/identity/services/memberships";
 import { decideSetSkill } from "@/modules/ministries/domain/capabilities";
 
 // Idempotente: marcar/desmarcar duas vezes converge sem erro (CAPA-01.5), via
@@ -56,7 +56,7 @@ export async function setMemberSkill(params: {
 // Funcoes ativas dos ministerios onde o usuario tem membership ACTIVE, com
 // flag de capacitado — para a secao "Minhas funcoes" do /perfil.
 export async function listOwnSkillOptions(userId: string) {
-  const ministryIds = await visibleMinistryIds(userId, false);
+  const ministryIds = await activeMinistryIdsOf(userId);
 
   const roles = await prisma.role.findMany({
     where: { ministryId: { in: ministryIds }, active: true },
@@ -107,7 +107,7 @@ export async function listMinistrySkillMatrix(ministryId: string) {
 // Set de roleId que o usuario e capacitado, restrito a membership ACTIVE e
 // Role.active — consumido por /vagas pra agrupar "Pra voce" x "Outras vagas".
 export async function capableRoleIds(userId: string): Promise<Set<string>> {
-  const activeMinistryIds = await visibleMinistryIds(userId, false);
+  const activeMinistryIds = await activeMinistryIdsOf(userId);
 
   const skills = await prisma.userSkill.findMany({
     where: { userId, role: { active: true, ministryId: { in: activeMinistryIds } } },
