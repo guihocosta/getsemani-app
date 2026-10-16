@@ -25,12 +25,12 @@ describe("attendanceUpdate", () => {
   });
 
   it("presente em CONFIRMED so mantem check-in", () => {
-    expect(attendanceUpdate({ status: "CONFIRMED", checkedInAt: t0 }, true, now)).toEqual({ checkedInAt: t0 });
+    expect(attendanceUpdate({ status: "CONFIRMED", checkedInAt: t0 }, true, now)).toStrictEqual({ checkedInAt: t0 });
   });
 
   it("desmarcar nao mexe no status", () => {
     for (const status of ["PENDING", "CONFIRMED"] as const) {
-      expect(attendanceUpdate({ status, checkedInAt: t0 }, false, now)).toEqual({ checkedInAt: null });
+      expect(attendanceUpdate({ status, checkedInAt: t0 }, false, now)).toStrictEqual({ checkedInAt: null });
     }
   });
 });

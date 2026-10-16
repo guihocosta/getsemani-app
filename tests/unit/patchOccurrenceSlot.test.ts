@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { patchOccurrenceSlot, type Item } from "@app/(app)/escalas/occurrenceCache";
+import { patchOccurrenceSlot, attendancePatch, type Item } from "@app/(app)/escalas/occurrenceCache";
 
 function makeItem(overrides: Partial<Item> = {}): Item {
   return {
@@ -87,6 +87,19 @@ describe("patchOccurrenceSlot", () => {
     const items = [makeItem()];
     const result = patchOccurrenceSlot(items, "occ-1", "slot-inexistente", PATCH);
     expect(result[0].slots.every((s) => s.allocatedUserId === null)).toBe(true);
+  });
+
+  it("presenca confirmada tira o aguardando", () => {
+    const items = patchOccurrenceSlot([makeItem()], "occ-1", "slot-1", PATCH);
+    const result = patchOccurrenceSlot(
+      items,
+      "occ-1",
+      "slot-1",
+      attendancePatch({ status: "CONFIRMED", checkedIn: true }),
+    );
+    expect(result[0].slots[0].allocatedStatus).toBe("CONFIRMED");
+    expect(result[0].slots[0].checkedIn).toBe(true);
+    expect(result[0].slots[0].allocatedName).toBe("Ana");
   });
 
   it("aceita patch de guest sem userId", () => {

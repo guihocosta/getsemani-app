@@ -38,7 +38,10 @@ Proof: `npm run test -- tests/unit/setAttendance.test.ts -t "presente em PENDING
 Proof: `npm run test -- tests/unit/setAttendanceAction.test.ts -t "devolve status e presenca"`
 
 **C6** - [x] `OccurrenceRow` repassa ao cache local o `status` devolvido pela action como `allocatedStatus`, junto de `checkedIn`
-Proof: `grep -q "allocatedStatus: res.allocation.status" "app/(app)/escalas/OccurrenceRow.tsx"`
+Proof: `npm run test -- tests/unit/patchOccurrenceSlot.test.ts -t "presenca confirmada tira o aguardando"`
+Proof: `grep -q "onAttendanceChanged(slot.slotId, attendancePatch(res.allocation))" "app/(app)/escalas/OccurrenceRow.tsx"`
+
+Prova reforçada no round 2: o grep original (`allocatedStatus: res.allocation.status`) já casava na base `caaea67` em callbacks de allocate/reassign e não discriminava (achado do Verifier). A claim não mudou.
 
 ## Coverage
 

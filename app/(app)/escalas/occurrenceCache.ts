@@ -54,6 +54,15 @@ export function patchOccurrenceSlot(
   });
 }
 
+// Patch da vaga apos marcar/desmarcar presenca: o servidor pode ter confirmado
+// a escala junto, entao o status vem do retorno da action, nao do estado local.
+export function attendancePatch(allocation: {
+  status: AllocationStatus;
+  checkedIn: boolean;
+}): Pick<Slot, "checkedIn" | "allocatedStatus"> {
+  return { checkedIn: allocation.checkedIn, allocatedStatus: allocation.status };
+}
+
 // Ativa/desativa 1 vaga sem re-buscar o mes. Desativar tambem limpa qualquer
 // alocacao que estivesse ali (o servidor ja removeu) - reativar sempre volta
 // vazia, nunca restaura quem estava antes.
