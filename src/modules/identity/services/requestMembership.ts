@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
+import { leaderIdsOf } from "@/modules/identity/services/memberships";
 import { notifyUser } from "@/modules/notifications/services/notify";
 
 export class AlreadyRequested extends Error {
@@ -36,15 +37,13 @@ export async function requestMembership(params: { ministryId: string }) {
   });
   if (user.isAdmin) return membership;
 
-  const leaders = await prisma.membership.findMany({
-    where: { ministryId: params.ministryId, role: "LEADER", status: "ACTIVE" },
-  });
+  const leaderIds = await leaderIdsOf(params.ministryId);
 
   // Sem lider ativo, ninguem seria avisado — cai pros admins revisarem.
   const recipients =
-    leaders.length > 0
-      ? leaders.map((l) => l.userId)
-      : (await prisma.user.findMany({ where: { isAdmin: true }, select: { id: true } })).map((u) => u.id);
+    leaderIds.length > 0
+      ? leaderIds
+      :(await prisma.user.findMany({ where: { isAdmin: true }, select: { id: true } })).map((u) => u.id);
 
   for (const userId of recipients) {
     await notifyUser({

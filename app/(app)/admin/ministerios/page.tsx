@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
 import { listMinistries } from "@/modules/ministries/services/listMinistries";
 import { listMinistrySkillMatrix } from "@/modules/ministries/services/userSkills";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { EmptyState } from "@/ui/EmptyState";
 import { CreateMinistryForm } from "./CreateMinistryForm";
 import { MinistryCard } from "./MinistryCard";

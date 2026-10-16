@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireLeaderOf } from "@/modules/identity/services/authz";
+import { activeMemberIdsAmong } from "@/modules/identity/services/memberships";
 import { usersUnavailableAt } from "@/modules/availability/services/checkConflict";
 import { notifyIfPublished } from "./notifyIfPublished";
 import { capableUserIdsForRole } from "@/modules/ministries/services/userSkills";
@@ -93,14 +94,7 @@ export async function repeatSchedule(scheduleId: string): Promise<RepeatResult> 
   // Resolucoes em lote (nao por alocacao): membership, capacitacao e indisponibilidade.
   const sourceUserIds = [...new Set(copies.map((c) => c.sourceUserId).filter((id): id is string => id !== null))];
 
-  const activeMembers = new Set(
-    (
-      await prisma.membership.findMany({
-        where: { userId: { in: sourceUserIds }, ministryId: schedule.ministryId, status: "ACTIVE" },
-        select: { userId: true },
-      })
-    ).map((m) => m.userId),
-  );
+  const activeMembers = await activeMemberIdsAmong(schedule.ministryId, sourceUserIds);
 
   // null = ninguem declarou capacitacao nessa funcao (REPT-04.4) -> nao bloqueia.
   const capableByRole = new Map<string, Set<string> | null>();

@@ -1,5 +1,5 @@
 import { requireUser } from "@/modules/identity/services/authz";
-import { visibleMinistryIds, ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds, ledMinistryIds } from "@/modules/identity/services/memberships";
 import { listSongs } from "@/modules/repertoire/services/songs";
 import { repertoireEmptyMessage } from "@/modules/repertoire/domain/validation";
 import { EmptyState } from "@/ui/EmptyState";

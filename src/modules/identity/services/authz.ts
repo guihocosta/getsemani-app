@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { ensureProfile } from "@/modules/identity/services/ensureProfile";
 import { logError } from "@/lib/logError";
+import { ACTIVE_LEADER } from "@/modules/identity/services/memberships";
 import type { User } from "@prisma/client";
 
 // "anonimo": sem sessao (usuario deslogado). "ok": sessao com perfil, caminho normal.
@@ -72,7 +73,7 @@ export async function isLeaderOf(userId: string, ministryId: string): Promise<bo
   const user = sessionUser?.id === userId ? sessionUser : await prisma.user.findUnique({ where: { id: userId } });
   if (user?.isAdmin) return true;
   const m = await prisma.membership.findFirst({
-    where: { userId, ministryId, role: "LEADER", status: "ACTIVE" },
+    where: { userId, ministryId, ...ACTIVE_LEADER },
   });
   return !!m;
 }
@@ -87,7 +88,7 @@ export async function requireLeaderOf(ministryId: string): Promise<User> {
 // cache() dedup: layout e paginas (ex: /admin) compartilham UMA resolucao por render.
 export const isLeaderOfAny = cache(async (userId: string): Promise<boolean> => {
   const m = await prisma.membership.findFirst({
-    where: { userId, role: "LEADER", status: "ACTIVE" },
+    where: { userId, ...ACTIVE_LEADER },
   });
   return !!m;
 });

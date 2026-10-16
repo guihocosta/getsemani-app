@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
+import { activeMemberIds, isActiveMember, leaderIdsOf } from "@/modules/identity/services/memberships";
 import { SlotTaken } from "./allocateVolunteer";
 import { NotPublished } from "./selfAllocate";
 import { notifyUser } from "@/modules/notifications/services/notify";
@@ -78,12 +79,7 @@ export async function requestSwap(params: { allocationId: string }) {
         });
 
   const ministryId = alloc.slot.occurrence.schedule.ministryId;
-  const members = await prisma.membership.findMany({
-    where: { ministryId, status: "ACTIVE" },
-  });
-  const recipientIds = members
-    .map((m) => m.userId)
-    .filter((id) => id !== user.id);
+  const recipientIds = (await activeMemberIds(ministryId)).filter((id) => id !== user.id);
 
   await Promise.all(
     recipientIds.map((recipientId) =>
@@ -159,11 +155,8 @@ export async function claimSwap(params: { swapRequestId: string }) {
     }
 
     const ministryId = swap.allocation.slot.occurrence.schedule.ministryId;
-    if (!user.isAdmin) {
-      const member = await tx.membership.findFirst({
-        where: { userId: user.id, ministryId, status: "ACTIVE" },
-      });
-      if (!member) throw new Error("NOT_ELIGIBLE");
+    if (!user.isAdmin && !(await isActiveMember(user.id, ministryId, tx))) {
+      throw new Error("NOT_ELIGIBLE");
     }
 
     // reatribui a allocation existente (mesmo slotId, evita cascade que apagaria o swap).
@@ -209,17 +202,14 @@ export async function claimSwap(params: { swapRequestId: string }) {
     });
   }
 
-  const leaders = await prisma.membership.findMany({
-    where: { ministryId, status: "ACTIVE", role: "LEADER" },
-    select: { userId: true },
-  });
+  const leaderIds = await leaderIdsOf(ministryId);
 
   await Promise.all(
-    leaders.map((leader) =>
+    leaderIds.map((leaderId) =>
       notifyUser({
-        userId: leader.userId,
+        userId: leaderId,
         type: "SWAP",
-        dedupeKey: `swap-claimed-leader:${swapId}:${resolvedAt.getTime()}:${leader.userId}`,
+        dedupeKey: `swap-claimed-leader:${swapId}:${resolvedAt.getTime()}:${leaderId}`,
         title: "Troca efetuada no ministério",
         body: `${user.name} assumiu a escala de ${originalUserName} · ${roleName} · ${fmtDateTime(occurrenceDate)}`,
         url: "/escalas",

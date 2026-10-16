@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { overviewData } from "@/modules/reports/services/reports";
 import { OVERVIEW_PERIODS, overviewPeriod, summarizeOverview, fmtPct } from "@/modules/reports/domain/overview";
 import { Card } from "@/ui/Card";

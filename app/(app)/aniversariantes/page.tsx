@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { requireUser } from "@/modules/identity/services/authz";
 import { listBirthdays } from "@/modules/identity/services/birthdays";
 import { isBirthdayToday, parseMonthNumber } from "@/modules/identity/domain/birthday";
-import { visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds } from "@/modules/identity/services/memberships";
 import { Card } from "@/ui/Card";
 import { Badge } from "@/ui/Badge";
 import { EmptyState } from "@/ui/EmptyState";

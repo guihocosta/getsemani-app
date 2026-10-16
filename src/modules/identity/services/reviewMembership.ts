@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/modules/identity/services/authz";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { ledMinistryIds } from "@/modules/identity/services/memberships";
 import { notifyUser } from "@/modules/notifications/services/notify";
 import type { MembershipStatus } from "@prisma/client";
 

@@ -21,12 +21,12 @@ vi.mock("@/modules/ministries/services/modules", () => ({
   assertRepertoireEnabled: vi.fn(),
   repertoireMinistries: vi.fn(),
 }));
-vi.mock("@/modules/scheduling/services/listMonthOccurrences", () => ({ visibleMinistryIds: vi.fn() }));
+vi.mock("@/modules/identity/services/memberships", () => ({ visibleMinistryIds: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireLeaderOf } from "@/modules/identity/services/authz";
 import { assertRepertoireEnabled, repertoireMinistries } from "@/modules/ministries/services/modules";
-import { visibleMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
+import { visibleMinistryIds } from "@/modules/identity/services/memberships";
 import {
   listSongs,
   getSong,
