@@ -1,16 +1,16 @@
 "use client";
 
-import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { Button } from "@/ui/Button";
 
 export function LoginForm() {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-
+  // supabase-js so no clique: e o maior peso da rota, e /login e a primeira tela
+  // de quem instala o PWA.
   async function signInGoogle() {
+    const { createSupabaseBrowser } = await import("@/lib/supabase/client");
     const supabase = createSupabaseBrowser();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${origin}/callback` },
+      options: { redirectTo: `${window.location.origin}/callback` },
     });
   }
 
@@ -22,4 +22,3 @@ export function LoginForm() {
     </div>
   );
 }
-
