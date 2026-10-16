@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { ensureProfile } from "@/modules/identity/services/ensureProfile";
+import { logError } from "@/lib/logError";
 import type { User } from "@prisma/client";
 
 // "anonimo": sem sessao (usuario deslogado). "ok": sessao com perfil, caminho normal.
@@ -16,22 +17,36 @@ export function resolveSessionState(params: { hasSession: boolean; hasProfile: b
 
 // Usuario da sessao (perfil de dominio) ou null.
 // cache() dedup: layout + pagina compartilham UMA resolucao por render.
-// getSession() le o cookie local (sem rede); o middleware so chama getUser()
-// (valida+renova o JWT via rede) quando falta menos de REFRESH_BUFFER_SECONDS
-// pra expirar (ver middleware.ts) — aqui confiamos no cookie dentro dessa janela.
+// Identidade vem de getClaims(), que VERIFICA a assinatura do JWT (JWKS em cache
+// com chave assimetrica; senao valida no servidor de Auth). Nunca usar
+// getSession().user aqui: ele le o cookie sem verificar, e um cookie forjado
+// com o UUID de outra pessoa viraria aquela pessoa (inclusive admin).
 // O perfil normalmente e criado no callback de auth, nao no caminho quente —
 // mas se a sessao existe e o perfil nao, reparamos aqui em vez de entrar em loop.
 export const getSessionUser = cache(async (): Promise<User | null> => {
   const supabase = await createSupabaseServer();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (!session?.user) return null;
+  // getClaims lanca (em vez de devolver error) quando o JWT nem decodifica —
+  // cookie corrompido/forjado e "sem sessao", nao erro 500.
+  let userId: string | undefined;
+  try {
+    const { data, error } = await supabase.auth.getClaims();
+    if (!error) userId = data?.claims?.sub;
+  } catch (err) {
+    logError("authz.getClaims", err);
+    return null;
+  }
+  if (!userId) return null;
 
-  const profile = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const profile = await prisma.user.findUnique({ where: { id: userId } });
   const state = resolveSessionState({ hasSession: true, hasProfile: !!profile });
   if (state === "ok") return profile;
-  return ensureProfile(session.user);
+
+  // Reparo (raro): ensureProfile precisa do usuario completo do Auth.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || user.id !== userId) return null;
+  return ensureProfile(user);
 });
 
 // Sessao ausente/expirada aqui e sempre inesperada (o layout ja redireciona antes de

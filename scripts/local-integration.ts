@@ -1,13 +1,35 @@
 /**
  * Teste de integração local (Postgres real, sem Supabase).
  * Exercita invariantes de dominio auth-free + unicidade de vaga.
- * Rodar: npm run test:local  (com DB no ar + migrate aplicado)
+ * Rodar: DATABASE_URL=postgresql://...@localhost:5432/... npm run test:local
+ * (com DB no ar + migrate aplicado)
  */
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { materializeOccurrences } from "../src/modules/scheduling/services/materializeOccurrences";
 import { openSlots, volunteersByMinistry } from "../src/modules/reports/services/reports";
 import { hasUnavailabilityConflict } from "../src/modules/availability/services/checkConflict";
+
+// O script comeca com TRUNCATE em todas as tabelas, e o .env aponta pro banco de
+// producao. Roda antes de qualquer query: so segue com DATABASE_URL local
+// (passado explicitamente; se o Prisma carregou o .env, o host remoto e barrado).
+function assertLocalDatabase() {
+  const raw = process.env.DATABASE_URL;
+  let host = "";
+  try {
+    host = raw ? new URL(raw).hostname : "";
+  } catch {
+    host = "";
+  }
+  if (!["localhost", "127.0.0.1", "::1", "[::1]"].includes(host)) {
+    console.error(
+      `❌ test:local abortado: DATABASE_URL precisa apontar pra um Postgres local (host atual: "${host || "não definido"}").\n` +
+        "   Este script apaga TODAS as tabelas. Ex.: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/getsemani npm run test:local",
+    );
+    process.exit(1);
+  }
+}
+assertLocalDatabase();
 
 const prisma = new PrismaClient();
 let ok = 0;

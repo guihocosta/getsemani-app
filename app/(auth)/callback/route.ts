@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { ensureProfile } from "@/modules/identity/services/ensureProfile";
 import { logError } from "@/lib/logError";
+import { safeNext } from "@/lib/safeNext";
 
 // Troca o code por sessao e garante o perfil de dominio.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  const next = safeNext(searchParams.get("next"));
 
   try {
     if (code) {

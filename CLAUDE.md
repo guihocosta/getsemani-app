@@ -21,7 +21,9 @@ npm run test -- tests/unit/swap.test.ts        # um arquivo
 npm run test -- -t "nome do caso"              # um caso
 npm run test:watch
 npm run test:e2e         # playwright (sobe `npm run dev` sozinho)
-npm run test:local       # scripts/local-integration.ts — integração com Postgres real, sem Supabase
+DATABASE_URL=postgresql://...@localhost:5432/... npm run test:local
+                         # scripts/local-integration.ts — integração com Postgres real, sem Supabase.
+                         # Faz TRUNCATE em tudo: aborta se DATABASE_URL não for localhost (o .env é produção)
 
 npm run db:migrate       # prisma migrate dev
 npm run db:deploy        # prisma migrate deploy (produção)
@@ -55,6 +57,8 @@ Aliases: `@/*` → `src/*`, `@app/*` → `app/*` (espelhados em `tsconfig.json` 
 
 - Supabase Auth é a fonte de verdade da sessão; `middleware.ts` renova o cookie a cada request (matcher exclui `api/cron` e assets).
 - `User.id === auth.users.id` (mesmo UUID). O perfil de domínio é criado no callback (`app/(auth)/callback/route.ts` → `ensureProfile`); `getSessionUser` (`authz.ts`) não chama `ensureProfile` no caminho normal — só como reparo, se a sessão do Supabase for válida mas a linha `User` estiver ausente (`resolveSessionState` → `"reparar"`), evitando o loop de redirect pro `/login`.
+- Identidade no servidor vem de `supabase.auth.getClaims()` (verifica a assinatura do JWT). **Nunca** usar `getSession().user` para decidir quem é o usuário: ele lê o cookie sem verificar e é forjável (ver `tests/unit/sessionForgery.test.ts`).
+- Prisma conecta como dono das tabelas e ignora RLS; a Data API do Supabase fica fechada por RLS sem policies. **Toda migration que cria tabela deve incluir `ALTER TABLE "X" ENABLE ROW LEVEL SECURITY;`** (ver `20261016220000_enable_rls`).
 - Todo gate passa por `src/modules/identity/services/authz.ts`: `getSessionUser` (embrulhado em `cache()` — layout e página compartilham uma resolução por render), `requireUser`, `requireAdmin`, `requireLeaderOf(ministryId)`, `isLeaderOfAny`. Falha de permissão = `throw new Error("FORBIDDEN")`, traduzido para pt-BR na action.
 - Serviços de leitura em lote (ex.: `listMonthOccurrences`) **não** checam permissão: o chamador resolve antes quais ministérios o usuário pode ver (`visibleMinistryIds`) ou gerenciar (`ledMinistryIds`).
 
@@ -77,6 +81,6 @@ Aliases: `@/*` → `src/*`, `@app/*` → `app/*` (espelhados em `tsconfig.json` 
 - Erros de domínio são classes/`Error` com mensagem-código em maiúsculas (`FORBIDDEN`, `NOT_ELIGIBLE`, `SLOT_TAKEN`); a camada de action traduz para texto pt-BR amigável ao usuário.
 - Server Actions com formulário retornam estado `{ ok, error? }` para `useActionState`. Ao usar `try/catch` numa action que faz `redirect()`, re-lançar o erro de redirect (checar `digest` começando com `NEXT_REDIRECT`) — ver `app/(app)/escalas/actions.ts`.
 - UI: mobile-first, `max-w-md`, nav inferior fixa (`src/ui/AppShell.tsx`), cores só via tokens do tema (`bg-surface`, `text-text-muted`, `text-primary`…) — nunca cores cruas do Tailwind, para o tema escuro (classe `.dark`) continuar válido.
-- Testes unitários cobrem regra de negócio de risco (recorrência, exclusão com escopo, conflito de indisponibilidade, concorrência de vaga, agregações). Bug corrigido ganha teste que o reproduz.
+- Testes unitários cobrem regra de negócio de risco (recorrência, conflito de indisponibilidade, concorrência de vaga, agregações). Exclusão com escopo (`deleteSchedule.ts`) ainda **não** tem teste. Bug corrigido ganha teste que o reproduz.
 - **Comunicação**: Sempre usar Caveman Ultra por padrão (respostas ultra concisas em pt-BR).
 - **Commits**: Sempre usar Conventional Commits em pt-BR (ex.: `feat: adicionar...`, `fix: corrigir...`).
