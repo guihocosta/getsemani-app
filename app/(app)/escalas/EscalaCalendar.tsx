@@ -157,14 +157,22 @@ export function EscalaCalendar({
       </div>
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => goToMonth(year, month - 1)} className="text-text-muted hover:text-text">
-          <ChevronLeft size={20} />
+        <button
+          onClick={() => goToMonth(year, month - 1)}
+          aria-label="Mês anterior"
+          className="min-h-11 min-w-11 -ml-3 flex items-center justify-center text-text-muted hover:text-text"
+        >
+          <ChevronLeft size={20} aria-hidden />
         </button>
-        <p className="text-sm font-semibold text-text">
+        <p className="text-sm font-semibold text-text" aria-live="polite">
           {MONTH_LABELS[month - 1]} {year}
         </p>
-        <button onClick={() => goToMonth(year, month + 1)} className="text-text-muted hover:text-text">
-          <ChevronRight size={20} />
+        <button
+          onClick={() => goToMonth(year, month + 1)}
+          aria-label="Próximo mês"
+          className="min-h-11 min-w-11 -mr-3 flex items-center justify-center text-text-muted hover:text-text"
+        >
+          <ChevronRight size={20} aria-hidden />
         </button>
       </div>
 
@@ -188,6 +196,8 @@ export function EscalaCalendar({
               <button
                 key={cellKey}
                 onClick={() => setSelected(cellKey)}
+                aria-pressed={isSelected}
+                aria-label={`${dayNum} de ${MONTH_LABELS[month - 1].toLowerCase()}${isToday ? ", hoje" : ""}${has ? ", com escala" : ""}`}
                 className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm transition-colors ${
                   isSelected
                     ? "bg-primary text-white font-semibold"
