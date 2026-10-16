@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, isLeaderOfAny } from "@/modules/identity/services/authz";
-import { ledMinistryIds } from "@/modules/scheduling/services/listMonthOccurrences";
-import { prisma } from "@/lib/prisma";
+import { pendingMembershipCount } from "@/modules/identity/services/memberships";
 import { AppShell } from "@/ui/AppShell";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 
@@ -9,15 +8,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const isLeader = await isLeaderOfAny(user.id);
-
-  let pendingCount = 0;
-  if (user.isAdmin || isLeader) {
-    const scopeIds = user.isAdmin ? undefined : await ledMinistryIds(user.id, false);
-    pendingCount = await prisma.membership.count({
-      where: { status: "PENDING", ...(scopeIds ? { ministryId: { in: scopeIds } } : {}) },
-    });
-  }
+  // Em paralelo: pendingMembershipCount ja devolve 0 pra quem nao lidera nada.
+  const [isLeader, pendingCount] = await Promise.all([
+    isLeaderOfAny(user.id),
+    pendingMembershipCount(user.id, user.isAdmin),
+  ]);
 
   return (
     <AppShell isAdmin={user.isAdmin} isLeader={isLeader} pendingCount={pendingCount}>
