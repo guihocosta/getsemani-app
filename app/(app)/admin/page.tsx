@@ -114,6 +114,8 @@ export default async function AdminPage({
 
       <h2 className="eyebrow mb-3">Resumo</h2>
 
+      <div data-testid="resumo" className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+      <section>
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm text-text-muted">Vagas sem ninguém ({open.length})</h3>
         <div className="flex items-center gap-2">
@@ -122,6 +124,7 @@ export default async function AdminPage({
               const [py, pm] = shiftMonth(vagasYear, vagasMonth, -1);
               return `${py}-${pad(pm)}`;
             })()}`}
+            aria-label="Mês anterior"
             className="text-text-muted hover:text-text"
           >
             <ChevronLeft size={16} />
@@ -132,6 +135,7 @@ export default async function AdminPage({
               const [ny, nm] = shiftMonth(vagasYear, vagasMonth, 1);
               return `${ny}-${pad(nm)}`;
             })()}`}
+            aria-label="Próximo mês"
             className="text-text-muted hover:text-text"
           >
             <ChevronRight size={16} />
@@ -157,7 +161,9 @@ export default async function AdminPage({
           ))}
         </ul>
       )}
+      </section>
 
+      <section>
       <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>
       <Card className="mb-8">
         <ul className="flex flex-col gap-2">
@@ -170,7 +176,9 @@ export default async function AdminPage({
           {load.length === 0 && <li className="text-sm text-text-muted">Sem dados no período.</li>}
         </ul>
       </Card>
+      </section>
 
+      <section>
       <h3 className="text-sm text-text-muted mb-2">Presença (últimos 30 dias)</h3>
       <Card className="mb-8">
         {presenca.taxa !== null && (
@@ -192,7 +200,9 @@ export default async function AdminPage({
           </ul>
         )}
       </Card>
+      </section>
 
+      <section>
       <h3 className="text-sm text-text-muted mb-2">Voluntários por ministério</h3>
       <Card>
         <ul className="flex flex-col gap-2">
@@ -204,6 +214,8 @@ export default async function AdminPage({
           ))}
         </ul>
       </Card>
+      </section>
+      </div>
     </div>
   );
 }

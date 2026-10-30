@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "./Button";
+import { useDialog } from "./useDialog";
 
 type ConfirmOptions = {
   title: string;
@@ -35,19 +36,27 @@ export function useConfirm() {
     resolver.current?.(value);
   }
 
+  const { panelRef, onKeyDown } = useDialog(state.open, () => settle(false));
+
   const dialog = (
     <AnimatePresence>
       {state.open && (
         <motion.div
           data-no-swipe
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8"
+          className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-8 lg:pb-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => settle(false)}
         >
           <motion.div
-            className="w-full max-w-md rounded-[2rem] bg-surface ring-1 ring-border p-6 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35)]"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={state.title}
+            tabIndex={-1}
+            onKeyDown={onKeyDown}
+            className="w-full max-w-md rounded-[2rem] outline-none bg-surface ring-1 ring-border p-6 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35)]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}

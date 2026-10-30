@@ -10,7 +10,7 @@ async function saveSession(persona: Persona, apiUrl: string, anonKey: string) {
   const supabase = createServerClient(apiUrl, anonKey, {
     cookies: {
       getAll: () => cookies,
-      setAll: (list) => {
+      setAll: (list: { name: string; value: string }[]) => {
         for (const { name, value } of list) {
           const i = cookies.findIndex((c) => c.name === name);
           if (i >= 0) cookies.splice(i, 1);

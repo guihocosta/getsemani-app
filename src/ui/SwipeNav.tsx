@@ -27,6 +27,8 @@ export function SwipeNav({ tabs, children }: { tabs: string[]; children: ReactNo
   }, [idx, router, tabs]);
 
   function onPointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    // Com mouse, arrastar seleciona texto; so toque e caneta trocam de aba.
+    if (e.pointerType === "mouse") return;
     const target = e.target as HTMLElement;
     if (target.closest("[data-no-swipe]")) return;
     controls.start(e);

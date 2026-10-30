@@ -24,11 +24,11 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
         ref={scrollRef}
         onScroll={handleScroll}
         data-no-swipe
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4 [&::-webkit-scrollbar]:hidden"
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4 [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-2 lg:mx-0 lg:px-0"
         style={{ scrollbarWidth: "none" }}
       >
         {items.map((it) => (
-          <div key={it.allocationId} className="w-[85%] shrink-0 snap-center">
+          <div key={it.allocationId} className="w-[85%] lg:w-auto shrink-0 snap-center">
             <Card className="flex flex-col">
               <div className="flex items-center justify-between">
                 <div>
@@ -52,7 +52,7 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
         ))}
       </div>
       {items.length > 1 && (
-        <p className="text-center text-xs text-text-muted mt-2">
+        <p className="lg:hidden text-center text-xs text-text-muted mt-2">
           {active + 1} de {items.length}
         </p>
       )}

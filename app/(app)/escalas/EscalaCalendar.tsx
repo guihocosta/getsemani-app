@@ -156,6 +156,8 @@ export function EscalaCalendar({
         )}
       </div>
 
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+      <div data-testid="calendario" className="lg:sticky lg:top-8">
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => goToMonth(year, month - 1)}
@@ -217,7 +219,9 @@ export function EscalaCalendar({
           })}
         </div>
       </div>
+      </div>
 
+      <div data-testid="escalas-do-dia">
       <h2 className="eyebrow mb-3">
         {new Date(`${selected}T00:00:00`).toLocaleDateString("pt-BR", {
           weekday: "long",
@@ -255,6 +259,8 @@ export function EscalaCalendar({
           ))}
         </ul>
       )}
+      </div>
+      </div>
     </div>
   );
 }

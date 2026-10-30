@@ -116,7 +116,7 @@ export default async function PanoramaPage({
         <EmptyState title="Nenhuma escala neste mês" />
       ) : (
         <div data-no-swipe className="overflow-x-auto -mx-4 px-4">
-          <table className="border-separate border-spacing-0 text-sm">
+          <table className="lg:w-full border-separate border-spacing-0 text-sm">
             <thead>
               <tr>
                 <th className="sticky left-0 z-10 bg-bg text-left align-bottom pr-3 pb-2 text-xs font-semibold text-text-muted">

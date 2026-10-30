@@ -38,14 +38,14 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="eyebrow">Sua Escala Hoje</h2>
         {items.length > 1 && (
-          <span className="text-xs font-medium text-text-muted">
+          <span className="lg:hidden text-xs font-medium text-text-muted">
             {safeActive + 1} de {items.length}
           </span>
         )}
       </div>
 
       <div 
-        className="flex overflow-x-auto snap-x snap-mandatory pb-1 gap-4 [&::-webkit-scrollbar]:hidden"
+        className="flex overflow-x-auto snap-x snap-mandatory pb-1 gap-4 [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-2"
         style={{ scrollbarWidth: "none" }}
         onScroll={(e) => {
           const el = e.currentTarget;

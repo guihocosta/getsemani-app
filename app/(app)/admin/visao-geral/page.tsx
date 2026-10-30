@@ -69,7 +69,7 @@ export default async function VisaoGeralPage({
         ))}
       </div>
 
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {cards.map((c) => (
           <li key={c.label}>
             <Card className="h-full">
