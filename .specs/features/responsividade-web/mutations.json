@@ -1,0 +1,23 @@
+[
+  {
+    "file": "app/(app)/layout.tsx",
+    "old": "hasRepertoire={repertoire.length > 0}",
+    "new": "hasRepertoire={repertoire.length >= 0}",
+    "proof": "npx playwright test tests/e2e/shell.spec.ts -g \"menu do voluntario\"",
+    "label": "layout: hasRepertoire sempre true (Repertorio para todo voluntario)"
+  },
+  {
+    "file": "src/ui/useDialog.ts",
+    "old": "if (e.shiftKey && (current === first || current === panelRef.current)) {",
+    "new": "if (e.shiftKey && current === panelRef.current) {",
+    "proof": "npx playwright test tests/e2e/interacao.spec.ts -g \"dialogo acessivel\"",
+    "label": "useDialog: Shift+Tab no primeiro item nao volta ao ultimo"
+  },
+  {
+    "file": "src/ui/SwipeNav.tsx",
+    "old": "if (e.pointerType === \"mouse\") return;",
+    "new": "if (e.pointerType === \"pen\") return;",
+    "proof": "npx playwright test tests/e2e/interacao.spec.ts -g \"mouse nao troca aba\"",
+    "label": "SwipeNav: gesto de mouse volta a trocar de aba"
+  }
+]

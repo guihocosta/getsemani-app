@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/responsividade-web/plan.md`
 
-29 checks in 4 slices · 4 one-way doors · 0 open, of which 0 block
+32 checks in 4 slices · 4 one-way doors · 0 open, of which 0 block
 
 ## Checks
 
@@ -15,6 +15,9 @@ Proof: `npx playwright test tests/e2e/shell.spec.ts -g "corte em 1024"`
 
 **C2** - [x] `navItems` devolve os destinos na ordem do plano para voluntário sem repertório, voluntário com repertório, líder e admin sem ministério (AC 2)
 Proof: `npx vitest run tests/unit/navItems.test.ts -t "itens por permissao"`
+
+**C32** - [x] O menu real de uma voluntária sem repertório lista 8 itens, sem Repertório e sem Gestão (AC 2)
+Proof: `npx playwright test tests/e2e/shell.spec.ts -g "menu do voluntario"`
 
 **C3** - [x] `activeHref` marca só o href mais específico em `/escalas/panorama`, `/escalas/nova`, `/repertorio/escala/abc`, `/indisponibilidade` e `/` (AC 3)
 Proof: `npx vitest run tests/unit/navItems.test.ts -t "item ativo"`
@@ -28,7 +31,7 @@ Proof: `npx playwright test tests/e2e/shell.spec.ts -g "cada item abre a rota"`
 **C6** - [x] Gestão mostra o ponto com 1 pedido pendente e não mostra com 0 (AC 5)
 Proof: `npx playwright test tests/e2e/shell.spec.ts -g "ponto de pendencia"`
 
-**C7** - [x] Em 1024 × 600, o menu continua visível com a página rolada e Perfil é alcançável rolando o menu (AC 6)
+**C7** - [x] Em 1024 × 600 e 1024 × 360, o menu fica em `top` 0 com a altura da janela com a página rolada, e Perfil é alcançável rolando o menu (AC 6)
 Proof: `npx playwright test tests/e2e/shell.spec.ts -g "menu fixo"`
 
 **C8** - [x] Uma rota que cai em `error.tsx` mantém o menu lateral (AC 7)
@@ -54,7 +57,13 @@ Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "esc fecha sheet"`
 **C14** - [x] Esc numa confirmação cancela: a escala segue pendente (AC 12)
 Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "esc cancela confirmacao"`
 
-**C15** - [x] Sheet e confirmação expõem `role="dialog"` e `aria-modal="true"`, recebem o foco, retêm Tab e devolvem o foco ao controle de origem (AC 13)
+**C30** - [x] Esc fecha o sheet com o foco no `body`, depois de um controle interno sumir (AC 11)
+Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "esc fecha sheet com foco no body"`
+
+**C31** - [x] Esc com confirmação aberta sobre um sheet fecha só a confirmação (AC 12)
+Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "esc na confirmacao mantem o sheet aberto"`
+
+**C15** - [x] Sheet e confirmação expõem `role="dialog"` e `aria-modal="true"`, recebem o foco, retêm Tab e Shift+Tab e devolvem o foco ao controle de origem (AC 13)
 Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "dialogo acessivel"`
 
 **C16** - [x] Em 1280 px, sheet e confirmação abrem centralizados com tolerância de 2 px, e o sheet tem botão "Fechar" visível que fecha (AC 14)
@@ -74,7 +83,7 @@ Proof: `npx playwright test tests/e2e/interacao.spec.ts -g "proximas visiveis"`
 
 ### S3 - Telas densas usam a largura
 
-**C20** - [x] Em 1280 px, Panorama com 5 datas exibe a tabela sem rolagem horizontal (AC 17)
+**C20** - [x] Em 1280 px, Panorama com 5 datas e nomes de 20 caracteres exibe a tabela sem rolagem horizontal (AC 17)
 Proof: `npx playwright test tests/e2e/telas.spec.ts -g "panorama cabe"`
 
 **C21** - [x] Em 1280 px, Panorama com 10 datas e nome longo rola por dentro com a coluna Função fixa (AC 17)
@@ -97,7 +106,7 @@ Proof: `npx playwright test tests/e2e/telas.spec.ts -g "visao geral em colunas"`
 **C26** - [x] As 5 rotas em 390 e 768 px, temas claro e escuro, são idênticas ao baseline gerado antes de qualquer mudança de UI (AC 22)
 Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "celular igual ao commit base"`
 
-**C27** - [x] `AppShell`, `SwipeNav`, `BottomSheet`, `ConfirmDialog` e `navItems` não usam cor crua do Tailwind (AC 23)
+**C27** - [x] Todos os arquivos de UI do diff não usam cor crua do Tailwind (AC 23)
 Proof: `npx vitest run tests/unit/themeTokens.test.ts -t "so tokens"`
 
 **C28** - [x] `CLAUDE.md` cita o ponto de corte `lg` e o menu lateral (AC 24)
@@ -113,7 +122,7 @@ Proof: `grep -q "lg:.*1024 px.*menu lateral" CLAUDE.md`
 | larguras sem rolagem horizontal (3) | 1024 C9 · 1280 C9 · 1920 C9 | - |
 | formulários em coluna (3) | `/escalas/nova` C10 · `/perfil` C10 · `/indisponibilidade` C10 | - |
 | carrosséis de `/` (3) | pendências C17 · check-ins C18 · próximas C29 | - |
-| diálogos (2) | sheet C13 C15 C16 · confirmação C14 C15 C16 | - |
+| diálogos (2) | sheet C13 C15 C16 C30 · confirmação C14 C15 C16 C31 | - |
 | portas do plano (4) | ponto de corte C1 · harness C26 · config fora da raiz C26 · relógio C26 | - |
 | rotas de regressão (5) | `/` C26 · `/escalas` C26 · `/escalas/panorama` C26 · `/admin` C26 · `/admin/visao-geral` C26 | - |
 | larguras de regressão (2) | 390 C26 · 768 C26 | - |
@@ -134,7 +143,7 @@ Proof: `grep -q "lg:.*1024 px.*menu lateral" CLAUDE.md`
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none
+- **Dispatched:** Verifier em 73a6d91, returned; sem segunda rodada: `check_proofs.py` com `mutations.json` fecha a passada
 - **Boundary:** none
 - **Abandoned:** `supabase/` na raiz: o CLI falha ao parsear o `.env` de produção
 - **Surfaced:** `listMonthOccurrences` não ordena `slots`; a ordem das funções segue o `roleId`. Script de tema causa hydration warning no `<html>` em tema escuro. Página 404 do Next aparece em inglês. Todos existem antes desta feature
