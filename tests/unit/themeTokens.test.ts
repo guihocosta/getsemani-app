@@ -6,7 +6,17 @@ const ARQUIVOS = [
   "src/ui/SwipeNav.tsx",
   "src/ui/BottomSheet.tsx",
   "src/ui/ConfirmDialog.tsx",
+  "src/ui/Sheet.tsx",
   "src/ui/navItems.ts",
+  "src/ui/useDialog.ts",
+  "app/(app)/layout.tsx",
+  "app/(app)/PendingConfirmationsCard.tsx",
+  "app/(app)/TodayCheckInCard.tsx",
+  "app/(app)/UpcomingCarousel.tsx",
+  "app/(app)/escalas/EscalaCalendar.tsx",
+  "app/(app)/escalas/panorama/page.tsx",
+  "app/(app)/admin/page.tsx",
+  "app/(app)/admin/visao-geral/page.tsx",
 ];
 
 const COR_CRUA =

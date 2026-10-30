@@ -36,7 +36,7 @@ export function useConfirm() {
     resolver.current?.(value);
   }
 
-  const { panelRef, onKeyDown } = useDialog(state.open, () => settle(false));
+  const panelRef = useDialog(state.open, () => settle(false));
 
   const dialog = (
     <AnimatePresence>
@@ -55,7 +55,6 @@ export function useConfirm() {
             aria-modal="true"
             aria-label={state.title}
             tabIndex={-1}
-            onKeyDown={onKeyDown}
             className="w-full max-w-md rounded-[2rem] outline-none bg-surface ring-1 ring-border p-6 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35)]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}

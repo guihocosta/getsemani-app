@@ -21,6 +21,7 @@ const centro = (l: Locator) =>
   });
 
 test("mouse nao troca aba", async ({ page }) => {
+  await page.goto("/vagas");
   await page.goto("/");
   await page.waitForLoadState("networkidle");
   const titulo = await page.getByRole("heading", { name: "Lia" }).boundingBox();
@@ -30,7 +31,8 @@ test("mouse nao troca aba", async ({ page }) => {
   await page.mouse.down();
   await page.mouse.move(x, y, { steps: 10 });
   await page.mouse.up();
-  await page.waitForTimeout(500);
+  // /vagas ja foi compilada acima: se o gesto navegasse, a URL mudaria nesta janela.
+  await page.waitForTimeout(1500);
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -60,6 +62,29 @@ test("esc fecha sheet", async ({ page }) => {
   await expect(dialogo).toBeHidden();
 });
 
+test("esc fecha sheet com foco no body", async ({ page }) => {
+  const { dialogo } = await abrirSheet(page);
+  await dialogo.getByRole("button", { name: "+ Pessoa sem conta" }).click();
+  await dialogo.getByRole("button", { name: "cancelar", exact: true }).click();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).toBe("BODY");
+  await page.keyboard.press("Escape");
+  await expect(dialogo).toBeHidden();
+});
+
+test("esc na confirmacao mantem o sheet aberto", async ({ page }) => {
+  await page.goto("/escalas?mes=2026-10");
+  await page.getByRole("button", { name: /^18 de outubro/ }).click();
+  await page.getByRole("button", { name: /Ana Beatriz Moreira/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Detalhes" });
+  await sheet.getByRole("button", { name: "Trocar", exact: true }).click();
+  await sheet.getByRole("button", { name: /João Pedro Almeida/ }).click();
+  const confirmacao = page.getByRole("dialog", { name: "Trocar alocação?" });
+  await expect(confirmacao).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(confirmacao).toBeHidden();
+  await expect(sheet).toBeVisible();
+});
+
 test.describe("confirmacao", () => {
   test.use({ storageState: "tests/e2e/.auth/lider.json" });
 
@@ -87,7 +112,12 @@ test.describe("confirmacao", () => {
       await page.keyboard.press("Tab");
       expect(await dialogo.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     }
-    await page.getByRole("button", { name: "Cancelar" }).click();
+    const cancelar = page.getByRole("button", { name: "Cancelar" });
+    const recusar = page.getByRole("button", { name: "Recusar" });
+    await cancelar.focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(recusar).toBeFocused();
+    await cancelar.click();
     await expect(gatilho).toBeFocused();
   });
 
@@ -116,6 +146,13 @@ test("dialogo acessivel: sheet", async ({ page }) => {
     await page.keyboard.press("Tab");
     expect(await dialogo.evaluate((el) => el.contains(document.activeElement))).toBe(true);
   }
+  await dialogo.getByRole("button", { name: "Fechar" }).focus();
+  await page.keyboard.press("Shift+Tab");
+  expect(
+    await dialogo.evaluate(
+      (el) => document.activeElement === [...el.querySelectorAll("button")].filter((b) => !b.disabled).at(-1),
+    ),
+  ).toBe(true);
   await page.keyboard.press("Escape");
   await expect(gatilho).toBeFocused();
 });

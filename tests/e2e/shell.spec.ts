@@ -70,16 +70,38 @@ test.describe("ponto de pendencia", () => {
   });
 });
 
-test.describe("janela baixa", () => {
-  test.use({ viewport: { width: 1024, height: 600 } });
-  test("menu fixo com a pagina rolada e Perfil alcancavel", async ({ page }) => {
-    await page.goto("/admin");
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-    await expect(lateral(page)).toBeInViewport();
-    const perfil = lateral(page).getByRole("link", { name: "Perfil" });
-    await perfil.scrollIntoViewIfNeeded();
-    await expect(perfil).toBeInViewport();
+for (const altura of [600, 360]) {
+  test.describe(`janela baixa ${altura}`, () => {
+    test.use({ viewport: { width: 1024, height: altura } });
+    test(`menu fixo com a pagina rolada: ${altura}`, async ({ page }) => {
+      await page.goto("/admin");
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+      const caixa = (await lateral(page).boundingBox())!;
+      expect(caixa.y).toBe(0);
+      expect(caixa.height).toBe(altura);
+      const perfil = lateral(page).getByRole("link", { name: "Perfil" });
+      await perfil.scrollIntoViewIfNeeded();
+      await expect(perfil).toBeInViewport({ ratio: 1 });
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    });
+  });
+}
+
+test.describe("permissao", () => {
+  test.use({ storageState: "tests/e2e/.auth/voluntario.json" });
+  test("menu do voluntario sem repertorio", async ({ page }) => {
+    await page.goto("/");
+    await expect(lateral(page).getByRole("link")).toHaveText([
+      "Início",
+      "Vagas",
+      "Escalas",
+      "Panorama",
+      "Agenda",
+      "Avisos",
+      "Aniversariantes",
+      "Perfil",
+    ]);
   });
 });
 

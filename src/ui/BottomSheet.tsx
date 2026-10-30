@@ -7,13 +7,15 @@ import { useDialog } from "./useDialog";
 export function BottomSheet({
   open,
   onClose,
+  label = "Detalhes",
   children,
 }: {
   open: boolean;
   onClose: () => void;
+  label?: string;
   children: ReactNode;
 }) {
-  const { panelRef, onKeyDown } = useDialog(open, onClose);
+  const panelRef = useDialog(open, onClose);
 
   return (
     <AnimatePresence>
@@ -30,8 +32,8 @@ export function BottomSheet({
             ref={panelRef}
             role="dialog"
             aria-modal="true"
+            aria-label={label}
             tabIndex={-1}
-            onKeyDown={onKeyDown}
             className="w-full max-w-md max-h-[85vh] flex flex-col rounded-t-[2rem] lg:rounded-[2rem] outline-none bg-surface ring-1 ring-border shadow-[0_-25px_60px_-15px_rgba(15,23,42,0.35)]"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}

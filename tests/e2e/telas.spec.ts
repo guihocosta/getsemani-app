@@ -10,6 +10,10 @@ test("panorama cabe com 5 datas", async ({ page }) => {
   await page.goto("/escalas/panorama?mes=2026-10");
   const tabela = page.getByRole("table");
   await expect(tabela.locator("thead th")).toHaveCount(6);
+  // A celula mostra nome abreviado: o pior caso do criterio vai direto no DOM.
+  await tabela.locator("tbody td span").evaluateAll((els) => {
+    for (const el of els) el.textContent = "x".repeat(20);
+  });
   const sobra = await tabela.locator("xpath=..").evaluate((el) => el.scrollWidth - el.clientWidth);
   expect(sobra).toBe(0);
 });
