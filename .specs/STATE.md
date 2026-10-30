@@ -53,6 +53,13 @@
 **Decisão**: o SQL sai de `prisma migrate diff --from-schema-datamodel <schema anterior> --to-schema-datamodel prisma/schema.prisma --script` (não precisa de banco) e é commitado em `prisma/migrations/`. Aplicar (`npm run db:deploy`) é ação separada, com autorização explícita, e precisa acontecer antes do deploy do código.
 **Motivo**: `DATABASE_URL` aponta para o banco real; mudança em produção não é coberta pela aprovação do plano.
 
+### AD-009 — Layout web começa em `lg` (1024 px); abaixo dele, nada muda
+
+**Data**: 2026-10-30
+**Contexto**: discovery `docs/discovery/2026-10-30-responsividade-web.md`. Perguntas: público, escopo, larguras e navegação. Respostas: "Líderes e admins", "Shell + telas densas", "Celular e desktop 1024+", "Sidebar com tudo".
+**Decisão**: a web atende líderes e admins. A partir de 1024 px entra a navegação lateral com todos os destinos e as telas densas usam a largura; formulários seguem em coluna. Abaixo de 1024 px, tablet incluso, o layout continua o do celular. Tela nova escreve primeiro o layout de celular e só depois as variantes `lg:`.
+**Motivo**: o uso diário segue no celular (constituição, princípio VI), e um único ponto de corte evita um terceiro layout para testar em cada tela.
+
 ---
 
 ## Handoff
