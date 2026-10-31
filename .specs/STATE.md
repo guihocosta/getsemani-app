@@ -64,6 +64,8 @@
 
 ## Handoff
 
+**Responsividade web (2026-10-30)**: branch `feat/responsividade-web`, gate verde em `76d2412`, nada pushado, sem migração. Ver `.specs/features/responsividade-web/`.
+
 **Última sessão**: 2026-10-02
 **Branch**: `feat/backlog-louveapp` (a partir de `master` em `0099754`). Nada foi pushado.
 **Estado**: backlog LouveApp (`docs/discovery/2026-09-21-louveapp.md`) entregue em 8 features, todas com Verifier independente PASS e `validate_verification.py` exit 0. Suíte: 377 testes, typecheck e lint limpos.

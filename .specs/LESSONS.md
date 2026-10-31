@@ -102,6 +102,48 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: checks.md C6 (tests)
 - last seen: 2026-10-16T21:33:38Z
 
+### L-016 - A dialog listens for keys on document, because a control that disappears inside it drops focus to body
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `src/ui` · harmful: 0
+- features: responsividade-web
+- evidence: src/ui/useDialog.ts:22 (src/ui)
+- last seen: 2026-10-31T00:26:32Z
+
+### L-017 - Prove a scroll claim at a size where the content really overflows, and assert the exact position instead of partial viewport intersection
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: responsividade-web
+- evidence: C7 tests/e2e/shell.spec.ts (tests/e2e)
+- last seen: 2026-10-31T00:26:32Z
+
+### L-018 - A pure rule fed by a server flag also needs one end-to-end proof for the persona whose flag is false
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: responsividade-web
+- evidence: C2 tests/unit/navItems.test.ts (tests/e2e)
+- last seen: 2026-10-31T00:26:32Z
+
+### L-019 - A focus trap check asserts both Tab and Shift+Tab at the edge items
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: responsividade-web
+- evidence: C15 tests/e2e/interacao.spec.ts (tests/e2e)
+- last seen: 2026-10-31T00:26:32Z
+
+### L-020 - A test that something did not navigate compiles the target route first, so a fixed wait cannot pass before the navigation would land
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: responsividade-web
+- evidence: C11 tests/e2e/interacao.spec.ts (tests/e2e)
+- last seen: 2026-10-31T00:26:33Z
+
+### L-021 - A criterion with a numeric bound is tested at that bound, not at a seed value just under it
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: responsividade-web
+- evidence: C20 tests/e2e/harness/seed.ts (tests/e2e)
+- last seen: 2026-10-31T00:26:33Z
+
+### L-022 - A check that a rule holds for all new code enumerates every file in the diff
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/unit` · harmful: 0
+- features: responsividade-web
+- evidence: C27 tests/unit/themeTokens.test.ts (tests/unit)
+- last seen: 2026-10-31T00:26:33Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

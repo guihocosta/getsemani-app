@@ -20,7 +20,8 @@ npm run test             # vitest run (tests/unit)
 npm run test -- tests/unit/swap.test.ts        # um arquivo
 npm run test -- -t "nome do caso"              # um caso
 npm run test:watch
-npm run test:e2e         # playwright (sobe `npm run dev` sozinho)
+npm run e2e:stack        # sobe a Supabase local em Docker (config em tests/e2e/supabase)
+npm run test:e2e         # playwright com seed e login reais só no stack local; sobe o próprio servidor na porta 3100
 DATABASE_URL=postgresql://...@localhost:5432/... npm run test:local
                          # scripts/local-integration.ts — integração com Postgres real, sem Supabase.
                          # Faz TRUNCATE em tudo: aborta se DATABASE_URL não for localhost (o .env é produção)

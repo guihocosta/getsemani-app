@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 16,
+  "next_id": 23,
   "lessons": [
     {
       "id": "L-001",
@@ -276,6 +276,132 @@
       ],
       "created": "2026-10-16T21:33:38Z",
       "last_seen": "2026-10-16T21:33:38Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::a dialog listens for keys on document because a control that disappears inside it drops focus to body",
+      "text": "A dialog listens for keys on document, because a control that disappears inside it drops focus to body",
+      "signal": "ac_gap",
+      "scope": "src/ui",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "src/ui/useDialog.ts:22 (src/ui)"
+      ],
+      "created": "2026-10-31T00:26:32Z",
+      "last_seen": "2026-10-31T00:26:32Z"
+    },
+    {
+      "id": "L-017",
+      "key": "spec_precision_gap::prove a scroll claim at a size where the content really overflows and assert the exact position instead of partial viewport intersection",
+      "text": "Prove a scroll claim at a size where the content really overflows, and assert the exact position instead of partial viewport intersection",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C7 tests/e2e/shell.spec.ts (tests/e2e)"
+      ],
+      "created": "2026-10-31T00:26:32Z",
+      "last_seen": "2026-10-31T00:26:32Z"
+    },
+    {
+      "id": "L-018",
+      "key": "spec_precision_gap::a pure rule fed by a server flag also needs one end to end proof for the persona whose flag is false",
+      "text": "A pure rule fed by a server flag also needs one end-to-end proof for the persona whose flag is false",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C2 tests/unit/navItems.test.ts (tests/e2e)"
+      ],
+      "created": "2026-10-31T00:26:32Z",
+      "last_seen": "2026-10-31T00:26:32Z"
+    },
+    {
+      "id": "L-019",
+      "key": "spec_precision_gap::a focus trap check asserts both tab and shift tab at the edge items",
+      "text": "A focus trap check asserts both Tab and Shift+Tab at the edge items",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C15 tests/e2e/interacao.spec.ts (tests/e2e)"
+      ],
+      "created": "2026-10-31T00:26:32Z",
+      "last_seen": "2026-10-31T00:26:32Z"
+    },
+    {
+      "id": "L-020",
+      "key": "spec_precision_gap::a test that something did not navigate compiles the target route first so a fixed wait cannot pass before the navigation would land",
+      "text": "A test that something did not navigate compiles the target route first, so a fixed wait cannot pass before the navigation would land",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C11 tests/e2e/interacao.spec.ts (tests/e2e)"
+      ],
+      "created": "2026-10-31T00:26:33Z",
+      "last_seen": "2026-10-31T00:26:33Z"
+    },
+    {
+      "id": "L-021",
+      "key": "spec_precision_gap::a criterion with a numeric bound is tested at that bound not at a seed value just under it",
+      "text": "A criterion with a numeric bound is tested at that bound, not at a seed value just under it",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C20 tests/e2e/harness/seed.ts (tests/e2e)"
+      ],
+      "created": "2026-10-31T00:26:33Z",
+      "last_seen": "2026-10-31T00:26:33Z"
+    },
+    {
+      "id": "L-022",
+      "key": "spec_precision_gap::a check that a rule holds for all new code enumerates every file in the diff",
+      "text": "A check that a rule holds for all new code enumerates every file in the diff",
+      "signal": "spec_precision_gap",
+      "scope": "tests/unit",
+      "status": "candidate",
+      "features": [
+        "responsividade-web"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C27 tests/unit/themeTokens.test.ts (tests/unit)"
+      ],
+      "created": "2026-10-31T00:26:33Z",
+      "last_seen": "2026-10-31T00:26:33Z"
     }
   ]
 }
