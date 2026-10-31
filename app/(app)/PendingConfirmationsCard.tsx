@@ -59,8 +59,8 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
         }}
       >
         {items.map((item) => (
-          <div key={item.allocationId} className="w-full shrink-0 snap-center">
-            <Card className="flex flex-col border-primary/20 bg-primary/5">
+          <div key={item.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2">
+            <Card data-testid="card-escala" className="flex flex-col border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>

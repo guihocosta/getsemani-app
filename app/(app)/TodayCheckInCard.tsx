@@ -34,7 +34,7 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
   }
 
   return (
-    <div className="mb-8">
+    <div data-testid="grupo-hoje" className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="eyebrow">Sua Escala Hoje</h2>
         {items.length > 1 && (
@@ -54,7 +54,7 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
         }}
       >
         {items.map((item, idx) => (
-          <div key={item.allocationId} className="w-full shrink-0 snap-center" ref={el => {
+          <div key={item.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2" ref={el => {
             if (el && idx === safeActive && el.parentElement) {
               const container = el.parentElement;
               if (container.scrollLeft !== el.offsetLeft) {
@@ -62,7 +62,7 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
               }
             }
           }}>
-            <Card className="flex flex-col border-primary/20 bg-primary/5">
+            <Card data-testid="card-escala" className="flex flex-col border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>
@@ -89,7 +89,7 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
 
               <div className="mt-5 pt-4 border-t border-border/50">
                 {item.checkedInAt ? (
-                  <div className="flex items-center justify-center gap-2 py-2 text-success font-semibold">
+                  <div className="flex items-center justify-center gap-2 py-2 text-primary font-semibold">
                     <CheckCircle2 size={20} />
                     <span>Check-in feito</span>
                   </div>

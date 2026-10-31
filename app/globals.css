@@ -1,25 +1,30 @@
 @import "tailwindcss";
 
-/* ===== Identidade Visual Getsemani — claro, indigo (ref: projeto SERVIR) ===== */
+/* dark: segue a classe .dark (ThemeToggle), nao o tema do sistema */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== Identidade Visual Getsêmani — ver Manual de Marca ===== */
 @theme {
   /* superfícies (claro) */
-  --color-bg: #f8fafc; /* slate-50 */
+  --color-bg: #f4f6f9; /* branco da marca */
   --color-surface: #ffffff; /* cartão base */
   --color-surface-2: #f1f5f9; /* slate-100 — elevação / chips */
 
-  /* indigo da marca — único accent */
-  --color-primary: #4f46e5; /* indigo-600 */
-  --color-primary-600: #4338ca; /* indigo-700 — hover/gradiente */
-  --color-primary-700: #3730a3; /* indigo-800 — fundo de CTA */
+  /* azul para texto, ícone e tints; cada tema usa o tom com contraste */
+  --color-primary: #164f94; /* azul profundo */
+
+  /* azul de preenchimento sólido com texto branco, igual nos dois temas */
+  --color-brand: #2a78cd; /* azul Getsêmani */
+  --color-brand-hover: #164f94; /* azul profundo */
 
   /* texto */
-  --color-text: #0f172a; /* slate-900 */
+  --color-text: #141518; /* grafite */
   --color-text-muted: #475569; /* slate-600 */
 
   /* semânticos */
   --color-danger: #ef4444; /* red-500 */
   --color-border: #e2e8f0; /* slate-200 */
-  --color-accent-soft: #eef2ff; /* indigo-50 — tint p/ badges, ícone-círculo */
+  --color-accent-soft: #e8f1fb; /* tint p/ badges, ícone-círculo */
 
   --font-title: "Gotham", system-ui, -apple-system, "SF Pro Display", sans-serif;
   --font-body: "Gotham", system-ui, -apple-system, "SF Pro Text", sans-serif;
@@ -28,27 +33,27 @@
   --radius-btn: 14px;
 }
 
-/* ===== Tema escuro (classe .dark no <html>, alternada por ThemeToggle) ===== */
-.dark {
-  --color-bg: #020617; /* slate-950 */
-  --color-surface: #0f172a; /* slate-900 */
-  --color-surface-2: #1e293b; /* slate-800 */
-
-  --color-primary: #6366f1; /* indigo-500 */
-  --color-primary-600: #818cf8; /* indigo-400 — hover mais claro no escuro */
-  --color-primary-700: #4f46e5; /* indigo-600 */
-
-  --color-text: #f8fafc; /* slate-50 */
-  --color-text-muted: #94a3b8; /* slate-400 */
-
-  --color-danger: #f87171; /* red-400 */
-  --color-border: #1e293b; /* slate-800 */
-  --color-accent-soft: #1e1b4b; /* indigo-950 */
-
-  color-scheme: dark;
-}
 :root {
   color-scheme: light;
+}
+
+/* ===== Tema escuro (classe .dark no <html>, alternada por ThemeToggle) ===== */
+/* Depois de :root: mesma especificidade, senão color-scheme fica light. */
+.dark {
+  --color-bg: #141518; /* grafite */
+  --color-surface: #1c1e23;
+  --color-surface-2: #24262c;
+
+  --color-primary: #308ef0; /* azul luz */
+
+  --color-text: #f4f6f9; /* branco da marca */
+  --color-text-muted: #8c929c; /* névoa */
+
+  --color-danger: #e0605a;
+  --color-border: #2b2e35;
+  --color-accent-soft: #16263a;
+
+  color-scheme: dark;
 }
 
 /* ===== Fonte da marca (public/fonts) ===== */
@@ -102,6 +107,33 @@ h3 {
   font-size: 0.6875rem;
   font-weight: 700;
   color: var(--color-text-muted);
+}
+
+/* Assinatura da marca (AD-012): brilho no pé e grão, só no login. */
+.assinatura {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+.assinatura::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 35%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to top, #164f94, transparent);
+}
+.assinatura::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  mix-blend-mode: overlay;
 }
 
 /* utilitários no espírito "glass" / "shadow-premium" do SERVIR */

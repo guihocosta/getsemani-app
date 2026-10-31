@@ -43,7 +43,7 @@ export function MinistryCard({
         <div className="flex items-center gap-2">
           <span
             className="h-3 w-3 rounded-full shrink-0 ring-1 ring-border"
-            style={{ backgroundColor: m.color ?? "#6d28d9" }}
+            style={{ backgroundColor: m.color ?? "#2a78cd" }}
           />
           <p className="text-lg text-text">{m.name}</p>
         </div>
