@@ -17,6 +17,10 @@
 | C20 usa nomes de no máximo 19 caracteres, e o critério fixa 20 (AC 17) | `tests/e2e/harness/seed.ts`, `NOMES`: maior nome tem 19. Exemplo próprio com 20 caracteres em todas as células passou (`scrollWidth` 1008 = `clientWidth` 1008); a partir de 24 a tabela rola por dentro | Incluir nome de 20 caracteres no seed; muda o baseline de C26 se a pessoa aparecer nas telas capturadas | 97c06cc - C20, 20 caracteres no DOM |
 | C27 varre 5 arquivos, e o critério vale para todo o código novo (AC 23) | `tests/unit/themeTokens.test.ts`, `ARQUIVOS` omite `src/ui/useDialog.ts` e as páginas de `app/(app)` do diff. Lendo o diff, não achei cor crua: a falha é de cobertura | Varrer os arquivos do diff | 97c06cc - C27 |
 
+## Passada de correção
+
+As 3 mutações de `mutations.json` foram mortas em `479d363`, com a prova da mutação 1 trocada para C32, porque a original usava a líder e não podia matá-la. O restante desta seção descreve a rodada do Verifier.
+
 ## Mutações pendentes
 
 `mutations.json` está pronto, com as 3 mutações. O run de `check_proofs.py` foi encerrado pelo Claude Code por falta de memória, sem saída. Ao final, não havia journal de mutação, `git diff -- app src` estava vazio e a porta 3100 estava livre.

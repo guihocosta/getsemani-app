@@ -146,6 +146,7 @@ Proof: `grep -q "lg:.*1024 px.*menu lateral" CLAUDE.md`
 - **Dispatched:** Verifier em 73a6d91, returned; sem segunda rodada: `check_proofs.py` com `mutations.json` fecha a passada
 - **Boundary:** none
 - **Abandoned:** `supabase/` na raiz: o CLI falha ao parsear o `.env` de produção
+- **Flake:** C5 falhou uma vez em `479d363` sob `check_proofs` e passou 2 vezes sozinho; provável estouro do limite de 30 s com compilação em dev. Teste ganhou `test.slow()`
 - **Surfaced:** `listMonthOccurrences` não ordena `slots`; a ordem das funções segue o `roleId`. Script de tema causa hydration warning no `<html>` em tema escuro. Página 404 do Next aparece em inglês. Todos existem antes desta feature
 - **Amended:** C5 dizia 9 itens; a líder do seed tem 10. Claim corrigida para 10 antes de o teste existir, mais estrita
 - **Walked:** logada como líder com Supabase local em 1280 × 800: `/` mostra menu lateral com ponto em Gestão e pendências em grade; `/escalas` mostra calendário e dia lado a lado; `/escalas/panorama` mostra as 5 datas sem rolagem; `/admin` mostra Resumo em 2 colunas. O usuário chega a cada estado pelo menu lateral em janela de 1024 px ou mais

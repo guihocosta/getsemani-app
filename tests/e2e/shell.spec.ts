@@ -34,6 +34,8 @@ test("item ativo no menu", async ({ page }) => {
 });
 
 test("cada item abre a rota", async ({ page }) => {
+  // Em dev, cada rota compila na primeira visita.
+  test.slow();
   const ROTAS = [
     ["Início", /\/$/],
     ["Vagas", /\/vagas$/],
@@ -50,7 +52,7 @@ test("cada item abre a rota", async ({ page }) => {
   await expect(lateral(page).getByRole("link")).toHaveCount(ROTAS.length);
   for (const [nome, url] of ROTAS) {
     await lateral(page).getByRole("link", { name: nome }).click();
-    await expect(page).toHaveURL(url);
+    await expect(page).toHaveURL(url, { timeout: 20_000 });
   }
 });
 
