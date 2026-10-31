@@ -52,6 +52,17 @@ describe("listMonthOccurrences", () => {
     ]);
   });
 
+  it("vagas saem em ordem alfabetica de funcao, nao na ordem do banco", async () => {
+    const slot = (id: string, name: string) => ({ id, roleId: `r-${id}`, active: true, role: { name }, allocation: null });
+    vi.mocked(prisma.occurrence.findMany).mockResolvedValue([
+      { ...row("o1", true), slots: [slot("1", "Vocal"), slot("2", "Órgão"), slot("3", "Bateria"), slot("4", "Violão")] },
+    ] as never);
+
+    const [item] = await listMonthOccurrences(["m1"], 2026, 10, []);
+
+    expect(item.slots.map((s) => s.role)).toEqual(["Bateria", "Órgão", "Violão", "Vocal"]);
+  });
+
   it("time vem em HH:mm no fuso do app", async () => {
     // 22:00 UTC = 19:00 em America/Sao_Paulo
     vi.mocked(prisma.occurrence.findMany).mockResolvedValue([row("o1", true)] as never);

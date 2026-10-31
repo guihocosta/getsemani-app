@@ -71,7 +71,8 @@ export async function listMonthOccurrences(
     time: fmtTime(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
-    slots: o.slots.map((s) => ({
+    // Mesma ordem das linhas do panorama; sem ela, a ordem seguia o roleId.
+    slots: [...o.slots].sort((a, b) => a.role.name.localeCompare(b.role.name, "pt-BR")).map((s) => ({
       slotId: s.id,
       roleId: s.roleId,
       role: s.role.name,
