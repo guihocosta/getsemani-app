@@ -77,8 +77,11 @@ for (const altura of [600, 360]) {
     test.use({ viewport: { width: 1024, height: altura } });
     test(`menu fixo com a pagina rolada: ${altura}`, async ({ page }) => {
       await page.goto("/admin");
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+      // A carga da pagina pode devolver a rolagem ao topo: repete ate valer.
+      await expect(async () => {
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+      }).toPass();
       const caixa = (await lateral(page).boundingBox())!;
       expect(caixa.y).toBe(0);
       expect(caixa.height).toBe(altura);
