@@ -26,12 +26,13 @@ export async function ledMinistryIds(userId: string, isAdmin: boolean): Promise<
 
 // Ministerios que o usuario PODE VER (qualquer membership ativa, lider ou
 // voluntario) — admin ve todos. Mais amplo que ledMinistryIds.
-export async function visibleMinistryIds(userId: string, isAdmin: boolean): Promise<string[]> {
+// cache(): layout e paginas pedem a mesma lista no mesmo render.
+export const visibleMinistryIds = cache(async (userId: string, isAdmin: boolean): Promise<string[]> => {
   if (isAdmin) {
     return (await prisma.ministry.findMany({ select: { id: true } })).map((m) => m.id);
   }
   return activeMinistryIdsOf(userId);
-}
+});
 
 // Ministerios em que o usuario tem membership ACTIVE (sem atalho de admin).
 // Regra de pertencimento, separada da de visibilidade acima.

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
 export class ModuleDisabled extends Error {
@@ -8,14 +9,15 @@ export class ModuleDisabled extends Error {
 
 // Dos ministerios informados, os que tem o repertorio ligado. Sem checagem de
 // permissao aqui: o chamador ja resolveu de quais ministerios o usuario e membro.
-export async function repertoireMinistries(ministryIds: string[]): Promise<{ id: string; name: string }[]> {
+// cache() compara o array por referencia: acerta com a lista de visibleMinistryIds.
+export const repertoireMinistries = cache(async (ministryIds: string[]): Promise<{ id: string; name: string }[]> => {
   if (ministryIds.length === 0) return [];
   return prisma.ministry.findMany({
     where: { id: { in: ministryIds }, repertoireEnabled: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
-}
+});
 
 // Modulo desligado preserva os dados e bloqueia o acesso.
 export async function assertRepertoireEnabled(ministryId: string): Promise<void> {

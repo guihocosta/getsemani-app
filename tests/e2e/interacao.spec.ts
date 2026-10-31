@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test";
 
 test.use({ storageState: "tests/e2e/.auth/lider.json", viewport: { width: 1280, height: 800 } });
 
-// Abre o sheet da primeira vaga vazia do dia 11, numa data ja passada mas gerenciavel.
+// Abre o sheet da primeira vaga vazia do dia 18.
 async function abrirSheet(page: Page) {
   await page.goto("/escalas?mes=2026-10");
   await page.getByRole("button", { name: /^18 de outubro/ }).click();
