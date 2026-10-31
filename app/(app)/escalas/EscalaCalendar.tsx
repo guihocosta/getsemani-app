@@ -156,105 +156,111 @@ export function EscalaCalendar({
         )}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => goToMonth(year, month - 1)}
-          aria-label="Mês anterior"
-          className="min-h-11 min-w-11 -ml-3 flex items-center justify-center text-text-muted hover:text-text"
-        >
-          <ChevronLeft size={20} aria-hidden />
-        </button>
-        <p className="text-sm font-semibold text-text" aria-live="polite">
-          {MONTH_LABELS[month - 1]} {year}
-        </p>
-        <button
-          onClick={() => goToMonth(year, month + 1)}
-          aria-label="Próximo mês"
-          className="min-h-11 min-w-11 -mr-3 flex items-center justify-center text-text-muted hover:text-text"
-        >
-          <ChevronRight size={20} aria-hidden />
-        </button>
-      </div>
-
-      <div className={`transition-opacity ${isPending ? "opacity-50" : "opacity-100"}`}>
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {WEEKDAY_LABELS.map((w, i) => (
-            <p key={i} className="text-center text-[11px] text-text-muted font-semibold">
-              {w}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+        <div data-testid="calendario" className="lg:sticky lg:top-8">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => goToMonth(year, month - 1)}
+              aria-label="Mês anterior"
+              className="min-h-11 min-w-11 -ml-3 flex items-center justify-center text-text-muted hover:text-text"
+            >
+              <ChevronLeft size={20} aria-hidden />
+            </button>
+            <p className="text-sm font-semibold text-text" aria-live="polite">
+              {MONTH_LABELS[month - 1]} {year}
             </p>
-          ))}
+            <button
+              onClick={() => goToMonth(year, month + 1)}
+              aria-label="Próximo mês"
+              className="min-h-11 min-w-11 -mr-3 flex items-center justify-center text-text-muted hover:text-text"
+            >
+              <ChevronRight size={20} aria-hidden />
+            </button>
+          </div>
+
+          <div className={`transition-opacity ${isPending ? "opacity-50" : "opacity-100"}`}>
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {WEEKDAY_LABELS.map((w, i) => (
+                <p key={i} className="text-center text-[11px] text-text-muted font-semibold">
+                  {w}
+                </p>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 mb-6">
+              {cells.map((cellKey, i) => {
+                if (!cellKey) return <div key={i} />;
+                const dayNum = Number(cellKey.split("-")[2]);
+                const has = byDay.has(cellKey);
+                const isSelected = cellKey === selected;
+                const isToday = cellKey === todayKey;
+                return (
+                  <button
+                    key={cellKey}
+                    onClick={() => setSelected(cellKey)}
+                    aria-pressed={isSelected}
+                    aria-label={`${dayNum} de ${MONTH_LABELS[month - 1].toLowerCase()}${isToday ? ", hoje" : ""}${has ? ", com escala" : ""}`}
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm transition-colors ${
+                      isSelected
+                        ? "bg-primary text-white font-semibold"
+                        : isToday
+                          ? "text-primary font-semibold"
+                          : "text-text hover:bg-surface-2"
+                    }`}
+                  >
+                    {dayNum}
+                    {has && (
+                      <span
+                        className={`h-1 w-1 rounded-full ${isSelected ? "bg-white" : "bg-primary"}`}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-6">
-          {cells.map((cellKey, i) => {
-            if (!cellKey) return <div key={i} />;
-            const dayNum = Number(cellKey.split("-")[2]);
-            const has = byDay.has(cellKey);
-            const isSelected = cellKey === selected;
-            const isToday = cellKey === todayKey;
-            return (
-              <button
-                key={cellKey}
-                onClick={() => setSelected(cellKey)}
-                aria-pressed={isSelected}
-                aria-label={`${dayNum} de ${MONTH_LABELS[month - 1].toLowerCase()}${isToday ? ", hoje" : ""}${has ? ", com escala" : ""}`}
-                className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm transition-colors ${
-                  isSelected
-                    ? "bg-primary text-white font-semibold"
-                    : isToday
-                      ? "text-primary font-semibold"
-                      : "text-text hover:bg-surface-2"
-                }`}
-              >
-                {dayNum}
-                {has && (
-                  <span
-                    className={`h-1 w-1 rounded-full ${isSelected ? "bg-white" : "bg-primary"}`}
-                  />
-                )}
-              </button>
-            );
-          })}
+        <div data-testid="escalas-do-dia">
+          <h2 className="eyebrow mb-3">
+            {new Date(`${selected}T00:00:00`).toLocaleDateString("pt-BR", {
+              weekday: "long",
+              day: "2-digit",
+              month: "long",
+            })}
+          </h2>
+
+          {dayItems.length === 0 ? (
+            <EmptyState
+              title="Nenhuma escala neste dia"
+              subtitle={canManageAny ? "Toque em Nova para criar uma." : undefined}
+            />
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {dayItems.map((o) => (
+                <OccurrenceRow
+                  key={o.occurrenceId}
+                  occurrenceId={o.occurrenceId}
+                  scheduleId={o.scheduleId}
+                  rotationCycle={o.rotationCycle}
+                  published={o.published}
+                  repertoireEnabled={o.repertoireEnabled}
+                  title={o.title}
+                  when={o.when}
+                  slots={o.slots}
+                  canManage={manageableMinistryIds.includes(o.ministryId)}
+                  dayKey={o.dayKey}
+                  todayKey={todayKey}
+                  onChanged={refreshCurrentMonth}
+                  onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
+                  onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
+                  onAttendanceChanged={(slotId: string, patch: Partial<Slot>) => patchSlot(o.occurrenceId, slotId, patch)}
+                />
+              ))}
+            </ul>
+          )}
         </div>
       </div>
-
-      <h2 className="eyebrow mb-3">
-        {new Date(`${selected}T00:00:00`).toLocaleDateString("pt-BR", {
-          weekday: "long",
-          day: "2-digit",
-          month: "long",
-        })}
-      </h2>
-
-      {dayItems.length === 0 ? (
-        <EmptyState
-          title="Nenhuma escala neste dia"
-          subtitle={canManageAny ? "Toque em Nova para criar uma." : undefined}
-        />
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {dayItems.map((o) => (
-            <OccurrenceRow
-              key={o.occurrenceId}
-              occurrenceId={o.occurrenceId}
-              scheduleId={o.scheduleId}
-              rotationCycle={o.rotationCycle}
-              published={o.published}
-              repertoireEnabled={o.repertoireEnabled}
-              title={o.title}
-              when={o.when}
-              slots={o.slots}
-              canManage={manageableMinistryIds.includes(o.ministryId)}
-              dayKey={o.dayKey}
-              todayKey={todayKey}
-              onChanged={refreshCurrentMonth}
-              onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}
-              onActiveChanged={(slotId: string, active: boolean) => patchActive(o.occurrenceId, slotId, active)}
-              onAttendanceChanged={(slotId: string, patch: Partial<Slot>) => patchSlot(o.occurrenceId, slotId, patch)}
-            />
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

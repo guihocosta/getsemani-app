@@ -114,96 +114,108 @@ export default async function AdminPage({
 
       <h2 className="eyebrow mb-3">Resumo</h2>
 
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm text-text-muted">Vagas sem ninguém ({open.length})</h3>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/admin?vagasMes=${(() => {
-              const [py, pm] = shiftMonth(vagasYear, vagasMonth, -1);
-              return `${py}-${pad(pm)}`;
-            })()}`}
-            className="text-text-muted hover:text-text"
-          >
-            <ChevronLeft size={16} />
-          </Link>
-          <p className="text-xs text-text-muted whitespace-nowrap">{monthLabel(vagasFrom)}</p>
-          <Link
-            href={`/admin?vagasMes=${(() => {
-              const [ny, nm] = shiftMonth(vagasYear, vagasMonth, 1);
-              return `${ny}-${pad(nm)}`;
-            })()}`}
-            className="text-text-muted hover:text-text"
-          >
-            <ChevronRight size={16} />
-          </Link>
-        </div>
+      <div data-testid="resumo" className="lg:grid lg:grid-cols-2 lg:gap-x-8">
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm text-text-muted">Vagas sem ninguém ({open.length})</h3>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/admin?vagasMes=${(() => {
+                  const [py, pm] = shiftMonth(vagasYear, vagasMonth, -1);
+                  return `${py}-${pad(pm)}`;
+                })()}`}
+                aria-label="Mês anterior"
+                className="text-text-muted hover:text-text"
+              >
+                <ChevronLeft size={16} />
+              </Link>
+              <p className="text-xs text-text-muted whitespace-nowrap">{monthLabel(vagasFrom)}</p>
+              <Link
+                href={`/admin?vagasMes=${(() => {
+                  const [ny, nm] = shiftMonth(vagasYear, vagasMonth, 1);
+                  return `${ny}-${pad(nm)}`;
+                })()}`}
+                aria-label="Próximo mês"
+                className="text-text-muted hover:text-text"
+              >
+                <ChevronRight size={16} />
+              </Link>
+            </div>
+          </div>
+          {open.length === 0 ? (
+            <div className="mb-8">
+              <EmptyState title="Nenhuma vaga em aberto neste mês" />
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2 mb-8">
+              {open.map((s) => (
+                <li key={s.slotId}>
+                  <Card className="flex items-center justify-between py-3">
+                    <div>
+                      <p className="eyebrow text-primary">{s.ministry}</p>
+                      <p className="text-text">{s.role}</p>
+                    </div>
+                    <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>
+          <Card className="mb-8">
+            <ul className="flex flex-col gap-2">
+              {load.slice(0, 5).map((p) => (
+                <li key={p.userId} className="flex justify-between text-sm">
+                  <span className="text-text">{p.name}</span>
+                  <span className="font-title text-primary">{p.count}</span>
+                </li>
+              ))}
+              {load.length === 0 && <li className="text-sm text-text-muted">Sem dados no período.</li>}
+            </ul>
+          </Card>
+        </section>
+
+        <section>
+          <h3 className="text-sm text-text-muted mb-2">Presença (últimos 30 dias)</h3>
+          <Card className="mb-8">
+            {presenca.taxa !== null && (
+              <p className="text-sm text-text mb-2">
+                <span className="font-title text-primary">{presenca.taxa}%</span> de presença em {presenca.total}{" "}
+                {presenca.total === 1 ? "escalação" : "escalações"}
+              </p>
+            )}
+            {presencaView.mensagem ? (
+              <p className="text-sm text-text-muted">{presencaView.mensagem}</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {presencaView.itens.map((p) => (
+                  <li key={p.userId} className="flex justify-between text-sm">
+                    <span className="text-text">{p.name}</span>
+                    <span className="text-danger">{p.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </section>
+
+        <section>
+          <h3 className="text-sm text-text-muted mb-2">Voluntários por ministério</h3>
+          <Card>
+            <ul className="flex flex-col gap-2">
+              {byMinistry.map((m) => (
+                <li key={m.ministryId} className="flex justify-between text-sm">
+                  <span className="text-text">{m.name}</span>
+                  <span className={m.count === 0 ? "text-danger" : "text-primary"}>{m.count}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </section>
       </div>
-      {open.length === 0 ? (
-        <div className="mb-8">
-          <EmptyState title="Nenhuma vaga em aberto neste mês" />
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-2 mb-8">
-          {open.map((s) => (
-            <li key={s.slotId}>
-              <Card className="flex items-center justify-between py-3">
-                <div>
-                  <p className="eyebrow text-primary">{s.ministry}</p>
-                  <p className="text-text">{s.role}</p>
-                </div>
-                <span className="text-sm text-text-muted">{fmtDateTime(s.date)}</span>
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <h3 className="text-sm text-text-muted mb-2">Carga por pessoa</h3>
-      <Card className="mb-8">
-        <ul className="flex flex-col gap-2">
-          {load.slice(0, 5).map((p) => (
-            <li key={p.userId} className="flex justify-between text-sm">
-              <span className="text-text">{p.name}</span>
-              <span className="font-title text-primary">{p.count}</span>
-            </li>
-          ))}
-          {load.length === 0 && <li className="text-sm text-text-muted">Sem dados no período.</li>}
-        </ul>
-      </Card>
-
-      <h3 className="text-sm text-text-muted mb-2">Presença (últimos 30 dias)</h3>
-      <Card className="mb-8">
-        {presenca.taxa !== null && (
-          <p className="text-sm text-text mb-2">
-            <span className="font-title text-primary">{presenca.taxa}%</span> de presença em {presenca.total}{" "}
-            {presenca.total === 1 ? "escalação" : "escalações"}
-          </p>
-        )}
-        {presencaView.mensagem ? (
-          <p className="text-sm text-text-muted">{presencaView.mensagem}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {presencaView.itens.map((p) => (
-              <li key={p.userId} className="flex justify-between text-sm">
-                <span className="text-text">{p.name}</span>
-                <span className="text-danger">{p.label}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      <h3 className="text-sm text-text-muted mb-2">Voluntários por ministério</h3>
-      <Card>
-        <ul className="flex flex-col gap-2">
-          {byMinistry.map((m) => (
-            <li key={m.ministryId} className="flex justify-between text-sm">
-              <span className="text-text">{m.name}</span>
-              <span className={m.count === 0 ? "text-danger" : "text-primary"}>{m.count}</span>
-            </li>
-          ))}
-        </ul>
-      </Card>
     </div>
   );
 }
