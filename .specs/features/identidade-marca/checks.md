@@ -146,7 +146,7 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "login 390"`
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** Verifier 1 em `7dd187f`: perdido com a queda da sessão, sem relatório. Verifier 2 em `7dd187f`+handoff; sem screens: nenhum critério cita captura
-- **Boundary:** C1-C24 fechados em `e768051`
-- **Abandoned:** none
+- **Dispatched:** Verifier 1 em `7dd187f`: perdido com a queda da sessão, sem relatório. Verifier 2 em `2bb1621`, returned: 6 achados, fechados em `06099c2`; sem screens: nenhum critério cita captura
+- **Boundary:** C1-C30 fechados em `06099c2`; 34 provas e 3 mutações mortas em `ba42a7c`
+- **Abandoned:** `themeColor` no `viewport` do Next: mudar o meta no cliente fazia o React inserir um segundo meta
 - **Walked:** login, home em 390 px (claro e escuro) e `/escalas` em 1280 px (claro e escuro), abertos no stack local e olhados nas imagens; check-in feito e carrossel provados no e2e

@@ -84,6 +84,8 @@
 
 ## Handoff
 
+**Identidade de marca (2026-11-01)**: branch `feat/identidade-marca`, gate verde, nada pushado, sem migração. Ver `.specs/features/identidade-marca/`. Em Windows, `check_proofs.py` só roda com adaptação de `npx` e sinais POSIX fora do repo.
+
 **Responsividade web (2026-10-30)**: branch `feat/responsividade-web`, gate verde em `76d2412`, nada pushado, sem migração. Ver `.specs/features/responsividade-web/`.
 
 **Última sessão**: 2026-10-02
