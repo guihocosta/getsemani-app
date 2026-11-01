@@ -47,7 +47,7 @@ export function AppShell({
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                active ? "bg-primary/10 text-primary" : "text-text-muted hover:bg-surface-2 hover:text-text",
+                active ? "bg-accent-soft text-primary" : "text-text-muted hover:bg-surface-2 hover:text-text",
               )}
             >
               <Icon size={18} strokeWidth={1.8} aria-hidden />
@@ -101,7 +101,7 @@ export function AppShell({
                   {active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-1.5 -z-10 rounded-2xl bg-primary/10"
+                      className="absolute inset-1.5 -z-10 rounded-2xl bg-accent-soft"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}

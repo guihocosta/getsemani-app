@@ -38,7 +38,7 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
   }
 
   return (
-    <div className="mb-8">
+    <div data-testid="grupo-escalado" className="mb-8">
       {dialog}
       <div className="flex items-center justify-between mb-3">
         <h2 className="eyebrow">Você foi escalado!</h2>

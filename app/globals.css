@@ -23,6 +23,7 @@
 
   /* semânticos */
   --color-danger: #ef4444; /* red-500 */
+  --color-danger-fill: #c62f2f; /* fundo sólido com texto branco, nos dois temas */
   --color-border: #e2e8f0; /* slate-200 */
   --color-accent-soft: #e8f1fb; /* tint p/ badges, ícone-círculo */
 

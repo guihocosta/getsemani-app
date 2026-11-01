@@ -38,7 +38,8 @@ flowchart LR
 | domain | `primary` era texto e preenchimento; agora é só texto, ícone e tints. `bg-primary` sólido vira `bg-brand` (8 usos) |
 | stored data | nada a migrar. `Ministry.color` já salva continua; só o padrão de ministério novo muda |
 | stored data | `localStorage.theme` é respeitado. Quem nunca clicou no botão passa de "segue o sistema" a escuro |
-| readers | snapshots de `tests/e2e/__screens__` são regerados: `maxDiffPixels: 0`, toda cor muda |
+| readers | snapshots de `tests/e2e/__screens__` são regerados: toda cor muda. `threshold: 0` entra junto, porque o padrão de 0,2 deixava passar a cor antiga |
+| domain | `bg-primary/10` com texto azul vira `bg-accent-soft` (5 usos), tint sólido que passa 4,5:1. Fundo sólido vermelho com texto branco usa `danger-fill` |
 
 Data: none - só apresentação; nenhum modelo ou migração.
 
@@ -121,7 +122,7 @@ Claro e escuro usam só a paleta do manual.
 | Logotipo escrito "Getsêmani" com o símbolo no "ê" | Não existe arquivo; o manual registra a falta |
 | Cor de ministério já salva | É dado escolhido pelo admin |
 | Símbolo no cabeçalho do celular | Opção aprovada cita login e menu lateral |
-| Vermelho do tema claro abaixo de AA | Já existe assim e não é da paleta; arrumar é outra tarefa |
+| Vermelho do tema claro abaixo de AA como texto | Já existe assim e não é da paleta; arrumar é outra tarefa. O botão vermelho sólido entrou, via `danger-fill` |
 | Movimento | Fade curto e easing do app já combinam com o manual |
 | Frases de marca (missão, headline, tema do ano) | Não aparecem no app e ninguém pediu |
 

@@ -86,6 +86,21 @@ describe("marca", () => {
     expect(contraste("#ffffff", token(CLARO, "brand")!)).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("contraste: branco sobre danger-fill", () => {
+    expect(contraste("#ffffff", token(CLARO, "danger-fill")!)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each([
+    ["claro", CLARO],
+    ["escuro", ESCURO],
+  ])("contraste: primary sobre accent-soft %s", (_nome, tema) => {
+    expect(contraste(token(tema, "primary")!, token(tema, "accent-soft")!)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("contraste: tint com texto azul usa accent-soft", () => {
+    expect(FONTES.filter((f) => readFileSync(f, "utf8").includes("bg-primary/10"))).toEqual([]);
+  });
+
   it("contraste: danger claro segue como excecao conhecida", () => {
     expect(contraste(token(CLARO, "danger")!, token(CLARO, "surface")!)).toBeLessThan(4.5);
     expect(contraste(token(ESCURO, "danger")!, token(ESCURO, "surface")!)).toBeGreaterThanOrEqual(4.5);

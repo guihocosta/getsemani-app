@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/identidade-marca/plan.md`
 
-24 checks in 5 slices · 3 one-way doors · 0 open, of which 0 block
+30 checks in 5 slices · 3 one-way doors · 0 open, of which 0 block
 
 ## Checks
 
@@ -91,19 +91,40 @@ Proof: `npx playwright test tests/e2e/marca.spec.ts -g "sem assinatura fora do l
 **C24** - [x] As 5 rotas em 390 e 768 px, nos dois temas, batem com as imagens regeneradas nesta feature (plano, `Changes underneath`)
 Proof: `npx playwright test tests/e2e/mobile.spec.ts`
 
+### Achados do Verifier
+
+**C25** - [x] O `<html>` já tem `.dark` quando o conteúdo de `/login` entra no DOM (AC 12)
+Proof: `npx playwright test tests/e2e/marca.spec.ts -g "padrao escuro no primeiro conteudo"`
+
+**C26** - [x] Com `localStorage` bloqueado, `/login` abre com `.dark` e um único `theme-color` `#141518` (AC 12)
+Proof: `npx playwright test tests/e2e/marca.spec.ts -g "padrao escuro com localStorage bloqueado"`
+
+**C27** - [x] Em 1280 px, "Você foi escalado!" com 2 e 3, "Sua Escala Hoje" com 2 e 3 e "Depois" com 2 e 3 ficam em duas colunas, e o terceiro em meia linha embaixo (AC 3)
+Proof: `npx playwright test tests/e2e/marca.spec.ts -g "largura web varios"`
+
+**C28** - [x] Nos pixels do `/login`: topo grafite, azul crescendo até o rodapé, e variação de grão numa mesma linha (AC 18, AC 19)
+Proof: `npx playwright test tests/e2e/marca.spec.ts -g "aparece na tela"`
+
+**C29** - [x] O item ativo do menu lateral atinge 4,5:1 medido nos dois temas; branco sobre `danger-fill` e `primary` sobre `accent-soft` atingem 4,5:1 (AC 8)
+Proof: `npx playwright test tests/e2e/marca.spec.ts -g "contraste do item ativo"`
+Proof: `npx vitest run tests/unit/marca.test.ts -t "contraste"`
+
+**C30** - [x] `/login` sem sessão bate com a imagem salva, em comparação exata com `threshold: 0` (AC 18)
+Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "login 390"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | grupos de card (4) | "Próxima escala" C1 C2 C4 · "Depois" C1 C2 C4 C5 · "Você foi escalado!" C2 C4 · "Sua Escala Hoje" C2 C4 C5 | - |
 | larguras de janela (2) | 390 C1 C2 C3 · 1280 C4 C5 | - |
-| exemplos do AC 3 (3) | 1 item C4 · 2 itens C5 · 3 itens C5 | - |
+| exemplos do AC 3 (9) | 3 grupos com 1 item C4 · "Você foi escalado!" 2 C27 · "Você foi escalado!" 3 C27 · "Sua Escala Hoje" 2 C27 · "Sua Escala Hoje" 3 C27 · "Depois" 2 C27 · "Depois" 3 C27 | - |
 | tokens escuros (7) | C7, table-driven sobre os 7 | - |
 | tokens claros (4) | C8, table-driven sobre os 4 | - |
 | pares de contraste (7) | C10, table-driven sobre os 7: `primary` e `text-muted` sobre `surface` nos dois temas, `primary` sobre `bg` nos dois temas, branco sobre `brand` | - |
 | cores antigas (6) | C11, table-driven sobre as 6 | - |
 | superfícies fora do app (4) | manifest C13 · offline C13 · global-error C13 · themeColor C13 | - |
-| estados de tema (3) | sem salvo C15 · claro salvo C16 · botão C17 | - |
+| estados de tema (4) | sem salvo C15 C25 · claro salvo C16 · botão C17 · bloqueado C26 | - |
 | arquivos com o nome (8) | C18, table-driven sobre os 8 | - |
 | símbolo (2 lugares) | menu lateral C19 · login C20 | - |
 | door 1: tokens separados (2) | preenchimento C9 · contraste C10 | - |
@@ -118,7 +139,7 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts`
 - authorization: existing - `/login` e rotas seguem iguais; imagem do símbolo é pública como `/icons`
 - concurrency: n/a - sem estado compartilhado
 - data lifecycle: C12 - cor salva de ministério preservada; C16 - tema salvo respeitado
-- dependency failure: existing - `localStorage` bloqueado cai no `try/catch` do script de tema
+- dependency failure: C26 - `localStorage` bloqueado
 - state transitions: C17
 - observability: n/a - sem requisito de log
 

@@ -26,15 +26,16 @@ export const viewport: Viewport = {
 // do Next: alterar o que veio do servidor faz o React inserir um segundo meta.
 const THEME_INIT_SCRIPT = `
 (function () {
+  var dark = true;
   try {
     var stored = localStorage.getItem("theme");
-    var dark = stored ? stored === "dark" : true;
-    document.documentElement.classList.toggle("dark", dark);
-    var meta = document.createElement("meta");
-    meta.name = "theme-color";
-    meta.content = dark ? "#141518" : "#f4f6f9";
-    document.head.appendChild(meta);
+    if (stored) dark = stored === "dark";
   } catch (e) {}
+  document.documentElement.classList.toggle("dark", dark);
+  var meta = document.createElement("meta");
+  meta.name = "theme-color";
+  meta.content = dark ? "#141518" : "#f4f6f9";
+  document.head.appendChild(meta);
 })();
 `;
 

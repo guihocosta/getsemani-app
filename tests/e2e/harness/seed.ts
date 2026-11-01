@@ -9,6 +9,7 @@ export const PERSONAS = {
   confirmador: "confirmador@e2e.local",
   liderSemPendencia: "lider2@e2e.local",
   umCard: "umcard@e2e.local",
+  varios: "varios@e2e.local",
 } as const;
 export type Persona = keyof typeof PERSONAS;
 
@@ -58,6 +59,7 @@ export async function seed(stack: Stack) {
       { id: ids.confirmador, name: "Caio Confirmador", email: PERSONAS.confirmador },
       { id: ids.liderSemPendencia, name: "Lena Lider", email: PERSONAS.liderSemPendencia },
       { id: ids.umCard, name: "Uma Unica", email: PERSONAS.umCard },
+      { id: ids.varios, name: "Vito Varios", email: PERSONAS.varios },
     ],
   });
   const pessoas = await Promise.all(
@@ -120,6 +122,7 @@ export async function seed(stack: Stack) {
   const recepcao = await ministerio("Recepção", false, ["Porta"]);
   const apoio = await ministerio("Apoio", false, ["Café", "Limpeza", "Portaria"]);
   const intercessao = await ministerio("Intercessão", false, ["Oração"]);
+  const zeladoria = await ministerio("Zeladoria", false, ["Chaves", "Luzes", "Som"]);
 
   await prisma.membership.createMany({
     data: [
@@ -129,6 +132,7 @@ export async function seed(stack: Stack) {
       { userId: ids.confirmador, ministryId: apoio.id, role: "VOLUNTEER" },
       { userId: ids.liderSemPendencia, ministryId: apoio.id, role: "LEADER" },
       { userId: ids.umCard, ministryId: intercessao.id, role: "VOLUNTEER" },
+      { userId: ids.varios, ministryId: zeladoria.id, role: "VOLUNTEER" },
       { userId: pessoas[5].id, ministryId: midia.id, role: "VOLUNTEER", status: "PENDING" },
       ...pessoas.slice(0, 4).map((p) => ({ userId: p.id, ministryId: louvor.id, role: "VOLUNTEER" as const })),
     ],
@@ -163,6 +167,15 @@ export async function seed(stack: Stack) {
   await data(intercessao, "2026-10-18", [{ userId: ids.umCard, status: "PENDING" }]);
   await data(intercessao, "2026-10-22", [{ userId: ids.umCard }]);
   await data(intercessao, "2026-10-29", [{ userId: ids.umCard }]);
+
+  // Tamanhos que faltavam nos grupos: 3 hoje, 2 pendentes e 2 em Depois.
+  const vito = { userId: ids.varios };
+  await data(zeladoria, "2026-10-15", [vito, vito, vito]);
+  await data(zeladoria, "2026-10-18", [{ ...vito, status: "PENDING" }]);
+  await data(zeladoria, "2026-10-25", [{ ...vito, status: "PENDING" }]);
+  await data(zeladoria, "2026-10-20", [vito]);
+  await data(zeladoria, "2026-10-22", [vito]);
+  await data(zeladoria, "2026-10-29", [vito]);
 
   await prisma.$disconnect();
 }

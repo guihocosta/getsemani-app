@@ -70,39 +70,33 @@ test.describe("cards na web", () => {
     });
   });
 
-  test.describe("varias escalas", () => {
-    test("largura web varios: 3 itens", async ({ browser }) => {
-      const contexto = await browser.newContext({
-        storageState: "tests/e2e/.auth/voluntario.json",
-        viewport: { width: 1280, height: 800 },
-      });
-      const page = await contexto.newPage();
-      await page.goto("/");
-      const depois = page.getByTestId("carrossel-depois").getByTestId("card-escala");
-      await expect(depois).toHaveCount(3);
-      const [a, b, c] = await retangulos(depois);
-      expect(a.y).toBe(b.y);
-      expect(Math.round(a.width)).toBe(Math.round(b.width));
-      expect(c.y).toBeGreaterThan(a.y);
-      expect(Math.round(c.width)).toBe(Math.round(a.width));
-      await contexto.close();
-    });
+  for (const [persona, grupo, itens] of [
+    ["varios", "grupo-escalado", 2],
+    ["lider", "grupo-escalado", 3],
+    ["lider", "grupo-hoje", 2],
+    ["varios", "grupo-hoje", 3],
+    ["varios", "carrossel-depois", 2],
+    ["voluntario", "carrossel-depois", 3],
+  ] as const) {
+    test.describe(`${grupo} ${itens}`, () => {
+      test.use({ storageState: `tests/e2e/.auth/${persona}.json` });
 
-    test("largura web varios: 2 itens", async ({ browser }) => {
-      const contexto = await browser.newContext({
-        storageState: "tests/e2e/.auth/lider.json",
-        viewport: { width: 1280, height: 800 },
+      test(`largura web varios: ${grupo} com ${itens}`, async ({ page }) => {
+        await page.goto("/");
+        const grupoCards = page.getByTestId(grupo).getByTestId("card-escala");
+        await expect(grupoCards).toHaveCount(itens);
+        const [a, b, c] = await retangulos(grupoCards);
+        expect(a.y).toBe(b.y);
+        expect(b.x).toBeGreaterThan(a.x + a.width);
+        expect(Math.round(b.width)).toBe(Math.round(a.width));
+        if (c) {
+          expect(c.y).toBeGreaterThan(a.y);
+          expect(c.x).toBe(a.x);
+          expect(Math.round(c.width)).toBe(Math.round(a.width));
+        }
       });
-      const page = await contexto.newPage();
-      await page.goto("/");
-      const hoje = page.getByTestId("grupo-hoje").getByTestId("card-escala");
-      await expect(hoje).toHaveCount(2);
-      const [a, b] = await retangulos(hoje);
-      expect(a.y).toBe(b.y);
-      expect(b.x).toBeGreaterThan(a.x + a.width);
-      await contexto.close();
     });
-  });
+  }
 });
 
 test.describe("tema escuro", () => {
@@ -134,6 +128,42 @@ test.describe("sem tema salvo", () => {
     await page.goto("/login");
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
     expect(await htmlEscuro(page)).toBe(true);
+    expect(await themeColor(page)).toBe("#141518");
+  });
+});
+
+test.describe("sem tema salvo, cedo", () => {
+  test.use({ theme: null, colorScheme: "light" });
+
+  test("padrao escuro no primeiro conteudo", async ({ page }) => {
+    await page.addInitScript(() => {
+      const estado = window as unknown as { escuroNoPrimeiroConteudo?: boolean };
+      new MutationObserver(() => {
+        if (estado.escuroNoPrimeiroConteudo !== undefined) return;
+        // .assinatura, nao o primeiro filho: o Next poe um <div hidden> antes do script de tema.
+        if (document.querySelector(".assinatura")) {
+          estado.escuroNoPrimeiroConteudo = document.documentElement.classList.contains("dark");
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
+    await page.goto("/login");
+    const primeiro = await page.evaluate(
+      () => (window as unknown as { escuroNoPrimeiroConteudo?: boolean }).escuroNoPrimeiroConteudo,
+    );
+    expect(primeiro).toBe(true);
+  });
+
+  test("padrao escuro com localStorage bloqueado", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        get() {
+          throw new Error("bloqueado");
+        },
+      });
+    });
+    await page.goto("/login");
+    expect(await htmlEscuro(page)).toBe(true);
+    await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
     expect(await themeColor(page)).toBe("#141518");
   });
 });
@@ -202,6 +232,53 @@ test.describe("simbolo no menu", () => {
   }
 });
 
+async function pixels(page: Page, pontos: [number, number][]) {
+  const png = (await page.screenshot()).toString("base64");
+  return page.evaluate(
+    async ({ png, pontos }) => {
+      const imagem = new Image();
+      imagem.src = `data:image/png;base64,${png}`;
+      await imagem.decode();
+      const tela = document.createElement("canvas");
+      tela.width = imagem.width;
+      tela.height = imagem.height;
+      const contexto = tela.getContext("2d")!;
+      contexto.drawImage(imagem, 0, 0);
+      return pontos.map(([x, y]) => Array.from(contexto.getImageData(x, y, 1, 1).data).slice(0, 3));
+    },
+    { png, pontos },
+  );
+}
+
+const luminancia = ([r, g, b]: number[]) => {
+  const [a, c, d] = [r, g, b].map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * a + 0.7152 * c + 0.0722 * d;
+};
+
+for (const [theme, largura] of [
+  ["dark", 1280],
+  ["light", 1280],
+] as const) {
+  test.describe(`item ativo ${theme}`, () => {
+    test.use({ theme, storageState: "tests/e2e/.auth/lider.json", viewport: { width: largura, height: 800 } });
+
+    test(`contraste do item ativo ${theme}`, async ({ page }) => {
+      await page.goto("/escalas");
+      const ativo = page.getByRole("navigation", { name: "Menu lateral" }).locator('[aria-current="page"]');
+      await expect(ativo).toBeVisible();
+      const [frente, fundo] = await ativo.evaluate((el) => {
+        const estilo = getComputedStyle(el);
+        return [estilo.color, estilo.backgroundColor].map((c) => c.match(/\d+/g)!.slice(0, 3).map(Number));
+      });
+      const [claro, escuro] = [luminancia(frente), luminancia(fundo)].sort((a, b) => b - a);
+      expect((claro + 0.05) / (escuro + 0.05)).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+}
+
 test.describe("login", () => {
   test.use({ theme: "light", viewport: { width: 390, height: 844 } });
 
@@ -225,6 +302,29 @@ test.describe("login", () => {
     expect(brilho.altura).toBeLessThanOrEqual(0.4);
     expect(brilho.fundo).toBe(0);
     expect(brilho.imagem).toContain("gradient");
+  });
+
+  test("brilho no login aparece na tela", async ({ page }) => {
+    await page.goto("/login");
+    await page.waitForLoadState("networkidle");
+    const [topo, meio, rodape] = await pixels(page, [
+      [10, 10],
+      [10, 750],
+      [10, 843],
+    ]);
+    // Grafite em cima, azul crescendo ate o rodape.
+    expect(Math.abs(topo[2] - 24)).toBeLessThanOrEqual(8);
+    expect(meio[2]).toBeGreaterThan(topo[2] + 20);
+    expect(rodape[2]).toBeGreaterThan(meio[2]);
+    expect(rodape[2]).toBeGreaterThan(rodape[0] * 3);
+  });
+
+  test("grao no login aparece na tela", async ({ page }) => {
+    await page.goto("/login");
+    await page.waitForLoadState("networkidle");
+    // Numa linha so o degrade e constante: variacao ali e grao.
+    const linha = await pixels(page, Array.from({ length: 60 }, (_, i) => [i * 6, 800] as [number, number]));
+    expect(new Set(linha.map((p) => p.join())).size).toBeGreaterThan(3);
   });
 
   test("grao no login", async ({ page }) => {
