@@ -125,7 +125,7 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts`
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** Verifier em `e768051`+handoff; sem screens: nenhum critério cita captura
+- **Dispatched:** Verifier 1 em `7dd187f`: perdido com a queda da sessão, sem relatório. Verifier 2 em `7dd187f`+handoff; sem screens: nenhum critério cita captura
 - **Boundary:** C1-C24 fechados em `e768051`
 - **Abandoned:** none
 - **Walked:** login, home em 390 px (claro e escuro) e `/escalas` em 1280 px (claro e escuro), abertos no stack local e olhados nas imagens; check-in feito e carrossel provados no e2e
