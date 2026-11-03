@@ -135,6 +135,9 @@ export function ScheduleForm({
               required
               className="field"
             />
+            {isEdit && (
+              <p className="text-xs text-text-muted mt-1">Muda também as datas já criadas a partir de hoje.</p>
+            )}
           </div>
         </div>
 

@@ -17,6 +17,8 @@ import type { SuggestActionResult } from "@/modules/scheduling/domain/suggest";
 import type { AllocationCandidate } from "@/modules/scheduling/domain/candidateList";
 import { getOccurrenceCandidates } from "@/modules/scheduling/services/getOccurrenceCandidates";
 import { deleteScheduleOccurrence } from "@/modules/scheduling/services/deleteSchedule";
+import { retimeOccurrence } from "@/modules/scheduling/services/retimeOccurrences";
+import { HorarioOcupado, horarioOcupadoText, type RetimeScope } from "@/modules/scheduling/domain/retime";
 import { materializeOccurrences } from "@/modules/scheduling/services/materializeOccurrences";
 import { requireUser, requireLeaderOf, getSessionUser } from "@/modules/identity/services/authz";
 import { listMonthOccurrences } from "@/modules/scheduling/services/listMonthOccurrences";
@@ -36,6 +38,7 @@ function friendlyError(e: unknown): string {
   if (msg.includes("roleIds")) return "Escolha pelo menos uma função.";
   if (msg === "FORBIDDEN") return "Você não tem permissão para essa ação.";
   if (msg.includes("INVALID_ROTATION_CYCLE")) return "Ciclo de rodízio deve ser entre 1 e 12.";
+  if (e instanceof HorarioOcupado) return horarioOcupadoText(e.instant);
   return "Não deu para salvar. Confira os campos e tente de novo.";
 }
 
@@ -247,6 +250,31 @@ export async function linkAllGuestAction(
 export async function deleteOccurrenceAction(occurrenceId: string, scope: "SINGLE" | "FROM_HERE") {
   await deleteScheduleOccurrence({ occurrenceId, scope });
   revalidatePath("/escalas");
+}
+
+export type RetimeActionResult = { ok: true; moved: number } | { ok: false; error: string; ref?: string };
+
+// Lider muda o horario de uma data ou dela em diante (ver retimeOccurrences).
+export async function retimeOccurrenceAction(
+  occurrenceId: string,
+  scope: RetimeScope,
+  time: string,
+): Promise<RetimeActionResult> {
+  try {
+    const { moved } = await retimeOccurrence({ occurrenceId, scope, time });
+    revalidatePath("/escalas");
+    revalidatePath("/");
+    return { ok: true, moved };
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
+    if (e instanceof HorarioOcupado) return { ok: false, error: horarioOcupadoText(e.instant) };
+    const msg = (e as Error)?.message ?? "";
+    if (msg === "FORBIDDEN") return { ok: false, error: MENSAGENS.FORBIDDEN };
+    if (msg === "DATA_PASSADA") return { ok: false, error: MENSAGENS.OCCURRENCE_PAST };
+    if (msg === "HORARIO_INVALIDO") return { ok: false, error: "Informe um horário válido." };
+    const ref = logError("escalas.retime", e, { occurrenceId, scope, time });
+    return { ok: false, error: "Não deu para mudar o horário agora.", ref };
+  }
 }
 
 // Troca de mes no calendario sem navegacao de pagina inteira (ver EscalaCalendar).

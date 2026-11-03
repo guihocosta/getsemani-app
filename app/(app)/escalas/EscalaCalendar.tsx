@@ -247,6 +247,7 @@ export function EscalaCalendar({
                   repertoireEnabled={o.repertoireEnabled}
                   title={o.title}
                   when={o.when}
+                  time={o.time}
                   slots={o.slots}
                   canManage={manageableMinistryIds.includes(o.ministryId)}
                   dayKey={o.dayKey}

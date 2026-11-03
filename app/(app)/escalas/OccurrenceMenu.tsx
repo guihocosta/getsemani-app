@@ -9,6 +9,7 @@ export function OccurrenceMenu(props: {
   copyLabel: string;
   onCopy: () => void;
   onAddExtra: () => void;
+  onRetime: () => void;
   publishLabel: string;
   onTogglePublish: () => void;
   onRepeat?: () => void;
@@ -58,6 +59,17 @@ export function OccurrenceMenu(props: {
             className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
           >
             Adicionar vaga extra
+          </button>
+          <button
+            type="button"
+            disabled={props.disabled}
+            onClick={() => {
+              setOpen(false);
+              props.onRetime();
+            }}
+            className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+          >
+            Mudar horário
           </button>
           <button
             type="button"

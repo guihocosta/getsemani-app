@@ -24,6 +24,7 @@ import { OccurrenceMenu } from "./OccurrenceMenu";
 import { SlotDetailSheet } from "./SlotDetailSheet";
 import { repeatOutcome } from "./repeatOutcome";
 import { AddExtraSlotSheet } from "./AddExtraSlotSheet";
+import { RetimeSheet } from "./RetimeSheet";
 import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
@@ -54,6 +55,7 @@ export function OccurrenceRow(props: {
   repertoireEnabled: boolean;
   title: string;
   when: string;
+  time: string;
   slots: Slot[];
   canManage: boolean;
   dayKey: string;
@@ -67,6 +69,7 @@ export function OccurrenceRow(props: {
   const [note, setNote] = useState<Note | null>(null);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [addExtraOpen, setAddExtraOpen] = useState(false);
+  const [retimeOpen, setRetimeOpen] = useState(false);
   const [copyNote, setCopyNote] = useState(false);
   const [repeatNote, setRepeatNote] = useState<{ message: string; isError: boolean } | null>(null);
   const { confirm, dialog } = useConfirm();
@@ -384,6 +387,13 @@ export function OccurrenceRow(props: {
         occurrenceId={props.occurrenceId}
         onAdded={() => props.onChanged()}
       />
+      <RetimeSheet
+        open={retimeOpen}
+        onClose={() => setRetimeOpen(false)}
+        occurrenceId={props.occurrenceId}
+        time={props.time}
+        onRetimed={() => props.onChanged()}
+      />
       <Card>
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -403,6 +413,7 @@ export function OccurrenceRow(props: {
               copyLabel={copyNote ? "Copiado!" : "Copiar p/ WhatsApp"}
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
+              onRetime={() => setRetimeOpen(true)}
               publishLabel={publishItem.label}
               onTogglePublish={togglePublish}
               onRepeat={repeatSchedule}
