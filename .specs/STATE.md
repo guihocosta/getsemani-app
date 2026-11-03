@@ -60,6 +60,13 @@
 **Decisão**: a web atende líderes e admins. A partir de 1024 px entra a navegação lateral com todos os destinos e as telas densas usam a largura; formulários seguem em coluna. Abaixo de 1024 px, tablet incluso, o layout continua o do celular. Tela nova escreve primeiro o layout de celular e só depois as variantes `lg:`.
 **Motivo**: o uso diário segue no celular (constituição, princípio VI), e um único ponto de corte evita um terceiro layout para testar em cada tela.
 
+### AD-013 — Mudança de horário funde com duplicata vazia no mesmo instante
+
+**Data**: 2026-11-03
+**Contexto**: o bug de editar horário criou ocorrências vazias ao lado das antigas. Pergunta: "Se o novo horário cair numa data que já tem outra ocorrência da mesma escala nesse horário [...] o que acontece?". Opção escolhida: "Junta se a outra estiver vazia (Recomendado)".
+**Decisão**: a ocorrência que ocupa o instante novo é apagada quando não tem `Allocation` nem `OccurrenceSong`; com pessoa ou música, a mudança inteira é recusada. Duplicatas antigas não são limpas em lote ("Só impedir novas").
+**Consequência**: `Occurrence.date` passa a mudar depois de criado; leitura nova de ocorrência não pode guardar `date` como chave estável fora do `id`.
+
 ---
 
 ## Handoff
