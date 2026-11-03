@@ -1,4 +1,4 @@
-// Service Worker — Web Push (App de Escalas Getsemani)
+// Service Worker — Web Push (App de Escalas Getsêmani)
 const CACHE = "getsemani-v3";
 
 self.addEventListener("install", (event) => {
@@ -18,7 +18,7 @@ self.addEventListener("activate", (event) => {
 
 // Push (FR-014/015): exibe notificacao
 self.addEventListener("push", (event) => {
-  let data = { title: "Getsemani", body: "Você tem uma atualização", url: "/" };
+  let data = { title: "Getsêmani", body: "Você tem uma atualização", url: "/" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch (_) {}

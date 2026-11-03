@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 29,
+  "next_id": 35,
   "lessons": [
     {
       "id": "L-001",
@@ -405,6 +405,114 @@
     },
     {
       "id": "L-023",
+      "key": "gate_fail::tohavescreenshot com maxdiffpixels 0 ainda tolera threshold 0 2 por pixel e update snapshots nao reescreve imagem que passa conferir no git que as imagens mudaram",
+      "text": "toHaveScreenshot com maxDiffPixels 0 ainda tolera threshold 0.2 por pixel, e --update-snapshots nao reescreve imagem que passa: conferir no git que as imagens mudaram.",
+      "signal": "gate_fail",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C24 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:56Z",
+      "last_seen": "2026-11-01T14:56:56Z"
+    },
+    {
+      "id": "L-024",
+      "key": "surviving_mutant::antes do primeiro paint so se prova observando o dom enquanto o parser roda nao lendo o estado final depois do load",
+      "text": "Antes do primeiro paint so se prova observando o DOM enquanto o parser roda, nao lendo o estado final depois do load.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 12 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-025",
+      "key": "surviving_mutant::regra por tamanho de grupo pede tabela grupo x tamanho com persona no seed para cada celula",
+      "text": "Regra por tamanho de grupo pede tabela grupo x tamanho, com persona no seed para cada celula.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 3 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-026",
+      "key": "surviving_mutant::efeito em pseudo elemento se prova em pixels da tela estilo calculado continua certo com o efeito invisivel",
+      "text": "Efeito em pseudo-elemento se prova em pixels da tela: estilo calculado continua certo com o efeito invisivel.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 18 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-027",
+      "key": "ac_gap::contraste calculado so de tokens solidos esconde tints com alfa medir o par real ou usar tint solido",
+      "text": "Contraste calculado so de tokens solidos esconde tints com alfa: medir o par real ou usar tint solido.",
+      "signal": "ac_gap",
+      "scope": "app/globals.css",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 8 (app/globals.css)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-028",
+      "key": "ac_gap::valor padrao decidido dentro de try catch some justamente quando a dependencia falha",
+      "text": "Valor padrao decidido dentro de try/catch some justamente quando a dependencia falha.",
+      "signal": "ac_gap",
+      "scope": "app/layout.tsx",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 12 (app/layout.tsx)"
+      ],
+      "created": "2026-11-01T14:56:58Z",
+      "last_seen": "2026-11-01T14:56:58Z"
+    },
+    {
+      "id": "L-029",
       "key": "ac_gap::mudar o instante de uma ocorrencia materializada exige provar por todo caminho que muda single from here editar modelo que a materializacao seguinte nao recria o dia um teste plano expandoccurrences por caminho",
       "text": "Mudar o instante de uma ocorrência materializada exige provar, por todo caminho que muda (SINGLE, FROM_HERE, editar modelo), que a materialização seguinte não recria o dia; um teste plano -> expandOccurrences por caminho.",
       "signal": "ac_gap",
@@ -422,7 +530,7 @@
       "last_seen": "2026-11-03T21:40:37Z"
     },
     {
-      "id": "L-024",
+      "id": "L-030",
       "key": "surviving_mutant::teste de authz com requireleaderof mockado deve assertar o argumento o ministryid nao so a rejeicao",
       "text": "Teste de authz com requireLeaderOf mockado deve assertar o argumento (o ministryId), não só a rejeição.",
       "signal": "surviving_mutant",
@@ -440,7 +548,7 @@
       "last_seen": "2026-11-03T21:40:37Z"
     },
     {
-      "id": "L-025",
+      "id": "L-031",
       "key": "surviving_mutant::regra de colisao precisa de caso com dois movidos com conteudo no mesmo destino nao so o ocupante ja parado",
       "text": "Regra de colisão precisa de caso com dois movidos com conteúdo no mesmo destino, não só o ocupante já parado.",
       "signal": "surviving_mutant",
@@ -458,7 +566,7 @@
       "last_seen": "2026-11-03T21:40:38Z"
     },
     {
-      "id": "L-026",
+      "id": "L-032",
       "key": "surviving_mutant::quando o carregador traz desde startofday now e a regra filtra por now a fixture precisa de uma linha de hoje antes de agora",
       "text": "Quando o carregador traz desde startOfDay(now) e a regra filtra por now, a fixture precisa de uma linha de hoje antes de agora.",
       "signal": "surviving_mutant",
@@ -476,7 +584,7 @@
       "last_seen": "2026-11-03T21:40:38Z"
     },
     {
-      "id": "L-027",
+      "id": "L-033",
       "key": "spec_precision_gap::mock que devolve o mesmo valor do fallback nao prova a consulta faca o valor consultado diferir do fallback",
       "text": "Mock que devolve o mesmo valor do fallback não prova a consulta: faça o valor consultado diferir do fallback.",
       "signal": "spec_precision_gap",
@@ -494,7 +602,7 @@
       "last_seen": "2026-11-03T21:40:38Z"
     },
     {
-      "id": "L-028",
+      "id": "L-034",
       "key": "gate_fail::nao commitar proofs md antes do gate o commit move o head e o gate recusa rode check proofs no head final e passe o gate com proofs md pendente",
       "text": "Não commitar proofs.md antes do gate: o commit move o HEAD e o gate recusa; rode check_proofs no HEAD final e passe o gate com proofs.md pendente.",
       "signal": "gate_fail",

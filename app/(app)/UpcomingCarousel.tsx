@@ -24,12 +24,13 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
         ref={scrollRef}
         onScroll={handleScroll}
         data-no-swipe
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-4 px-4 [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-2 lg:mx-0 lg:px-0"
+        data-testid="carrossel-depois"
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-2"
         style={{ scrollbarWidth: "none" }}
       >
         {items.map((it) => (
-          <div key={it.allocationId} className="w-[85%] lg:w-auto shrink-0 snap-center">
-            <Card className="flex flex-col">
+          <div key={it.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2">
+            <Card data-testid="card-escala" className="flex flex-col">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{it.ministry}</p>

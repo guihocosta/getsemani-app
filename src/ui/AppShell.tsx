@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "./cn";
 import { activeHref, isWideRoute, navItems } from "./navItems";
+import { Simbolo } from "./Simbolo";
 import { SwipeNav } from "./SwipeNav";
 
 export function AppShell({
@@ -33,7 +34,10 @@ export function AppShell({
         aria-label="Menu lateral"
         className="hidden lg:flex fixed inset-y-0 left-0 z-20 w-60 flex-col gap-1 overflow-y-auto border-r border-border bg-surface px-3 py-6"
       >
-        <p className="font-title text-xl text-text px-3 mb-4">Getsemani</p>
+        <p className="flex items-center gap-2 font-title text-xl text-text px-3 mb-4">
+          <Simbolo className="h-7" />
+          Getsêmani
+        </p>
         {items.map(({ href, label, Icon }) => {
           const active = href === activeItem;
           return (
@@ -43,7 +47,7 @@ export function AppShell({
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                active ? "bg-primary/10 text-primary" : "text-text-muted hover:bg-surface-2 hover:text-text",
+                active ? "bg-accent-soft text-primary" : "text-text-muted hover:bg-surface-2 hover:text-text",
               )}
             >
               <Icon size={18} strokeWidth={1.8} aria-hidden />
@@ -97,7 +101,7 @@ export function AppShell({
                   {active && (
                     <motion.span
                       layoutId="nav-pill"
-                      className="absolute inset-1.5 -z-10 rounded-2xl bg-primary/10"
+                      className="absolute inset-1.5 -z-10 rounded-2xl bg-accent-soft"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -109,7 +113,7 @@ export function AppShell({
                   </span>
                   {label}
                   {active && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(79,70,229,0.5)]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(48,142,240,0.5)]" />
                   )}
                 </Link>
               </li>

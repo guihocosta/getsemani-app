@@ -171,7 +171,7 @@ export function PushRegister() {
           O iPhone não pergunta de novo depois de bloqueado. Para liberar, vá em{" "}
           <span className="text-text font-semibold">Ajustes</span> →{" "}
           <span className="text-text font-semibold">Notificações</span> →{" "}
-          <span className="text-text font-semibold">Getsemani</span> e ative{" "}
+          <span className="text-text font-semibold">Getsêmani</span> e ative{" "}
           <span className="text-text font-semibold">Permitir notificações</span>.
         </p>
       </Card>

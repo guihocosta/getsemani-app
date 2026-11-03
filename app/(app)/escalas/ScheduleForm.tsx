@@ -177,7 +177,7 @@ export function ScheduleForm({
                     className={
                       "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ring-1 " +
                       (active
-                        ? "bg-primary text-white ring-primary"
+                        ? "bg-brand text-white ring-brand"
                         : "bg-surface-2 text-text-muted ring-border hover:text-text")
                     }
                   >

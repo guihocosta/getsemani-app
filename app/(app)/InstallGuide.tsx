@@ -43,7 +43,7 @@ function Seta({ position }: { position: "bottom" | "top" }) {
       animate={{ y: position === "bottom" ? [0, 8, 0] : [0, -8, 0] }}
       transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
     >
-      <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white shadow-premium">
+      <span className="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow-premium">
         {position === "bottom" ? "aqui embaixo ↓" : "aqui em cima ↑"}
       </span>
     </motion.div>
@@ -136,7 +136,7 @@ export function InstallGuide({ onDone, onSnooze }: { onDone: () => void; onSnooz
           height={48}
         />
         <div>
-          <p className="text-base text-text">Getsemani na Tela de Início</p>
+          <p className="text-base text-text">Getsêmani na Tela de Início</p>
           <p className="text-xs text-text-muted">Abre direto, sem procurar no navegador.</p>
         </div>
       </div>

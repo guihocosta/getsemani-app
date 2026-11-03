@@ -60,6 +60,26 @@
 **Decisão**: a web atende líderes e admins. A partir de 1024 px entra a navegação lateral com todos os destinos e as telas densas usam a largura; formulários seguem em coluna. Abaixo de 1024 px, tablet incluso, o layout continua o do celular. Tela nova escreve primeiro o layout de celular e só depois as variantes `lg:`.
 **Motivo**: o uso diário segue no celular (constituição, princípio VI), e um único ponto de corte evita um terceiro layout para testar em cada tela.
 
+### AD-010 — Tema escuro por padrão; claro continua no perfil
+
+**Data**: 2026-10-30
+**Contexto**: pergunta: "O manual pede fundo grafite em tudo [...] Qual o tema padrão do app?". Opção escolhida: "Escuro por padrão". A recomendação era seguir o celular.
+**Decisão**: sem `theme` salvo, o app abre em grafite. O tema claro segue disponível no botão de `/perfil`, em desvio aprovado do "nunca branco" do manual.
+**Consequência**: tela nova é conferida primeiro no escuro, sem deixar o claro quebrar.
+
+### AD-011 — App usa só Gotham até existir licença web da Monument Extended
+
+**Data**: 2026-10-30
+**Contexto**: o arquivo disponível é "Free for Personal Use" e a licença proíbe redistribuir; o app web entregaria a fonte a todo visitante. Opção escolhida: "Só Gotham por ora".
+**Decisão**: nenhum arquivo de Monument em `public/`; títulos seguem em Gotham, caixa normal.
+**Consequência**: com a licença comercial/web da Pangram Pangram, a mudança é um `@font-face` e `--font-title`.
+
+### AD-012 — Grão e brilho no pé só no login
+
+**Data**: 2026-10-30
+**Contexto**: opção aprovada "Login com assinatura": "Só no login: grão nas telas de uso pesa e atrapalha a leitura."
+**Decisão**: a textura da marca fica em `/login`. Telas de uso não recebem grão nem brilho.
+
 ### AD-013 — Mudança de horário funde com duplicata vazia no mesmo instante
 
 **Data**: 2026-11-03
@@ -78,7 +98,9 @@
 
 ## Handoff
 
-**Horário em lote (2026-11-03)**: branch `feat/horario-em-lote`, gate verde em `62fc631` (31 provas, 3 mutações mortas), nada pushado, sem migração. Lições L-023..L-028 colidem em número com as de `feat/identidade-marca`: renumerar no merge. Ver `.specs/features/horario-em-lote/`.
+**Horário em lote (2026-11-03)**: branch `feat/horario-em-lote`, gate verde em `62fc631` (31 provas, 3 mutações mortas), sem migração. Lições renumeradas para L-029, L-030, L-031, L-032, L-033, L-034 no merge com master. Ver `.specs/features/horario-em-lote/`.
+
+**Identidade de marca (2026-11-01)**: branch `feat/identidade-marca`, gate verde, nada pushado, sem migração. Ver `.specs/features/identidade-marca/`. Em Windows, `check_proofs.py` só roda com adaptação de `npx` e sinais POSIX fora do repo.
 
 **Responsividade web (2026-10-30)**: branch `feat/responsividade-web`, gate verde em `76d2412`, nada pushado, sem migração. Ver `.specs/features/responsividade-web/`.
 

@@ -144,37 +144,73 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C27 tests/unit/themeTokens.test.ts (tests/unit)
 - last seen: 2026-10-31T00:26:33Z
 
-### L-023 - Mudar o instante de uma ocorrência materializada exige provar, por todo caminho que muda (SINGLE, FROM_HERE, editar modelo), que a materialização seguinte não recria o dia; um teste plano -> expandOccurrences por caminho.
+### L-023 - toHaveScreenshot com maxDiffPixels 0 ainda tolera threshold 0.2 por pixel, e --update-snapshots nao reescreve imagem que passa: conferir no git que as imagens mudaram.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: C24 (tests/e2e)
+- last seen: 2026-11-01T14:56:56Z
+
+### L-024 - Antes do primeiro paint so se prova observando o DOM enquanto o parser roda, nao lendo o estado final depois do load.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 12 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-025 - Regra por tamanho de grupo pede tabela grupo x tamanho, com persona no seed para cada celula.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 3 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-026 - Efeito em pseudo-elemento se prova em pixels da tela: estilo calculado continua certo com o efeito invisivel.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 18 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-027 - Contraste calculado so de tokens solidos esconde tints com alfa: medir o par real ou usar tint solido.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/globals.css` · harmful: 0
+- features: identidade-marca
+- evidence: AC 8 (app/globals.css)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-028 - Valor padrao decidido dentro de try/catch some justamente quando a dependencia falha.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/layout.tsx` · harmful: 0
+- features: identidade-marca
+- evidence: AC 12 (app/layout.tsx)
+- last seen: 2026-11-01T14:56:58Z
+
+### L-029 - Mudar o instante de uma ocorrência materializada exige provar, por todo caminho que muda (SINGLE, FROM_HERE, editar modelo), que a materialização seguinte não recria o dia; um teste plano -> expandOccurrences por caminho.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
 - features: horario-em-lote
 - evidence: verification.md finding 1-2 (scheduling)
 - last seen: 2026-11-03T21:40:37Z
 
-### L-024 - Teste de authz com requireLeaderOf mockado deve assertar o argumento (o ministryId), não só a rejeição.
+### L-030 - Teste de authz com requireLeaderOf mockado deve assertar o argumento (o ministryId), não só a rejeição.
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
 - features: horario-em-lote
 - evidence: retimeOccurrence.test.ts sem permissao (tests)
 - last seen: 2026-11-03T21:40:37Z
 
-### L-025 - Regra de colisão precisa de caso com dois movidos com conteúdo no mesmo destino, não só o ocupante já parado.
+### L-031 - Regra de colisão precisa de caso com dois movidos com conteúdo no mesmo destino, não só o ocupante já parado.
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
 - features: horario-em-lote
 - evidence: retime.ts full.length > 1 (scheduling)
 - last seen: 2026-11-03T21:40:38Z
 
-### L-026 - Quando o carregador traz desde startOfDay(now) e a regra filtra por now, a fixture precisa de uma linha de hoje antes de agora.
+### L-032 - Quando o carregador traz desde startOfDay(now) e a regra filtra por now, a fixture precisa de uma linha de hoje antes de agora.
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
 - features: horario-em-lote
 - evidence: updateSchedule.ts targets filter (tests)
 - last seen: 2026-11-03T21:40:38Z
 
-### L-027 - Mock que devolve o mesmo valor do fallback não prova a consulta: faça o valor consultado diferir do fallback.
+### L-033 - Mock que devolve o mesmo valor do fallback não prova a consulta: faça o valor consultado diferir do fallback.
 - signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
 - features: horario-em-lote
 - evidence: retimeOccurrence.test.ts corrida (tests)
 - last seen: 2026-11-03T21:40:38Z
 
-### L-028 - Não commitar proofs.md antes do gate: o commit move o HEAD e o gate recusa; rode check_proofs no HEAD final e passe o gate com proofs.md pendente.
+### L-034 - Não commitar proofs.md antes do gate: o commit move o HEAD e o gate recusa; rode check_proofs no HEAD final e passe o gate com proofs.md pendente.
 - signal: `gate_fail` · recurrence: 1 feature(s) · harmful: 0
 - features: horario-em-lote
 - evidence: proofs.md HEAD

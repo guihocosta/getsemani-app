@@ -9,7 +9,7 @@ function applyTheme(dark: boolean) {
   localStorage.setItem("theme", dark ? "dark" : "light");
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#020617" : "#f8fafc");
+    ?.setAttribute("content", dark ? "#141518" : "#f4f6f9");
 }
 
 export function ThemeToggle({ className }: { className?: string }) {

@@ -40,7 +40,7 @@ export function CreateMinistryForm() {
             <label className="text-xs text-text-muted block mb-1" htmlFor="ministry-color">
               Cor
             </label>
-            <input id="ministry-color" name="color" type="color" defaultValue="#6d28d9" className="field h-[42px] w-16 p-1" />
+            <input id="ministry-color" name="color" type="color" defaultValue="#2a78cd" className="field h-[42px] w-16 p-1" />
           </div>
         </div>
         <div>

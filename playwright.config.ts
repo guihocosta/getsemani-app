@@ -15,7 +15,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  expect: { toHaveScreenshot: { maxDiffPixels: 0 } },
+  expect: { toHaveScreenshot: { maxDiffPixels: 0, threshold: 0 } },
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "on-first-retry",
