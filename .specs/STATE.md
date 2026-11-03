@@ -78,6 +78,8 @@
 
 ## Handoff
 
+**Horário em lote (2026-11-03)**: branch `feat/horario-em-lote`, gate verde em `62fc631` (31 provas, 3 mutações mortas), nada pushado, sem migração. Lições L-023..L-028 colidem em número com as de `feat/identidade-marca`: renumerar no merge. Ver `.specs/features/horario-em-lote/`.
+
 **Responsividade web (2026-10-30)**: branch `feat/responsividade-web`, gate verde em `76d2412`, nada pushado, sem migração. Ver `.specs/features/responsividade-web/`.
 
 **Última sessão**: 2026-10-02

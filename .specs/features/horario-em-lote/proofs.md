@@ -1,6 +1,6 @@
 # horario-em-lote proofs
 
-**HEAD**: 1c93fd6
+**HEAD**: 62fc631
 **Tree**: clean
 **Result**: 31 pass, 0 fail; mutations 3 killed, 0 not
 

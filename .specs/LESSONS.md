@@ -144,6 +144,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C27 tests/unit/themeTokens.test.ts (tests/unit)
 - last seen: 2026-10-31T00:26:33Z
 
+### L-023 - Mudar o instante de uma ocorrência materializada exige provar, por todo caminho que muda (SINGLE, FROM_HERE, editar modelo), que a materialização seguinte não recria o dia; um teste plano -> expandOccurrences por caminho.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: horario-em-lote
+- evidence: verification.md finding 1-2 (scheduling)
+- last seen: 2026-11-03T21:40:37Z
+
+### L-024 - Teste de authz com requireLeaderOf mockado deve assertar o argumento (o ministryId), não só a rejeição.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: horario-em-lote
+- evidence: retimeOccurrence.test.ts sem permissao (tests)
+- last seen: 2026-11-03T21:40:37Z
+
+### L-025 - Regra de colisão precisa de caso com dois movidos com conteúdo no mesmo destino, não só o ocupante já parado.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: horario-em-lote
+- evidence: retime.ts full.length > 1 (scheduling)
+- last seen: 2026-11-03T21:40:38Z
+
+### L-026 - Quando o carregador traz desde startOfDay(now) e a regra filtra por now, a fixture precisa de uma linha de hoje antes de agora.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: horario-em-lote
+- evidence: updateSchedule.ts targets filter (tests)
+- last seen: 2026-11-03T21:40:38Z
+
+### L-027 - Mock que devolve o mesmo valor do fallback não prova a consulta: faça o valor consultado diferir do fallback.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: horario-em-lote
+- evidence: retimeOccurrence.test.ts corrida (tests)
+- last seen: 2026-11-03T21:40:38Z
+
+### L-028 - Não commitar proofs.md antes do gate: o commit move o HEAD e o gate recusa; rode check_proofs no HEAD final e passe o gate com proofs.md pendente.
+- signal: `gate_fail` · recurrence: 1 feature(s) · harmful: 0
+- features: horario-em-lote
+- evidence: proofs.md HEAD
+- last seen: 2026-11-03T21:40:38Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
