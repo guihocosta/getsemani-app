@@ -123,7 +123,7 @@ Proof: `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"`
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none
-- **Boundary:** C1-C25 closed at `ab006c8`
-- **Abandoned:** -
+- **Dispatched:** Verifier at `2687b60` (sem screens sub-agent: nenhuma captura)
+- **Boundary:** C1-C25 closed at `2687b60`
+- **Abandoned:** folha com campos controlados e reinício num `useEffect` na abertura: o efeito rodava depois da pintura e o `fill` do e2e perdia o horário; trocado por formulário não controlado lido por `FormData`
 - **Walked:** sem captura. O Playwright abriu `/escalas?mes=2026-11` como líder, tocou o dia 1, ⋮ > "Mudar horário", viu 18:00 e "Só esta data" marcado, salvou 19:30, a folha fechou e o card mostrou `· 19:30`, voltou para 18:00; no dia 04/10 "Salvar" deixou a folha aberta com "Essa data já passou."; ⋮ > "Editar" mostrou o aviso sob Hora. O líder chega a cada estado pelo menu ⋮ do card da data em Escalas.
