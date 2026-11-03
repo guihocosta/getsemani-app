@@ -1,8 +1,8 @@
 # horario-em-lote proofs
 
-**HEAD**: 2687b60
+**HEAD**: a98ee7d
 **Tree**: clean
-**Result**: 28 pass, 0 fail; mutations 0 killed, 0 not
+**Result**: 28 pass, 0 fail; mutations 0 killed, 3 not
 
 | Check | Proof | Ran | Passed | Result |
 | --- | --- | --- | --- | --- |
@@ -34,3 +34,11 @@
 | C25 | `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"` | 1 | - | pass |
 | Build | `npm run typecheck` | - | - | pass |
 | Build | `npm run lint` | - | - | pass |
+
+## Mutations
+
+| Mutation | Location | Killed |
+| --- | --- | --- |
+| authz checa o id da escala em vez do ministerio | `src\modules\scheduling\services\retimeOccurrences.ts:120` | no |
+| duas datas com pessoas no mesmo instante novo viram fusao (apaga uma com pessoas) | `src\modules\scheduling\domain\retime.ts:64` | no |
+| editar escala move tambem as datas de hoje que ja passaram | `src\modules\scheduling\services\updateSchedule.ts:50` | no |
