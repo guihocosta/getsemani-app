@@ -10,84 +10,84 @@ Plan: `.specs/features/horario-em-lote/plan.md`
 
 ### S1 - Mudar o horário
 
-**C1** - `retimeInstant(2026-10-18T21:00Z, "18:30")` devolve `2026-10-18T21:30:00Z` e `retimeInstant(2026-10-18T21:00Z, "00:30")` devolve `2026-10-18T03:30:00Z` (mesmo dia local) (AC 1)
+**C1** - [x] `retimeInstant(2026-10-18T21:00Z, "18:30")` devolve `2026-10-18T21:30:00Z` e `retimeInstant(2026-10-18T21:00Z, "00:30")` devolve `2026-10-18T03:30:00Z` (mesmo dia local) (AC 1)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "mesmo dia local"`
 
-**C2** - `planRetime` em `SINGLE` com datas 18/10, 25/10 e 01/11 às 18:00, escolhendo 25/10 e "18:30", move só 25/10 para `2026-10-25T21:30:00Z`, sem apagar nada e com `startTime` `null` (AC 1)
+**C2** - [x] `planRetime` em `SINGLE` com datas 18/10, 25/10 e 01/11 às 18:00, escolhendo 25/10 e "18:30", move só 25/10 para `2026-10-25T21:30:00Z`, sem apagar nada e com `startTime` `null` (AC 1)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "so esta data"`
 
-**C3** - `planRetime` em `FROM_HERE` com 18/10, 25/10 e 01/11 cancelada, escolhendo 25/10, move 25/10 e 01/11, deixa 18/10 e devolve `startTime: "18:30"` (AC 2)
+**C3** - [x] `planRetime` em `FROM_HERE` com 18/10, 25/10 e 01/11 cancelada, escolhendo 25/10, move 25/10 e 01/11, deixa 18/10 e devolve `startTime: "18:30"` (AC 2)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "esta e as proximas"`
 
-**C4** - `planRetime` em `FROM_HERE` escolhendo 11/10 com agora em 15/10 15:00 move 15/10 18:00 e 18/10 e deixa 11/10 como está (AC 8)
+**C4** - [x] `planRetime` em `FROM_HERE` escolhendo 11/10 com agora em 15/10 15:00 move 15/10 18:00 e 18/10 e deixa 11/10 como está (AC 8)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "datas passadas ficam"`
 
-**C5** - `planRetime` em `SINGLE` numa data anterior a agora devolve o erro `DATA_PASSADA` sem movimentos (AC 8)
+**C5** - [x] `planRetime` em `SINGLE` numa data anterior a agora devolve o erro `DATA_PASSADA` sem movimentos (AC 8)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "data passada recusa"`
 
-**C6** - `planRetime` com o horário igual ao atual devolve 0 movimentos e 0 exclusões, em `SINGLE` e em `FROM_HERE` (AC 4)
+**C6** - [x] `planRetime` com o horário igual ao atual devolve 0 movimentos e 0 exclusões, em `SINGLE` e em `FROM_HERE` (AC 4)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "mesmo horario nao muda"`
 
-**C7** - `planRetime` quando o instante novo é de outra ocorrência da escala sem pessoa e sem música apaga essa outra e move a escolhida, também quando a outra é uma das datas de `FROM_HERE` (AC 5)
+**C7** - [x] `planRetime` quando o instante novo é de outra ocorrência da escala sem pessoa e sem música apaga essa outra e move a escolhida, também quando a outra é uma das datas de `FROM_HERE` (AC 5)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "funde com duplicata vazia"`
 
-**C8** - `planRetime` devolve `conflito` com o instante ocupado e nenhum movimento quando a outra tem 1 pessoa, quando tem só música, e em `FROM_HERE` com 1 conflito em 3 datas (AC 6)
+**C8** - [x] `planRetime` devolve `conflito` com o instante ocupado e nenhum movimento quando a outra tem 1 pessoa, quando tem só música, e em `FROM_HERE` com 1 conflito em 3 datas (AC 6)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "recusa duplicata com conteudo"`
 
-**C9** - `parseTime` aceita `00:00` e `23:59` e recusa `24:00`, `23:60`, `9:00`, `ab` e vazio (AC 9)
+**C9** - [x] `parseTime` aceita `00:00` e `23:59` e recusa `24:00`, `23:60`, `9:00`, `ab` e vazio (AC 9)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "horario valido"`
 
-**C10** - `retimeOccurrence` em `SINGLE` grava numa transação `occurrence.update` com `data` igual a `{ date }` e não chama `schedule.update` (AC 1)
+**C10** - [x] `retimeOccurrence` em `SINGLE` grava numa transação `occurrence.update` com `data` igual a `{ date }` e não chama `schedule.update` (AC 1)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "so esta data grava a data"`
 
-**C11** - `retimeOccurrence` em `FROM_HERE` grava `schedule.update` com `data: { startTime: "18:30" }` e apaga a duplicata vazia antes de mover (AC 2, AC 5)
+**C11** - [x] `retimeOccurrence` em `FROM_HERE` grava `schedule.update` com `data: { startTime: "18:30" }` e apaga a duplicata vazia antes de mover (AC 2, AC 5)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "proximas grava o modelo"`
 
-**C12** - `retimeOccurrence` com conflito lança `HorarioOcupado` com o instante e não grava nada (AC 6)
+**C12** - [x] `retimeOccurrence` com conflito lança `HorarioOcupado` com o instante e não grava nada (AC 6)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "conflito nao grava"`
 
-**C13** - `retimeOccurrence` quando `occurrence.update` rejeita com `P2002` lança `HorarioOcupado`, não o erro do Prisma (AC 7)
+**C13** - [x] `retimeOccurrence` quando `occurrence.update` rejeita com `P2002` lança `HorarioOcupado`, não o erro do Prisma (AC 7)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "corrida vira horario ocupado"`
 
-**C14** - `retimeOccurrence` com `requireLeaderOf` lançando `FORBIDDEN` propaga `FORBIDDEN` sem abrir transação (AC 10)
+**C14** - [x] `retimeOccurrence` com `requireLeaderOf` lançando `FORBIDDEN` propaga `FORBIDDEN` sem abrir transação (AC 10)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "sem permissao"`
 
-**C15** - `updateSchedule` com `startTime` de 18:00 para 18:30 move na mesma transação as 13 datas a partir de agora; com o mesmo `startTime`, não chama `occurrence.update` (AC 3)
+**C15** - [x] `updateSchedule` com `startTime` de 18:00 para 18:30 move na mesma transação as 13 datas a partir de agora; com o mesmo `startTime`, não chama `occurrence.update` (AC 3)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "editar escala move as datas"`
 
-**C16** - Depois de mover 13 datas semanais de 18:00 para 18:30, `expandOccurrences` com `startTime: "18:30"` na janela de 90 dias devolve exatamente os 13 instantes movidos: a materialização não acha dia faltando (AC 3)
+**C16** - [x] Depois de mover 13 datas semanais de 18:00 para 18:30, `expandOccurrences` com `startTime: "18:30"` na janela de 90 dias devolve exatamente os 13 instantes movidos: a materialização não acha dia faltando (AC 3)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "materializacao nao duplica"`
 
-**C17** - `retimeOccurrenceAction` devolve `{ ok: true, moved: 2 }` no sucesso; `FORBIDDEN` vira "Você não tem permissão para essa ação.", `HorarioOcupado(01/11 18:30)` vira "Já existe outra data desta escala em 01/11 às 18:30.", `DATA_PASSADA` vira "Essa data já passou.", `HORARIO_INVALIDO` vira "Informe um horário válido."; erro de redirect é relançado (AC 6, 8, 9, 10)
+**C17** - [x] `retimeOccurrenceAction` devolve `{ ok: true, moved: 2 }` no sucesso; `FORBIDDEN` vira "Você não tem permissão para essa ação.", `HorarioOcupado(01/11 18:30)` vira "Já existe outra data desta escala em 01/11 às 18:30.", `DATA_PASSADA` vira "Essa data já passou.", `HORARIO_INVALIDO` vira "Informe um horário válido."; erro de redirect é relançado (AC 6, 8, 9, 10)
 Proof: `npx vitest run tests/unit/retimeAction.test.ts -t "retimeOccurrenceAction"`
 
-**C18** - `updateScheduleAction` com `updateSchedule` lançando `HorarioOcupado(01/11 18:30)` devolve `{ ok: false, error: "Já existe outra data desta escala em 01/11 às 18:30." }` (AC 6)
+**C18** - [x] `updateScheduleAction` com `updateSchedule` lançando `HorarioOcupado(01/11 18:30)` devolve `{ ok: false, error: "Já existe outra data desta escala em 01/11 às 18:30." }` (AC 6)
 Proof: `npx vitest run tests/unit/retimeAction.test.ts -t "editar escala ocupado"`
 
 ### S2 - Aviso
 
-**C19** - `retimeNotices` agrupa por pessoa: 1 data "Culto Louvor: 18/10 agora às 18:30."; 2 datas "18/10 e 25/10"; 5 datas "18/10, 25/10, 01/11 e mais 2 datas"; mesma pessoa em 2 vagas da mesma data dá 1 aviso (AC 11)
+**C19** - [x] `retimeNotices` agrupa por pessoa: 1 data "Culto Louvor: 18/10 agora às 18:30."; 2 datas "18/10 e 25/10"; 5 datas "18/10, 25/10, 01/11 e mais 2 datas"; mesma pessoa em 2 vagas da mesma data dá 1 aviso (AC 11)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "um aviso por pessoa"`
 
-**C20** - `retimeNotices` ignora data em rascunho, data cancelada e vaga de convidado (`userId` nulo) (AC 12, AC 13)
+**C20** - [x] `retimeNotices` ignora data em rascunho, data cancelada e vaga de convidado (`userId` nulo) (AC 12, AC 13)
 Proof: `npx vitest run tests/unit/retime.test.ts -t "aviso ignora rascunho e convidado"`
 
-**C21** - `retimeOccurrence` chama `notifyUser` uma vez por pessoa com `type: "ASSIGNMENT"`, `title: "Horário alterado"`, `url: "/"` e `dedupeKey` no formato `retime:<uuid>:<userId>`, o mesmo `<uuid>` para todas no lote (AC 11)
+**C21** - [x] `retimeOccurrence` chama `notifyUser` uma vez por pessoa com `type: "ASSIGNMENT"`, `title: "Horário alterado"`, `url: "/"` e `dedupeKey` no formato `retime:<uuid>:<userId>`, o mesmo `<uuid>` para todas no lote (AC 11)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "aviso por pessoa"`
 
-**C22** - `retimeOccurrence` com `notifyUser` rejeitando resolve `{ moved: 1 }` e a transação já foi gravada (AC 14)
+**C22** - [x] `retimeOccurrence` com `notifyUser` rejeitando resolve `{ moved: 1 }` e a transação já foi gravada (AC 14)
 Proof: `npx vitest run tests/unit/retimeOccurrence.test.ts -t "falha do aviso nao desfaz"`
 
 ### S3 - Telas
 
-**C23** - No menu ⋮ da data 01/11 do Culto Louvor o líder vê "Mudar horário"; usá-lo abre uma folha com o horário `18:00` preenchido, "Só esta data" marcado, "Esta e as próximas" e "Salvar" (AC 15)
+**C23** - [x] No menu ⋮ da data 01/11 do Culto Louvor o líder vê "Mudar horário"; usá-lo abre uma folha com o horário `18:00` preenchido, "Só esta data" marcado, "Esta e as próximas" e "Salvar" (AC 15)
 Proof: `npx playwright test tests/e2e/horario.spec.ts -g "folha de mudar horario"`
 
-**C24** - Na folha, mudar para 19:30 e usar "Salvar" fecha a folha e a data 01/11 mostra "19:30"; com a data 04/10, "Salvar" deixa a folha aberta com "Essa data já passou." (AC 16)
+**C24** - [x] Na folha, mudar para 19:30 e usar "Salvar" fecha a folha e a data 01/11 mostra "19:30"; com a data 04/10, "Salvar" deixa a folha aberta com "Essa data já passou." (AC 16)
 Proof: `npx playwright test tests/e2e/horario.spec.ts -g "salvar mostra horario novo"`
 Proof: `npx playwright test tests/e2e/horario.spec.ts -g "erro mantem a folha"`
 
-**C25** - Em "Editar escala" o campo Hora mostra "Muda também as datas já criadas a partir de hoje." (AC 17)
+**C25** - [x] Em "Editar escala" o campo Hora mostra "Muda também as datas já criadas a partir de hoje." (AC 17)
 Proof: `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"`
 
 ## Coverage
@@ -124,6 +124,6 @@ Proof: `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"`
 
 - **Settled mid-build:** none
 - **Dispatched:** none
-- **Boundary:** -
+- **Boundary:** C1-C25 closed at `ab006c8`
 - **Abandoned:** -
-- **Walked:** -
+- **Walked:** sem captura. O Playwright abriu `/escalas?mes=2026-11` como líder, tocou o dia 1, ⋮ > "Mudar horário", viu 18:00 e "Só esta data" marcado, salvou 19:30, a folha fechou e o card mostrou `· 19:30`, voltou para 18:00; no dia 04/10 "Salvar" deixou a folha aberta com "Essa data já passou."; ⋮ > "Editar" mostrou o aviso sob Hora. O líder chega a cada estado pelo menu ⋮ do card da data em Escalas.
