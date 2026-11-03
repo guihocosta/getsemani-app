@@ -1,0 +1,23 @@
+[
+  {
+    "file": "src/modules/scheduling/services/retimeOccurrences.ts",
+    "old": "await requireLeaderOf(occ.schedule.ministryId);",
+    "new": "await requireLeaderOf(occ.scheduleId);",
+    "proof": "npx vitest run tests/unit/retimeOccurrence.test.ts -t \"sem permissao\"",
+    "label": "authz checa o id da escala em vez do ministerio"
+  },
+  {
+    "file": "src/modules/scheduling/domain/retime.ts",
+    "old": "full.length > 1",
+    "new": "full.length > 2",
+    "proof": "npx vitest run tests/unit/retime.test.ts -t \"recusa duplicata com conteudo\"",
+    "label": "duas datas com pessoas no mesmo instante novo viram fusao (apaga uma com pessoas)"
+  },
+  {
+    "file": "src/modules/scheduling/services/updateSchedule.ts",
+    "old": "targets: occurrences.filter((o) => o.date >= now),",
+    "new": "targets: occurrences,",
+    "proof": "npx vitest run tests/unit/retimeOccurrence.test.ts -t \"editar escala move as datas\"",
+    "label": "editar escala move tambem as datas de hoje que ja passaram"
+  }
+]

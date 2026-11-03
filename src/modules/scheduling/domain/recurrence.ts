@@ -1,5 +1,5 @@
 import { RRule } from "rrule";
-import { fromZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 const APP_TZ = process.env.APP_TIMEZONE || "America/Sao_Paulo";
 
@@ -35,6 +35,18 @@ export function expandOccurrences(input: RecurrenceInput, from: Date, to: Date):
 
   if (hardEnd < from) return [];
   return rule.between(from, hardEnd, true);
+}
+
+function localDay(d: Date): string {
+  return formatInTimeZone(d, APP_TZ, "yyyy-MM-dd");
+}
+
+// Datas da recorrencia cujo dia local ainda nao tem ocorrencia da escala.
+// Compara por dia, nao por instante: uma data cujo horario o lider mudou
+// continua ocupando o seu dia (WEEKLY e MONTHLY geram no maximo uma por dia).
+export function missingDays(expected: Date[], existing: Date[]): Date[] {
+  const taken = new Set(existing.map(localDay));
+  return expected.filter((d) => !taken.has(localDay(d)));
 }
 
 function endOfDayLocal(day: Date, time: string): Date {

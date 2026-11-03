@@ -80,9 +80,25 @@
 **Contexto**: opção aprovada "Login com assinatura": "Só no login: grão nas telas de uso pesa e atrapalha a leitura."
 **Decisão**: a textura da marca fica em `/login`. Telas de uso não recebem grão nem brilho.
 
+### AD-013 — Mudança de horário funde com duplicata vazia no mesmo instante
+
+**Data**: 2026-11-03
+**Contexto**: o bug de editar horário criou ocorrências vazias ao lado das antigas. Pergunta: "Se o novo horário cair numa data que já tem outra ocorrência da mesma escala nesse horário [...] o que acontece?". Opção escolhida: "Junta se a outra estiver vazia (Recomendado)".
+**Decisão**: a ocorrência que ocupa o instante novo é apagada quando não tem `Allocation` nem `OccurrenceSong`; com pessoa ou música, a mudança inteira é recusada. Duplicatas antigas não são limpas em lote ("Só impedir novas").
+**Consequência**: `Occurrence.date` passa a mudar depois de criado; leitura nova de ocorrência não pode guardar `date` como chave estável fora do `id`.
+
+### AD-014 — Materialização compara ocorrências por dia local
+
+**Data**: 2026-11-03
+**Contexto**: o Verifier de `horario-em-lote` mostrou que "Só esta data" (modelo fica no horário antigo) e "Esta e as próximas" a partir de uma data posterior (datas anteriores ficam no horário antigo) deixavam o instante da recorrência vazio, e a materialização recriava a data vazia no mesmo dia.
+**Decisão**: `materializeOccurrences` cria só a data cujo dia local (`APP_TZ`) não tem ocorrência da escala, em qualquer horário (`missingDays`). Vale porque `buildRRule` só gera `WEEKLY` e `MONTHLY`: no máximo uma data por dia por escala.
+**Consequência**: uma recorrência com mais de uma data no mesmo dia (ex.: `HOURLY`, ou dois horários por dia) exige outra chave antes de existir. Duplicatas antigas do bug deixam de crescer.
+
 ---
 
 ## Handoff
+
+**Horário em lote (2026-11-03)**: branch `feat/horario-em-lote`, gate verde em `62fc631` (31 provas, 3 mutações mortas), sem migração. Lições renumeradas para L-029, L-030, L-031, L-032, L-033, L-034 no merge com master. Ver `.specs/features/horario-em-lote/`.
 
 **Identidade de marca (2026-11-01)**: branch `feat/identidade-marca`, gate verde, nada pushado, sem migração. Ver `.specs/features/identidade-marca/`. Em Windows, `check_proofs.py` só roda com adaptação de `npx` e sinais POSIX fora do repo.
 
