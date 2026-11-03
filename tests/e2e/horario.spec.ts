@@ -24,7 +24,9 @@ async function salvar(page: Page, hora: string) {
   const { card, folha } = await abrirFolha(page, "2026-11", /^1 de novembro/);
   await folha.getByLabel("Hora").fill(hora);
   await folha.getByRole("button", { name: "Salvar" }).click();
-  await expect(folha).toBeHidden();
+  // Servidor frio: o dev server compila sob demanda as rotas que o card
+  // pre-carrega e a resposta da action espera na fila (a action leva ~80 ms).
+  await expect(folha).toBeHidden({ timeout: 60_000 });
   await expect(card).toContainText(`· ${hora}`);
 }
 
@@ -37,6 +39,7 @@ test("folha de mudar horario", async ({ page }) => {
 });
 
 test("salvar mostra horario novo", async ({ page }) => {
+  test.setTimeout(150_000);
   await salvar(page, "19:30");
   // Volta ao horario do seed: as telas seguintes comparam com 18:00.
   await salvar(page, "18:00");
