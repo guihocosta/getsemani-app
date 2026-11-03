@@ -84,7 +84,7 @@ export function useConfirm() {
               </Button>
               <Button
                 variant="primary"
-                className={state.tone === "danger" ? "flex-1 !bg-danger hover:!bg-danger/90" : "flex-1"}
+                className={state.tone === "danger" ? "flex-1 !bg-danger-fill hover:!bg-danger-fill/90" : "flex-1"}
                 onClick={() => settle(true)}
               >
                 {state.confirmLabel ?? "Confirmar"}

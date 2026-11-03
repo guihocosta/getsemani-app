@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/modules/identity/services/authz";
 import { Card } from "@/ui/Card";
+import { Simbolo } from "@/ui/Simbolo";
 import { LoginForm } from "./LoginForm";
 
 const ERROR_LABEL: Record<string, string> = {
@@ -20,14 +21,16 @@ export default async function LoginPage({
   const errorMessage = error ? ERROR_LABEL[error] ?? ERROR_LABEL.falha : null;
 
   return (
+    // .dark aqui: o login e sempre grafite, mesmo com tema claro salvo.
     <div
-      className="min-h-dvh flex items-center justify-center px-6"
+      className="dark assinatura min-h-dvh flex items-center justify-center px-6"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
       <Card className="w-full max-w-sm">
+        <Simbolo alt="Getsêmani" className="h-12 mb-4" />
         <h1 className="text-3xl tracking-tight text-text mb-1">Bem-vindo(a)</h1>
         <p className="eyebrow mb-6">Escalas dos voluntários</p>
         {errorMessage && (

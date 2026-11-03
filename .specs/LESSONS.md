@@ -144,6 +144,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C27 tests/unit/themeTokens.test.ts (tests/unit)
 - last seen: 2026-10-31T00:26:33Z
 
+### L-023 - toHaveScreenshot com maxDiffPixels 0 ainda tolera threshold 0.2 por pixel, e --update-snapshots nao reescreve imagem que passa: conferir no git que as imagens mudaram.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: C24 (tests/e2e)
+- last seen: 2026-11-01T14:56:56Z
+
+### L-024 - Antes do primeiro paint so se prova observando o DOM enquanto o parser roda, nao lendo o estado final depois do load.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 12 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-025 - Regra por tamanho de grupo pede tabela grupo x tamanho, com persona no seed para cada celula.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 3 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-026 - Efeito em pseudo-elemento se prova em pixels da tela: estilo calculado continua certo com o efeito invisivel.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: identidade-marca
+- evidence: AC 18 (tests/e2e)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-027 - Contraste calculado so de tokens solidos esconde tints com alfa: medir o par real ou usar tint solido.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/globals.css` · harmful: 0
+- features: identidade-marca
+- evidence: AC 8 (app/globals.css)
+- last seen: 2026-11-01T14:56:57Z
+
+### L-028 - Valor padrao decidido dentro de try/catch some justamente quando a dependencia falha.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/layout.tsx` · harmful: 0
+- features: identidade-marca
+- evidence: AC 12 (app/layout.tsx)
+- last seen: 2026-11-01T14:56:58Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

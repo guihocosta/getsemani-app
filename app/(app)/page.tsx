@@ -118,7 +118,7 @@ export default async function HomePage() {
       ) : (
         <>
           <h2 className="eyebrow mb-3">Próxima escala</h2>
-          <Card className="mb-8 flex flex-col">
+          <Card data-testid="card-escala" className="mb-8 flex flex-col">
             <div className="flex items-center justify-between">
               <div>
                 <p className="eyebrow text-primary">{futureItems[0].ministry}</p>

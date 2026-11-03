@@ -139,7 +139,7 @@ export function SongList({
                   onClick={() => setCategory(c)}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${
                     category === c
-                      ? "bg-primary/10 text-primary ring-primary/30"
+                      ? "bg-accent-soft text-primary ring-primary/30"
                       : "bg-surface-2 text-text-muted ring-border"
                   }`}
                 >

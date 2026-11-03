@@ -49,7 +49,7 @@ export function EditMinistryForm({ ministryId, name, color, description, reperto
         </label>
         <label className="block">
           <span className="text-xs text-text-muted block mb-1">Cor</span>
-          <input name="color" type="color" defaultValue={color ?? "#6d28d9"} className="field h-[42px] w-16 p-1" />
+          <input name="color" type="color" defaultValue={color ?? "#2a78cd"} className="field h-[42px] w-16 p-1" />
         </label>
       </div>
       <label className="block">

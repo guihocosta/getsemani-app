@@ -20,7 +20,7 @@ export async function POST() {
       try {
         const ok = await sendPush(
           { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-          { title: "Getsemani", body: "Notificação de teste ✓", url: "/perfil" },
+          { title: "Getsêmani", body: "Notificação de teste ✓", url: "/perfil" },
         );
         // Assinatura expirada (410/404): remove, mesma logica de notify.ts.
         if (!ok) await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => {});

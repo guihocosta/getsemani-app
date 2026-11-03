@@ -1,0 +1,23 @@
+[
+  {
+    "file": "app/layout.tsx",
+    "old": "<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />",
+    "new": "<script dangerouslySetInnerHTML={{ __html: `addEventListener(\"load\",function(){${THEME_INIT_SCRIPT}})` }} />",
+    "proof": "npx playwright test tests/e2e/marca.spec.ts -g \"padrao escuro\"",
+    "label": "AC12: script de tema so roda no load, depois do primeiro paint"
+  },
+  {
+    "file": "app/(app)/PendingConfirmationsCard.tsx",
+    "old": "lg:only:col-span-2",
+    "new": "lg:col-span-2",
+    "proof": "npx playwright test tests/e2e/marca.spec.ts -g \"largura web varios\"",
+    "label": "AC3: Voce foi escalado com 2 ou 3 itens ocupa linha inteira em vez de duas colunas"
+  },
+  {
+    "file": "app/globals.css",
+    "old": "isolation: isolate;",
+    "new": "isolation: auto;",
+    "proof": "npx playwright test tests/e2e/marca.spec.ts -g \"brilho no login\"",
+    "label": "AC18: sem contexto de empilhamento, brilho e grao ficam atras do fundo e somem da tela"
+  }
+]

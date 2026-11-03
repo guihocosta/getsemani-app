@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Getsemani · Escalas",
-  description: "Escalas dos voluntários da Igreja Getsemani",
+  title: "Getsêmani · Escalas",
+  description: "Escalas dos voluntários da Igreja Getsêmani",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Getsemani" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Getsêmani" },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -16,23 +16,26 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#020617" },
-  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
 
 // Aplica a classe .dark antes do primeiro paint, evitando flash de tema errado.
+// Sem tema salvo, escuro (AD-010). O meta theme-color nasce aqui e nao no viewport
+// do Next: alterar o que veio do servidor faz o React inserir um segundo meta.
 const THEME_INIT_SCRIPT = `
 (function () {
+  var dark = true;
   try {
     var stored = localStorage.getItem("theme");
-    var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.classList.toggle("dark", dark);
+    if (stored) dark = stored === "dark";
   } catch (e) {}
+  document.documentElement.classList.toggle("dark", dark);
+  var meta = document.createElement("meta");
+  meta.name = "theme-color";
+  meta.content = dark ? "#141518" : "#f4f6f9";
+  document.head.appendChild(meta);
 })();
 `;
 

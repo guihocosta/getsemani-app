@@ -202,7 +202,7 @@ export function EscalaCalendar({
                     aria-label={`${dayNum} de ${MONTH_LABELS[month - 1].toLowerCase()}${isToday ? ", hoje" : ""}${has ? ", com escala" : ""}`}
                     className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-sm transition-colors ${
                       isSelected
-                        ? "bg-primary text-white font-semibold"
+                        ? "bg-brand text-white font-semibold"
                         : isToday
                           ? "text-primary font-semibold"
                           : "text-text hover:bg-surface-2"

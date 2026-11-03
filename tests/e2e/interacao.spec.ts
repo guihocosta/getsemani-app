@@ -196,7 +196,7 @@ test("check-ins visiveis", async ({ page }) => {
   await botoes.nth(1).scrollIntoViewIfNeeded();
   await expect(botoes.nth(0)).toBeInViewport({ ratio: 1 });
   await expect(botoes.nth(1)).toBeInViewport({ ratio: 1 });
-  await expect(page.getByText("1 de 2")).toBeHidden();
+  await expect(page.getByText("1 de 3")).toBeHidden();
   expect(await semRolagem(botoes.first().locator("xpath=ancestor::div[contains(@class,'overflow-x-auto')]"))).toBe(0);
 });
 
@@ -205,11 +205,11 @@ test.describe("proximas", () => {
   test("proximas visiveis", async ({ page }) => {
     await page.goto("/");
     const secao = page.locator("div.overflow-x-auto").last();
-    await expect(secao.locator("> div")).toHaveCount(2);
+    await expect(secao.locator("> div")).toHaveCount(3);
     await secao.locator("> div").nth(1).scrollIntoViewIfNeeded();
     await expect(secao.locator("> div").nth(0)).toBeInViewport({ ratio: 1 });
     await expect(secao.locator("> div").nth(1)).toBeInViewport({ ratio: 1 });
-    await expect(page.getByText("1 de 2")).toBeHidden();
+    await expect(page.getByText("1 de 3")).toBeHidden();
     expect(await semRolagem(secao)).toBe(0);
   });
 });

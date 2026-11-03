@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 23,
+  "next_id": 29,
   "lessons": [
     {
       "id": "L-001",
@@ -402,6 +402,114 @@
       ],
       "created": "2026-10-31T00:26:33Z",
       "last_seen": "2026-10-31T00:26:33Z"
+    },
+    {
+      "id": "L-023",
+      "key": "gate_fail::tohavescreenshot com maxdiffpixels 0 ainda tolera threshold 0 2 por pixel e update snapshots nao reescreve imagem que passa conferir no git que as imagens mudaram",
+      "text": "toHaveScreenshot com maxDiffPixels 0 ainda tolera threshold 0.2 por pixel, e --update-snapshots nao reescreve imagem que passa: conferir no git que as imagens mudaram.",
+      "signal": "gate_fail",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C24 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:56Z",
+      "last_seen": "2026-11-01T14:56:56Z"
+    },
+    {
+      "id": "L-024",
+      "key": "surviving_mutant::antes do primeiro paint so se prova observando o dom enquanto o parser roda nao lendo o estado final depois do load",
+      "text": "Antes do primeiro paint so se prova observando o DOM enquanto o parser roda, nao lendo o estado final depois do load.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 12 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-025",
+      "key": "surviving_mutant::regra por tamanho de grupo pede tabela grupo x tamanho com persona no seed para cada celula",
+      "text": "Regra por tamanho de grupo pede tabela grupo x tamanho, com persona no seed para cada celula.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 3 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-026",
+      "key": "surviving_mutant::efeito em pseudo elemento se prova em pixels da tela estilo calculado continua certo com o efeito invisivel",
+      "text": "Efeito em pseudo-elemento se prova em pixels da tela: estilo calculado continua certo com o efeito invisivel.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 18 (tests/e2e)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-027",
+      "key": "ac_gap::contraste calculado so de tokens solidos esconde tints com alfa medir o par real ou usar tint solido",
+      "text": "Contraste calculado so de tokens solidos esconde tints com alfa: medir o par real ou usar tint solido.",
+      "signal": "ac_gap",
+      "scope": "app/globals.css",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 8 (app/globals.css)"
+      ],
+      "created": "2026-11-01T14:56:57Z",
+      "last_seen": "2026-11-01T14:56:57Z"
+    },
+    {
+      "id": "L-028",
+      "key": "ac_gap::valor padrao decidido dentro de try catch some justamente quando a dependencia falha",
+      "text": "Valor padrao decidido dentro de try/catch some justamente quando a dependencia falha.",
+      "signal": "ac_gap",
+      "scope": "app/layout.tsx",
+      "status": "candidate",
+      "features": [
+        "identidade-marca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 12 (app/layout.tsx)"
+      ],
+      "created": "2026-11-01T14:56:58Z",
+      "last_seen": "2026-11-01T14:56:58Z"
     }
   ]
 }

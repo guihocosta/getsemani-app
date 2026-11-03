@@ -38,7 +38,7 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
   }
 
   return (
-    <div className="mb-8">
+    <div data-testid="grupo-escalado" className="mb-8">
       {dialog}
       <div className="flex items-center justify-between mb-3">
         <h2 className="eyebrow">Você foi escalado!</h2>
@@ -59,8 +59,8 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
         }}
       >
         {items.map((item) => (
-          <div key={item.allocationId} className="w-full shrink-0 snap-center">
-            <Card className="flex flex-col border-primary/20 bg-primary/5">
+          <div key={item.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2">
+            <Card data-testid="card-escala" className="flex flex-col border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>
