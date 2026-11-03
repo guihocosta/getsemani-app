@@ -37,6 +37,7 @@ sequenceDiagram
 | domain | `updateSchedule` passava a afetar só datas novas; agora move as datas criadas a partir de agora quando o horário muda |
 | stored data | nada a migrar. Duplicatas antigas ficam; viram fusão só quando uma mudança de horário cai nelas (AD-013) |
 | readers | lembrete das 11h usa `date` na hora de rodar: lê o horário novo. Aviso já enviado (`dedupeKey` por ocorrência) não reenvia |
+| domain | `materializeOccurrences` passa a comparar por dia local, não pelo instante: uma data com horário mudado continua ocupando o seu dia (door 3, AD-014) |
 
 ```mermaid
 erDiagram
@@ -62,6 +63,8 @@ New: nothing - atualiza `Occurrence.date` e `Schedule.startTime`; apaga uma `Occ
 | --- | --- | --- |
 | 1. Aviso de horário reusa o tipo existente | `type: "ASSIGNMENT"`, `dedupeKey: "retime:<lote>:<userId>"`, com `<lote>` um UUID por mudança | Novo valor `RETIME` em `NotificationType`: pede migração aplicada antes do deploy (AD-008) e nenhuma tela filtra por tipo |
 | 2. Fusão apaga a duplicata vazia (AD-013) | apaga a `Occurrence` que já ocupa o instante novo quando ela não tem `Allocation` nem `OccurrenceSong`; os `Slot` saem em cascata | Sempre recusar: cancelar não libera o unique `(scheduleId, date)`, e o líder ficaria travado nas duplicatas que o bug já criou |
+
+| 3. Materialização compara por dia local (AD-014) | `missingDays(expected, existing)` em `domain/recurrence.ts`: cria só a data cujo dia em `APP_TZ` não tem ocorrência da escala, em qualquer horário | Guardar o instante original da recorrência na `Occurrence`: pede coluna nova e migração aplicada antes do deploy (AD-008) |
 
 - Nothing else in this change is hard to reverse
 

@@ -6,7 +6,7 @@ import {
   retimeNotices,
   type RetimeOcc,
 } from "@/modules/scheduling/domain/retime";
-import { expandOccurrences } from "@/modules/scheduling/domain/recurrence";
+import { expandOccurrences, missingDays } from "@/modules/scheduling/domain/recurrence";
 
 // 15/10 15:00 em Sao Paulo
 const NOW = new Date("2026-10-15T18:00:00Z");
@@ -94,7 +94,14 @@ describe("planRetime", () => {
       scheduleTime: "18:00",
       now: NOW,
     });
-    expect("moves" in plan && plan.moves.map((m) => m.id)).toEqual(["o15", "o18"]);
+    expect(plan).toEqual({
+      moves: [
+        { id: "o15", to: new Date("2026-10-15T22:00:00Z") },
+        { id: "o18", to: new Date("2026-10-18T22:00:00Z") },
+      ],
+      deletes: [],
+      startTime: "19:00",
+    });
   });
 
   it("data passada recusa", () => {
@@ -185,6 +192,18 @@ describe("planRetime", () => {
       occurrences: [d1810(), d2510(), occ("dup", instante.toISOString(), { userIds: ["u9"] }), d0111()],
     });
     expect(umEmTres).toEqual({ conflito: instante });
+
+    // duplicatas antigas 18:00 e 18:15 no mesmo dia, as duas com pessoa, indo para 18:30
+    const doisCheios = planRetime({
+      ...base,
+      chosenId: "o18",
+      scope: "FROM_HERE",
+      occurrences: [
+        occ("o18", "2026-10-18T21:00:00Z", { userIds: ["u1"] }),
+        occ("o18b", "2026-10-18T21:15:00Z", { userIds: ["u2"] }),
+      ],
+    });
+    expect(doisCheios).toEqual({ conflito: new Date("2026-10-18T21:30:00Z") });
   });
 });
 
@@ -206,6 +225,44 @@ describe("materializacao", () => {
     ).map((d) => d.getTime());
     expect(esperadas).toHaveLength(13);
     expect(esperadas).toEqual(movidas);
+  });
+});
+
+// Aplica o plano em 13 domingos e confere que a materializacao com o modelo
+// resultante nao acha dia faltando.
+function diasFaltando(scope: "SINGLE" | "FROM_HERE", chosenId: string) {
+  const de = new Date("2026-10-18T21:00:00Z").getTime();
+  const occurrences = Array.from({ length: 13 }, (_, i) =>
+    occ(`o${i}`, new Date(de + i * 7 * 86_400_000).toISOString()),
+  );
+  const plan = planRetime({ occurrences, chosenId, scope, time: "18:30", scheduleTime: "18:00", now: NOW });
+  if (!("moves" in plan)) throw new Error("plano recusado");
+  const depois = occurrences.map((o) => plan.moves.find((m) => m.id === o.id)?.to ?? o.date);
+  const esperadas = expandOccurrences(
+    {
+      recurrenceRule: "FREQ=WEEKLY;BYDAY=SU",
+      startDate: new Date("2026-10-04"),
+      startTime: plan.startTime ?? "18:00",
+      recurrenceUntil: null,
+    },
+    NOW,
+    new Date(NOW.getTime() + 90 * 86_400_000),
+  );
+  return { moved: plan.moves.length, faltando: missingDays(esperadas, depois) };
+}
+
+describe("materializacao por dia local", () => {
+  it("dia movido nao volta", () => {
+    // SINGLE em 25/10: o modelo continua 18:00 e 25/10 agora esta as 18:30
+    expect(diasFaltando("SINGLE", "o1")).toEqual({ moved: 1, faltando: [] });
+    // FROM_HERE a partir de 25/10: 18/10 fica as 18:00 e o modelo vira 18:30
+    expect(diasFaltando("FROM_HERE", "o1")).toEqual({ moved: 12, faltando: [] });
+  });
+
+  it("dia sem data continua faltando", () => {
+    const esperadas = [new Date("2026-10-18T21:00:00Z"), new Date("2026-10-25T21:00:00Z")];
+    expect(missingDays(esperadas, [new Date("2026-10-18T03:30:00Z")])).toEqual([esperadas[1]]);
+    expect(missingDays(esperadas, [])).toEqual(esperadas);
   });
 });
 

@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/horario-em-lote/plan.md`
 
-25 checks in 3 slices · 2 one-way doors · 0 open
+27 checks in 3 slices · 3 one-way doors · 0 open
 
 ## Checks
 
@@ -64,6 +64,13 @@ Proof: `npx vitest run tests/unit/retimeAction.test.ts -t "retimeOccurrenceActio
 **C18** - [x] `updateScheduleAction` com `updateSchedule` lançando `HorarioOcupado(01/11 18:30)` devolve `{ ok: false, error: "Já existe outra data desta escala em 01/11 às 18:30." }` (AC 6)
 Proof: `npx vitest run tests/unit/retimeAction.test.ts -t "editar escala ocupado"`
 
+**C26** - [x] Depois de "Só esta data" em 25/10 (modelo 18:00) e de "Esta e as próximas" a partir de 25/10 (18/10 fica 18:00, modelo 18:30), `missingDays` sobre `expandOccurrences` do modelo resultante devolve `[]`; um dia sem ocorrência continua faltando (AC 1, AC 2; door 3)
+Proof: `npx vitest run tests/unit/retime.test.ts -t "dia movido nao volta"`
+Proof: `npx vitest run tests/unit/retime.test.ts -t "dia sem data continua faltando"`
+
+**C27** - [x] `materializeOccurrences` com 25/10 já existente às 18:30 e modelo 18:00 cria 0 datas; sem 01/11 no banco cria só `2026-11-01T21:00:00Z` (door 3)
+Proof: `npx vitest run tests/unit/materializeOccurrences.test.ts -t "materializa por dia local"`
+
 ### S2 - Aviso
 
 **C19** - [x] `retimeNotices` agrupa por pessoa: 1 data "Culto Louvor: 18/10 agora às 18:30."; 2 datas "18/10 e 25/10"; 5 datas "18/10, 25/10, 01/11 e mais 2 datas"; mesma pessoa em 2 vagas da mesma data dá 1 aviso (AC 11)
@@ -106,6 +113,7 @@ Proof: `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"`
 | `updateScheduleAction` statuses (2 novos) | 303 ao salvar C15 · `HORARIO_OCUPADO` C18 | - |
 | door 1: tipo e dedupe do aviso (1) | C21 | - |
 | door 2: fusão apaga duplicata vazia (1) | C7 C11 | - |
+| door 3: materialização por dia local, por caminho (3) | "Só esta data" C26 · "Esta e as próximas" C26 · "Editar escala" C16 C27 | - |
 | controles da folha (4) | horário C24 · "Só esta data" C23 · "Esta e as próximas" C23 · "Salvar" C24 | - |
 
 ## Swept
@@ -122,8 +130,8 @@ Proof: `npx playwright test tests/e2e/horario.spec.ts -g "aviso no editar"`
 
 ## Handoff
 
-- **Settled mid-build:** none
-- **Dispatched:** Verifier at `2687b60` (sem screens sub-agent: nenhuma captura)
+- **Settled mid-build:** none. Door 3 (AD-014) decidida pelo autor depois do Verifier, sem pergunta: fecha os achados 1 e 2 sem migração
+- **Dispatched:** Verifier at `2687b60` (sem screens sub-agent: nenhuma captura) - returned FAIL, 7 achados
 - **Boundary:** C1-C25 closed at `2687b60`
 - **Abandoned:** folha com campos controlados e reinício num `useEffect` na abertura: o efeito rodava depois da pintura e o `fill` do e2e perdia o horário; trocado por formulário não controlado lido por `FormData`
 - **Walked:** sem captura. O Playwright abriu `/escalas?mes=2026-11` como líder, tocou o dia 1, ⋮ > "Mudar horário", viu 18:00 e "Só esta data" marcado, salvou 19:30, a folha fechou e o card mostrou `· 19:30`, voltou para 18:00; no dia 04/10 "Salvar" deixou a folha aberta com "Essa data já passou."; ⋮ > "Editar" mostrou o aviso sob Hora. O líder chega a cada estado pelo menu ⋮ do card da data em Escalas.

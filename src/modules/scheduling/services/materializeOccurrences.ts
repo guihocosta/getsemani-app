@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { expandOccurrences } from "../domain/recurrence";
+import { expandOccurrences, missingDays } from "../domain/recurrence";
 
 const WINDOW_DAYS = 90;
 
 // Gera Occurrence + Slots para escalas dentro da janela futura.
-// Idempotente: unique (scheduleId, date) evita duplicar.
+// Idempotente por dia local: data que ja existe naquele dia, em qualquer
+// horario (o lider pode ter mudado), nao e criada de novo (AD-014).
 // scheduleId opcional: materializa só uma serie (usado logo apos criar/editar
 // uma escala, pra nao varrer todas as series existentes num caminho quente).
 export async function materializeOccurrences(now = new Date(), scheduleId?: string): Promise<number> {
@@ -31,12 +32,19 @@ export async function materializeOccurrences(now = new Date(), scheduleId?: stri
     );
     if (dates.length === 0) continue;
 
+    // Um dia de folga em cada ponta cobre qualquer horario dos dias extremos.
+    const DAY = 24 * 60 * 60 * 1000;
     const existing = await prisma.occurrence.findMany({
-      where: { scheduleId: s.id, date: { in: dates } },
+      where: {
+        scheduleId: s.id,
+        date: { gte: new Date(dates[0].getTime() - DAY), lte: new Date(dates[dates.length - 1].getTime() + DAY) },
+      },
       select: { date: true },
     });
-    const existingTimes = new Set(existing.map((e) => e.date.getTime()));
-    const missing = dates.filter((d) => !existingTimes.has(d.getTime()));
+    const missing = missingDays(
+      dates,
+      existing.map((e) => e.date),
+    );
     if (missing.length === 0) continue;
 
     await prisma.$transaction(

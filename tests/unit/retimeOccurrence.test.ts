@@ -104,14 +104,16 @@ describe("retimeOccurrence", () => {
   });
 
   it("corrida vira horario ocupado", async () => {
-    setup([row("o25", "2026-10-25T21:00:00Z")]);
-    vi.mocked(prisma.occurrence.update).mockRejectedValue(
-      Object.assign(new Error("Unique constraint failed"), { code: "P2002" }),
-    );
-    vi.mocked(prisma.occurrence.findFirst).mockResolvedValue({ date: new Date("2026-10-25T21:30:00Z") } as never);
-    const err = await retimeOccurrence({ occurrenceId: "o25", scope: "SINGLE", time: "18:30" }, NOW).catch((e) => e);
+    setup([row("o25", "2026-10-25T21:00:00Z"), row("o01", "2026-11-01T21:00:00Z")]);
+    vi.mocked(prisma.occurrence.update)
+      .mockResolvedValueOnce({} as never)
+      .mockRejectedValueOnce(Object.assign(new Error("Unique constraint failed"), { code: "P2002" }));
+    // a outra mudanca tomou 01/11 18:30, o segundo instante do lote
+    vi.mocked(prisma.occurrence.findFirst).mockResolvedValue({ date: new Date("2026-11-01T21:30:00Z") } as never);
+    const err = await retimeOccurrence({ occurrenceId: "o25", scope: "FROM_HERE", time: "18:30" }, NOW).catch((e) => e);
     expect(err).toBeInstanceOf(HorarioOcupado);
-    expect((err as HorarioOcupado).instant).toEqual(new Date("2026-10-25T21:30:00Z"));
+    expect((err as HorarioOcupado).instant).toEqual(new Date("2026-11-01T21:30:00Z"));
+    expect(notifyUser).not.toHaveBeenCalled();
   });
 
   it("sem permissao", async () => {
@@ -120,6 +122,7 @@ describe("retimeOccurrence", () => {
     await expect(
       retimeOccurrence({ occurrenceId: "o25", scope: "SINGLE", time: "18:30" }, NOW),
     ).rejects.toThrow("FORBIDDEN");
+    expect(requireLeaderOf).toHaveBeenCalledWith("m1");
     expect(prisma.$transaction).not.toHaveBeenCalled();
     for (const w of writes()) expect(w).not.toHaveBeenCalled();
   });
@@ -169,11 +172,14 @@ describe("updateSchedule", () => {
     const rows = Array.from({ length: 13 }, (_, i) =>
       row(`o${i}`, new Date(de + i * 7 * 86_400_000).toISOString()),
     );
-    vi.mocked(prisma.occurrence.findMany).mockResolvedValue(rows as never);
+    // hoje 10:00, antes de agora (15:00): o carregador traz o dia todo, mas ela ja passou
+    const hojeCedo = row("hoje", "2026-10-15T13:00:00Z");
+    vi.mocked(prisma.occurrence.findMany).mockResolvedValue([hojeCedo, ...rows] as never);
 
     await updateSchedule(input("18:30"), NOW);
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     expect(prisma.occurrence.update).toHaveBeenCalledTimes(13);
+    expect(prisma.occurrence.update).not.toHaveBeenCalledWith(expect.objectContaining({ where: { id: "hoje" } }));
     expect(prisma.occurrence.update).toHaveBeenCalledWith({
       where: { id: "o0" },
       data: { date: new Date("2026-10-18T21:30:00Z") },
