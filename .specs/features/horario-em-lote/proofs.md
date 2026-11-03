@@ -1,8 +1,8 @@
 # horario-em-lote proofs
 
-**HEAD**: a98ee7d
+**HEAD**: 1c93fd6
 **Tree**: clean
-**Result**: 28 pass, 0 fail; mutations 0 killed, 3 not
+**Result**: 31 pass, 0 fail; mutations 3 killed, 0 not
 
 | Check | Proof | Ran | Passed | Result |
 | --- | --- | --- | --- | --- |
@@ -24,6 +24,9 @@
 | C16 | `npx vitest run tests/unit/retime.test.ts -t "materializacao nao duplica"` | 1 | 1 | pass |
 | C17 | `npx vitest run tests/unit/retimeAction.test.ts -t "retimeOccurrenceAction"` | 3 | 3 | pass |
 | C18 | `npx vitest run tests/unit/retimeAction.test.ts -t "editar escala ocupado"` | 1 | 1 | pass |
+| C26 | `npx vitest run tests/unit/retime.test.ts -t "dia movido nao volta"` | 1 | 1 | pass |
+| C26 | `npx vitest run tests/unit/retime.test.ts -t "dia sem data continua faltando"` | 1 | 1 | pass |
+| C27 | `npx vitest run tests/unit/materializeOccurrences.test.ts -t "materializa por dia local"` | 1 | 1 | pass |
 | C19 | `npx vitest run tests/unit/retime.test.ts -t "um aviso por pessoa"` | 1 | 1 | pass |
 | C20 | `npx vitest run tests/unit/retime.test.ts -t "aviso ignora rascunho e convidado"` | 1 | 1 | pass |
 | C21 | `npx vitest run tests/unit/retimeOccurrence.test.ts -t "aviso por pessoa"` | 1 | 1 | pass |
@@ -39,6 +42,6 @@
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| authz checa o id da escala em vez do ministerio | `src\modules\scheduling\services\retimeOccurrences.ts:120` | no |
-| duas datas com pessoas no mesmo instante novo viram fusao (apaga uma com pessoas) | `src\modules\scheduling\domain\retime.ts:64` | no |
-| editar escala move tambem as datas de hoje que ja passaram | `src\modules\scheduling\services\updateSchedule.ts:50` | no |
+| authz checa o id da escala em vez do ministerio | `src\modules\scheduling\services\retimeOccurrences.ts:120` | yes |
+| duas datas com pessoas no mesmo instante novo viram fusao (apaga uma com pessoas) | `src\modules\scheduling\domain\retime.ts:64` | yes |
+| editar escala move tambem as datas de hoje que ja passaram | `src\modules\scheduling\services\updateSchedule.ts:50` | yes |
