@@ -1,6 +1,6 @@
 # identidade-marca proofs
 
-**HEAD**: ba42a7c
+**HEAD**: 8b0e9e4
 **Tree**: clean
 **Result**: 34 pass, 0 fail; mutations 3 killed, 0 not
 
