@@ -53,5 +53,7 @@ test("aviso no editar", async ({ page }) => {
   const card = await abrirData(page, "2026-11", /^1 de novembro/);
   await card.getByRole("button", { name: "Mais ações" }).click();
   await card.getByRole("link", { name: "Editar" }).click();
+  // Primeira visita compila a rota no dev server: espera a navegacao antes do texto.
+  await page.waitForURL(/\/escalas\/[^/]+\/editar$/, { timeout: 60_000 });
   await expect(page.getByText("Muda também as datas já criadas a partir de hoje.")).toBeVisible();
 });
