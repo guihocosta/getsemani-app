@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 35,
+  "next_id": 41,
   "lessons": [
     {
       "id": "L-001",
@@ -618,6 +618,114 @@
       ],
       "created": "2026-11-03T21:40:38Z",
       "last_seen": "2026-11-03T21:40:38Z"
+    },
+    {
+      "id": "L-035",
+      "key": "surviving_mutant::ordem pt br se prova com fixture que tem acento e minuscula so maiusculas sem acento dao a mesma ordem por code point",
+      "text": "Ordem pt-BR se prova com fixture que tem acento e minúscula; só maiúsculas sem acento dão a mesma ordem por code point.",
+      "signal": "surviving_mutant",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "getOccurrenceTeam.ts localeCompare (tests)"
+      ],
+      "created": "2026-11-04T01:01:46Z",
+      "last_seen": "2026-11-04T01:01:46Z"
+    },
+    {
+      "id": "L-036",
+      "key": "surviving_mutant::selo que so a pagina mostra precisa de seed com o caso teste do servico nao prova a tela",
+      "text": "Selo que só a página mostra precisa de seed com o caso; teste do serviço não prova a tela.",
+      "signal": "surviving_mutant",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 5 sem conta (tests/e2e)"
+      ],
+      "created": "2026-11-04T01:01:46Z",
+      "last_seen": "2026-11-04T01:01:46Z"
+    },
+    {
+      "id": "L-037",
+      "key": "spec_precision_gap::ordem de secoes condicionais se prova com persona que tem todas as secoes nao so as que a persona comum tem",
+      "text": "Ordem de seções condicionais se prova com persona que tem todas as seções, não só as que a persona comum tem.",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C1 ordem da home (tests/e2e)"
+      ],
+      "created": "2026-11-04T01:01:46Z",
+      "last_seen": "2026-11-04T01:01:46Z"
+    },
+    {
+      "id": "L-038",
+      "key": "spec_precision_gap::criterio cada cartao dos n grupos pede laco sobre todos os cartoes com contagem por grupo nao um cartao",
+      "text": "Critério 'cada cartão dos N grupos' pede laço sobre todos os cartões com contagem por grupo, não um cartão.",
+      "signal": "spec_precision_gap",
+      "scope": "tests/e2e",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C20 Músicas (tests/e2e)"
+      ],
+      "created": "2026-11-04T01:01:47Z",
+      "last_seen": "2026-11-04T01:01:47Z"
+    },
+    {
+      "id": "L-039",
+      "key": "gate_fail::seletor t com quebra a tabela de proofs md separar em varias linhas proof",
+      "text": "Seletor -t com | quebra a tabela de proofs.md: separar em várias linhas Proof.",
+      "signal": "gate_fail",
+      "scope": "",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C18 proofs.md"
+      ],
+      "created": "2026-11-04T01:01:47Z",
+      "last_seen": "2026-11-04T01:01:47Z"
+    },
+    {
+      "id": "L-040",
+      "key": "spec_deviation::com loading tsx acima notfound responde http 200 criterio de 404 em rota do grupo app prova a pagina de nao encontrada nao o status",
+      "text": "Com loading.tsx acima, notFound() responde HTTP 200: critério de 404 em rota do grupo (app) prova a página de não encontrada, não o status.",
+      "signal": "spec_deviation",
+      "scope": "app",
+      "status": "candidate",
+      "features": [
+        "ajustes-visuais"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 6 notFound (app)"
+      ],
+      "created": "2026-11-04T01:01:47Z",
+      "last_seen": "2026-11-04T01:01:47Z"
     }
   ]
 }

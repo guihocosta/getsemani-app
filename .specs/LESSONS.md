@@ -216,6 +216,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: proofs.md HEAD
 - last seen: 2026-11-03T21:40:38Z
 
+### L-035 - Ordem pt-BR se prova com fixture que tem acento e minúscula; só maiúsculas sem acento dão a mesma ordem por code point.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: ajustes-visuais
+- evidence: getOccurrenceTeam.ts localeCompare (tests)
+- last seen: 2026-11-04T01:01:46Z
+
+### L-036 - Selo que só a página mostra precisa de seed com o caso; teste do serviço não prova a tela.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: ajustes-visuais
+- evidence: AC 5 sem conta (tests/e2e)
+- last seen: 2026-11-04T01:01:46Z
+
+### L-037 - Ordem de seções condicionais se prova com persona que tem todas as seções, não só as que a persona comum tem.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: ajustes-visuais
+- evidence: C1 ordem da home (tests/e2e)
+- last seen: 2026-11-04T01:01:46Z
+
+### L-038 - Critério 'cada cartão dos N grupos' pede laço sobre todos os cartões com contagem por grupo, não um cartão.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/e2e` · harmful: 0
+- features: ajustes-visuais
+- evidence: C20 Músicas (tests/e2e)
+- last seen: 2026-11-04T01:01:47Z
+
+### L-039 - Seletor -t com | quebra a tabela de proofs.md: separar em várias linhas Proof.
+- signal: `gate_fail` · recurrence: 1 feature(s) · harmful: 0
+- features: ajustes-visuais
+- evidence: C18 proofs.md
+- last seen: 2026-11-04T01:01:47Z
+
+### L-040 - Com loading.tsx acima, notFound() responde HTTP 200: critério de 404 em rota do grupo (app) prova a página de não encontrada, não o status.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `app` · harmful: 0
+- features: ajustes-visuais
+- evidence: AC 6 notFound (app)
+- last seen: 2026-11-04T01:01:47Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
