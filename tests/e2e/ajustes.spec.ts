@@ -133,17 +133,48 @@ test.describe("lider", () => {
     await expect(page.getByRole("heading", { name: "Músicas" })).toBeVisible();
   });
 
+  test("ordem da home", async ({ page }) => {
+    await page.goto("/");
+    const ys = [
+      await topo(page, "Solicitações"),
+      await topo(page, "Você foi escalado!"),
+      await topo(page, "Sua Escala Hoje"),
+      await topo(page, "Próxima escala"),
+      await topo(page, "Depois"),
+      await topo(page, "Avisos em destaque"),
+      await topo(page, "Aniversariantes"),
+    ];
+    expect([...ys].sort((a, b) => a - b)).toEqual(ys);
+  });
+
   test("botao musicas", async ({ page }) => {
     await page.goto("/");
-    const card = page.getByTestId("grupo-hoje").getByTestId("card-escala").first();
-    const link = card.getByRole("link", { name: "Músicas" });
-    const box = await link.boundingBox();
-    expect(box!.height).toBeGreaterThanOrEqual(44);
-    await expect(link.locator("svg")).toHaveCount(1);
+    // Louvor tem repertorio: todo cartao dos 4 grupos tem "Músicas".
+    const todos = page.getByTestId("card-escala");
+    await expect(page.getByTestId("grupo-escalado").getByTestId("card-escala")).toHaveCount(3);
+    await expect(page.getByTestId("grupo-hoje").getByTestId("card-escala")).toHaveCount(2);
+    await expect(page.getByTestId("carrossel-depois").getByTestId("card-escala")).toHaveCount(1);
+    await expect(todos).toHaveCount(7);
+    for (const card of await todos.all()) {
+      const link = card.getByRole("link", { name: "Músicas" });
+      await link.scrollIntoViewIfNeeded();
+      const box = await link.boundingBox();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      await expect(link.locator("svg")).toHaveCount(1);
+      expect(await link.getAttribute("href")).toMatch(new RegExp(`^/repertorio/escala/${UUID}$`));
+    }
+    const link = page.getByTestId("grupo-hoje").getByTestId("card-escala").first().getByRole("link", { name: "Músicas" });
     const href = await link.getAttribute("href");
-    expect(href).toMatch(new RegExp(`^/repertorio/escala/${UUID}$`));
     await link.click();
     await expect(page).toHaveURL(href!);
+  });
+
+  test("sem conta na data", async ({ page }) => {
+    await page.goto("/");
+    // Terceiro pendente da lider: Louvor 01/11, Teclado com pessoa sem conta.
+    await verEscala(page.getByTestId("grupo-escalado").getByTestId("card-escala").nth(2)).click();
+    await expect(page.getByTestId("data-escala")).toHaveText(/01 de nov/);
+    await expect(page.getByTestId("vaga-equipe").nth(1)).toHaveText(/^Teclado\s*Zé Visitante\s*sem conta$/i);
   });
 
   test("404 da data", async ({ page, browser }) => {

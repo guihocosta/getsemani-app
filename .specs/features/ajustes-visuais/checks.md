@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/ajustes-visuais/plan.md`
 
-23 checks in 6 slices · 0 one-way doors · 0 open, of which 0 block
+26 checks in 6 slices · 0 one-way doors · 0 open, of which 0 block
 
 ## Checks
 
@@ -18,6 +18,9 @@ Proof: `npx vitest run tests/unit/homeSections.test.ts -t "vazio da home"`
 
 **C3** - [x] `homeSections` separa pendente, hoje e futura pelo status e pelo dia local, e a futura exclui o dia de hoje (AC 1, AC 2)
 Proof: `npx vitest run tests/unit/homeSections.test.ts -t "grupos da home"`
+
+**C24** - [x] Em `/` para `lider` (com aviso fixado e um item em cada grupo), "Solicitações", "Você foi escalado!", "Sua Escala Hoje", "Próxima escala", "Depois", "Avisos em destaque" e "Aniversariantes" ficam nessa ordem (AC 1)
+Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "lider ordem da home"`
 
 ### S2 - Página da data com a equipe
 
@@ -44,6 +47,12 @@ Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "musicas na data"`
 
 **C23** - [x] Sem sessão, `/escalas/data/<id>` redireciona para `/login` (Surface)
 Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "data sem sessao"`
+
+**C25** - [x] Louvor 01/11 para `lider` mostra Teclado "Zé Visitante" com "sem conta" (AC 5)
+Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "sem conta na data"`
+
+**C26** - [x] Em `/` para `lider`, os 7 cartões dos 4 grupos (3 pendentes, 2 hoje, próxima, 1 depois) têm "Músicas" com 44 px ou mais, ícone `svg` e link para `/repertorio/escala/<id>` (AC 17)
+Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "lider botao musicas"`
 
 **C11** - [x] "Início" no topo da página da data volta para `/` (AC 9)
 Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "voltar ao inicio"`
@@ -97,13 +106,14 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "celular igual ao commit
 | grupos da home (4) | "Você foi escalado!" C1 C4 C14 C21 · "Sua Escala Hoje" C1 C4 C14 C20 C21 · "Próxima escala" C1 C4 C14 C21 · "Depois" C1 C4 C14 C21 | - |
 | exemplos do vazio, AC 2 (5) | nada C2 · só hoje C2 · só pendente C2 · só futura C2 · hoje e pendente C2 | - |
 | exemplos de acesso, AC 6 (7) | `abc` C7 C8 · inexistente C7 · cancelada C7 · não membro C7 C8 · rascunho voluntário C7 · rascunho líder C7 · admin sem vínculo C7 | - |
-| linhas da equipe, AC 4-5 (5) | ocupada C5 C6 · vaga aberta C5 C6 · desativada C6 · sem conta C6 · pendente C5 C6 | - |
+| linhas da equipe, AC 4-5 (5) | ocupada C5 C6 · vaga aberta C5 C6 · desativada C6 · sem conta C6 C25 · pendente C5 C6 | - |
+| seções da home, AC 1 (7) | Solicitações C24 · "Você foi escalado!" C1 C24 · "Sua Escala Hoje" C1 C24 · "Próxima escala" C1 C24 · "Depois" C1 C24 · "Avisos em destaque" C24 · atalhos C1 C24 | - |
 | exemplos de cor, AC 10 (7) | C12, table-driven sobre os 7 | - |
 | leitores da cor (3) | home C13 C14 · `/escalas` C13 C15 · página da data C15 | - |
 | esqueletos (4) | geral C17 · escalas C16 C17 · panorama C16 C17 · visão geral C16 C17 | - |
 | personas do menu (4) | voluntário C18 C19 · líder C18 C19 · admin sem ministério C18 · voluntário com repertório C18 | - |
 | `GET /escalas/data/[occurrenceId]` statuses (3) | 200 C5 · não encontrada C8 · `/login` sem sessão C23 | - |
-| controles novos (4) | "Ver escala" C4 C21 · "Músicas" na home C20 · "Músicas" na data C10 · "Início" C11 · "Visão geral" no menu C19 | - |
+| controles novos (4) | "Ver escala" C4 C21 · "Músicas" na home C20 C26 · "Músicas" na data C10 · "Início" C11 · "Visão geral" no menu C19 | - |
 
 ## Swept
 
@@ -120,7 +130,7 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "celular igual ao commit
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none
-- **Boundary:** -
+- **Dispatched:** Verifier em `416adfb`, returned: FAIL, 4 achados (C24-C26 e fixture de C6); sem screens: nenhum critério cita captura
+- **Boundary:** C1-C23 fechados em `416adfb`; 26 provas verdes
 - **Abandoned:** status HTTP 404 na página da data: o `loading.tsx` de `(app)` faz streaming com 200 antes do `notFound()`; C8 e AC 6 passaram a provar a página "Página não encontrada" sem vagas
 - **Walked:** home de `lider` em 390 px escuro e `/escalas` em 390 px claro olhadas nas imagens regeneradas (ordem nova, botões "Ver escala"/"Músicas", borda de cor); página da data, 404, menu lateral em 1280 px e botões percorridos pelo e2e `ajustes.spec.ts` no stack local. O usuário chega à página da data por "Ver escala" em qualquer cartão da home

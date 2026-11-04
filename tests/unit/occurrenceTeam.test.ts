@@ -65,6 +65,9 @@ describe("getOccurrenceTeam", () => {
           slot("s-tec", "Teclado"),
           slot("s-acordeon", "Acordeom", { guest: "Zé Visitante" }),
           slot("s-vio", "Violão", { user: { id: "u2", name: "Ana Beatriz Moreira" } }),
+          slot("s-org", "Órgão"),
+          slot("s-baixo", "baixo"),
+          slot("s-perc", "Percussão"),
         ],
       }) as never,
     );
@@ -73,7 +76,10 @@ describe("getOccurrenceTeam", () => {
 
     expect(t.slots).toEqual([
       { slotId: "s-acordeon", role: "Acordeom", name: "Zé Visitante", isGuest: true, status: "CONFIRMED", isMe: false },
+      { slotId: "s-baixo", role: "baixo", name: null, isGuest: false, status: null, isMe: false },
       { slotId: "s-bat", role: "Bateria", name: "Lia Lider", isGuest: false, status: "PENDING", isMe: true },
+      { slotId: "s-org", role: "Órgão", name: null, isGuest: false, status: null, isMe: false },
+      { slotId: "s-perc", role: "Percussão", name: null, isGuest: false, status: null, isMe: false },
       { slotId: "s-tec", role: "Teclado", name: null, isGuest: false, status: null, isMe: false },
       { slotId: "s-vio", role: "Violão", name: "Ana Beatriz Moreira", isGuest: false, status: "CONFIRMED", isMe: false },
       { slotId: "s-vocal", role: "Vocal", name: "Rafael Souza Lima", isGuest: false, status: "CONFIRMED", isMe: false },
