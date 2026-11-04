@@ -83,7 +83,9 @@ Proof: `npx vitest run tests/unit/skeletons.test.ts -t "esqueleto anunciado"`
 ### S5 - Visão geral no menu lateral
 
 **C18** - [x] `navItems` tem "Visão geral" logo depois de "Gestão" para líder e admin e não tem para voluntário; a barra inferior não muda; `/admin/visao-geral` marca "Visão geral" (AC 15, AC 16)
-Proof: `npx vitest run tests/unit/navItems.test.ts -t "itens por permissao|barra inferior|item ativo"`
+Proof: `npx vitest run tests/unit/navItems.test.ts -t "itens por permissao"`
+Proof: `npx vitest run tests/unit/navItems.test.ts -t "barra inferior"`
+Proof: `npx vitest run tests/unit/navItems.test.ts -t "item ativo"`
 
 **C19** - [x] Em 1280 px, `lider` usa "Visão geral" no menu lateral, chega a `/admin/visao-geral` com o item em `aria-current="page"` e "Gestão" sem; `voluntario` não tem o item (AC 15, AC 16)
 Proof: `npx playwright test tests/e2e/ajustes.spec.ts -g "visao geral no menu"`
