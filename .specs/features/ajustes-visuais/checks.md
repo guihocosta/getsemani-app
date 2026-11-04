@@ -131,6 +131,6 @@ Proof: `npx playwright test tests/e2e/mobile.spec.ts -g "celular igual ao commit
 
 - **Settled mid-build:** none
 - **Dispatched:** Verifier em `416adfb`, returned: FAIL, 4 achados (C24-C26 e fixture de C6); sem screens: nenhum critério cita captura
-- **Boundary:** C1-C23 fechados em `416adfb`; 26 provas verdes
+- **Boundary:** C1-C23 fechados em `416adfb`; C24-C26 e achados do Verifier fechados em `bb37880`
 - **Abandoned:** status HTTP 404 na página da data: o `loading.tsx` de `(app)` faz streaming com 200 antes do `notFound()`; C8 e AC 6 passaram a provar a página "Página não encontrada" sem vagas
 - **Walked:** home de `lider` em 390 px escuro e `/escalas` em 390 px claro olhadas nas imagens regeneradas (ordem nova, botões "Ver escala"/"Músicas", borda de cor); página da data, 404, menu lateral em 1280 px e botões percorridos pelo e2e `ajustes.spec.ts` no stack local. O usuário chega à página da data por "Ver escala" em qualquer cartão da home
