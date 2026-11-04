@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { startOfDay } from "@/lib/time";
+import { ministryColor } from "@/modules/ministries/domain/color";
 import type { AllocationStatus } from "@prisma/client";
 
 export type UpcomingItem = {
@@ -8,6 +9,7 @@ export type UpcomingItem = {
   repertoireEnabled: boolean;
   date: Date;
   ministry: string;
+  ministryColor: string;
   role: string;
   hasSwapOpen: boolean;
   swapRequestId: string | null;
@@ -40,6 +42,7 @@ export async function getMySchedule(userId: string, from = startOfDay(new Date()
       repertoireEnabled: a.slot.occurrence.schedule.ministry.repertoireEnabled,
       date: a.slot.occurrence.date,
       ministry: a.slot.occurrence.schedule.ministry.name,
+      ministryColor: ministryColor(a.slot.occurrence.schedule.ministry.color),
       role: a.slot.role.name,
       hasSwapOpen: a.swapRequest?.status === "OPEN",
       swapRequestId: a.swapRequest?.status === "OPEN" ? a.swapRequest.id : null,

@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { LucideProps } from "lucide-react";
 import {
+  BarChart3,
   Cake,
   Calendar,
   CalendarOff,
@@ -38,7 +39,12 @@ export function navItems({
     { href: "/avisos", label: "Avisos", Icon: Megaphone, tab: false },
     ...(hasRepertoire ? [{ href: "/repertorio", label: "Repertório", Icon: Music, tab: false }] : []),
     { href: "/aniversariantes", label: "Aniversariantes", Icon: Cake, tab: false },
-    ...(isAdmin || isLeader ? [{ href: "/admin", label: "Gestão", Icon: Settings, tab: true }] : []),
+    ...(isAdmin || isLeader
+      ? [
+          { href: "/admin", label: "Gestão", Icon: Settings, tab: true },
+          { href: "/admin/visao-geral", label: "Visão geral", Icon: BarChart3, tab: false },
+        ]
+      : []),
     { href: "/perfil", label: "Perfil", Icon: User, tab: true },
   ];
 }

@@ -72,11 +72,12 @@ export async function seed(stack: Stack) {
 
   // Id fixo: sem orderBy, a ordem das vagas na tela segue o roleId.
   let ministerios = 0;
-  async function ministerio(name: string, repertoireEnabled: boolean, roles: string[]) {
+  async function ministerio(name: string, repertoireEnabled: boolean, roles: string[], color?: string) {
     ministerios++;
     const m = await prisma.ministry.create({
       data: {
         name,
+        color,
         repertoireEnabled,
         roles: {
           create: roles.map((r, i) => ({
@@ -121,7 +122,8 @@ export async function seed(stack: Stack) {
   const midia = await ministerio("Mídia", false, ["Projeção", "Som"]);
   const recepcao = await ministerio("Recepção", false, ["Porta"]);
   const apoio = await ministerio("Apoio", false, ["Café", "Limpeza", "Portaria"]);
-  const intercessao = await ministerio("Intercessão", false, ["Oração"]);
+  // Cor salva: os cartoes de umCard mostram a borda nessa cor.
+  const intercessao = await ministerio("Intercessão", false, ["Oração"], "#e0605a");
   const zeladoria = await ministerio("Zeladoria", false, ["Chaves", "Luzes", "Som"]);
 
   await prisma.membership.createMany({

@@ -6,6 +6,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     occurrenceId: "occ-1",
     scheduleId: "sched-1",
     ministryId: "min-1",
+    ministryColor: "#2a78cd",
     rotationCycle: null,
     published: true,
     repertoireEnabled: false,

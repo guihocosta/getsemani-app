@@ -246,6 +246,7 @@ export function EscalaCalendar({
                   published={o.published}
                   repertoireEnabled={o.repertoireEnabled}
                   title={o.title}
+                  ministryColor={o.ministryColor}
                   when={o.when}
                   time={o.time}
                   slots={o.slots}

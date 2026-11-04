@@ -17,6 +17,7 @@ export type Item = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  ministryColor: string;
   rotationCycle: number | null;
   published: boolean;
   repertoireEnabled: boolean;

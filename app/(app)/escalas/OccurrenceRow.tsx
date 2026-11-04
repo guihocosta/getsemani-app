@@ -54,6 +54,7 @@ export function OccurrenceRow(props: {
   published: boolean;
   repertoireEnabled: boolean;
   title: string;
+  ministryColor: string;
   when: string;
   time: string;
   slots: Slot[];
@@ -394,7 +395,7 @@ export function OccurrenceRow(props: {
         time={props.time}
         onRetimed={() => props.onChanged()}
       />
-      <Card>
+      <Card data-testid="cartao-data" className="border-l-4" style={{ borderLeftColor: props.ministryColor }}>
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-sm text-text flex items-center gap-1.5 flex-wrap">

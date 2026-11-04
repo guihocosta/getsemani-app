@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import Link from "next/link";
 import { Card } from "@/ui/Card";
 import { Button } from "@/ui/Button";
 import { Badge } from "@/ui/Badge";
 import { CheckCircle2 } from "lucide-react";
 import { fmtTime } from "@/lib/time";
 import { checkInAllocationAction } from "./respondAllocationActions";
+import { OccurrenceLinks } from "./OccurrenceLinks";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
 
 export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
@@ -62,7 +62,11 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
               }
             }
           }}>
-            <Card data-testid="card-escala" className="flex flex-col border-primary/20 bg-primary/5">
+            <Card
+              data-testid="card-escala"
+              className="flex flex-col border-primary/20 border-l-4 bg-primary/5"
+              style={{ borderLeftColor: item.ministryColor }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>
@@ -75,19 +79,15 @@ export function TodayCheckInCard({ items }: { items: UpcomingItem[] }) {
                     )}
                   </div>
                   <p className="text-sm text-text-muted mt-1">Hoje</p>
-                  {item.repertoireEnabled && (
-                    <Link
-                      href={`/repertorio/escala/${item.occurrenceId}`}
-                      className="text-sm text-primary font-medium underline underline-offset-2"
-                    >
-                      Músicas
-                    </Link>
-                  )}
                 </div>
                 <p className="font-title text-4xl text-primary">{fmtTime(item.date)}</p>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-border/50">
+              <div className="mt-3">
+                <OccurrenceLinks occurrenceId={item.occurrenceId} repertoireEnabled={item.repertoireEnabled} />
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-border/50">
                 {item.checkedInAt ? (
                   <div className="flex items-center justify-center gap-2 py-2 text-primary font-semibold">
                     <CheckCircle2 size={20} />

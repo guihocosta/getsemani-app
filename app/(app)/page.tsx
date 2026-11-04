@@ -13,7 +13,9 @@ import { Card } from "@/ui/Card";
 import { EmptyState } from "@/ui/EmptyState";
 import { NavRow } from "@/ui/NavRow";
 import { fmtDate, fmtTime, dateKey } from "@/lib/time";
+import { homeSections } from "@/modules/scheduling/domain/homeSections";
 import { AllocationActions } from "./AllocationActions";
+import { OccurrenceLinks } from "./OccurrenceLinks";
 import { UpcomingCarousel } from "./UpcomingCarousel";
 import { InstallPopup } from "./InstallPopup";
 import { PendingConfirmationsCard } from "./PendingConfirmationsCard";
@@ -45,11 +47,7 @@ export default async function HomePage() {
   ]);
 
   const birthdaysToday = birthdays.filter((b) => isBirthdayToday(b.day, todayMonth, todayKey));
-  const pendingItems = items.filter((it) => it.status === "PENDING");
-  
-  const confirmedItems = items.filter((it) => it.status !== "PENDING");
-  const todayItems = confirmedItems.filter((it) => dateKey(it.date) === todayKey);
-  const futureItems = confirmedItems.filter((it) => dateKey(it.date) !== todayKey);
+  const { pending: pendingItems, today: todayItems, future: futureItems, showEmpty } = homeSections(items, todayKey);
 
   return (
     <div>
@@ -68,6 +66,60 @@ export default async function HomePage() {
             Icon={Bell}
           />
         </Card>
+      )}
+
+      {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
+
+      {todayItems.length > 0 && <TodayCheckInCard items={todayItems} />}
+
+      {showEmpty && (
+        <div className="mb-8">
+          <EmptyState
+            title="Nenhuma escala próxima"
+            subtitle="Quando você for escalado e confirmar, aparecerá aqui."
+          />
+        </div>
+      )}
+
+      {futureItems.length > 0 && (
+        <>
+          <h2 className="eyebrow mb-3">Próxima escala</h2>
+          <Card
+            data-testid="card-escala"
+            className="mb-8 flex flex-col border-l-4"
+            style={{ borderLeftColor: futureItems[0].ministryColor }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="eyebrow text-primary">{futureItems[0].ministry}</p>
+                <p className="text-xl text-text">{futureItems[0].role}</p>
+                <p className="text-sm text-text-muted">{fmtDate(futureItems[0].date)}</p>
+              </div>
+              <p className="font-title text-3xl text-primary">{fmtTime(futureItems[0].date)}</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 mt-3">
+              <OccurrenceLinks
+                occurrenceId={futureItems[0].occurrenceId}
+                repertoireEnabled={futureItems[0].repertoireEnabled}
+              />
+              <AllocationActions
+                allocationId={futureItems[0].allocationId}
+                status={futureItems[0].status}
+                hasSwapOpen={futureItems[0].hasSwapOpen}
+                swapRequestId={futureItems[0].swapRequestId}
+              />
+            </div>
+          </Card>
+
+          {futureItems.length > 1 && (
+            <>
+              <h2 className="eyebrow mb-3">Depois</h2>
+              <div className="mb-8">
+                <UpcomingCarousel items={futureItems.slice(1)} todayKey={todayKey} />
+              </div>
+            </>
+          )}
+        </>
       )}
 
       {pinned.length > 0 && (
@@ -105,56 +157,6 @@ export default async function HomePage() {
           Icon={Cake}
         />
       </Card>
-
-      {pendingItems.length > 0 && <PendingConfirmationsCard items={pendingItems} />}
-
-      {todayItems.length > 0 && <TodayCheckInCard items={todayItems} />}
-
-      {futureItems.length === 0 ? (
-        <EmptyState
-          title="Nenhuma escala próxima"
-          subtitle="Quando você for escalado e confirmar, aparecerá aqui."
-        />
-      ) : (
-        <>
-          <h2 className="eyebrow mb-3">Próxima escala</h2>
-          <Card data-testid="card-escala" className="mb-8 flex flex-col">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="eyebrow text-primary">{futureItems[0].ministry}</p>
-                <p className="text-xl text-text">{futureItems[0].role}</p>
-                <p className="text-sm text-text-muted">{fmtDate(futureItems[0].date)}</p>
-              </div>
-              <p className="font-title text-3xl text-primary">{fmtTime(futureItems[0].date)}</p>
-            </div>
-            <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-              {futureItems[0].repertoireEnabled ? (
-                <Link
-                  href={`/repertorio/escala/${futureItems[0].occurrenceId}`}
-                  className="text-sm text-primary font-medium underline underline-offset-2"
-                >
-                  Músicas
-                </Link>
-              ) : (
-                <div />
-              )}
-              <AllocationActions
-                allocationId={futureItems[0].allocationId}
-                status={futureItems[0].status}
-                hasSwapOpen={futureItems[0].hasSwapOpen}
-                swapRequestId={futureItems[0].swapRequestId}
-              />
-            </div>
-          </Card>
-
-          {futureItems.length > 1 && (
-            <>
-              <h2 className="eyebrow mb-3">Depois</h2>
-              <UpcomingCarousel items={futureItems.slice(1)} todayKey={todayKey} />
-            </>
-          )}
-        </>
-      )}
     </div>
   );
 }
