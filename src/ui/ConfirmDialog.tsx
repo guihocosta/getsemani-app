@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "./Button";
 import { useDialog } from "./useDialog";
+import { Portal } from "./Portal";
 
 type ConfirmOptions = {
   title: string;
@@ -39,61 +40,67 @@ export function useConfirm() {
   const panelRef = useDialog(state.open, () => settle(false));
 
   const dialog = (
-    <AnimatePresence>
-      {state.open && (
-        <motion.div
-          data-no-swipe
-          className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-8 lg:pb-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => settle(false)}
-        >
+    <Portal>
+      <AnimatePresence>
+        {state.open && (
           <motion.div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={state.title}
-            tabIndex={-1}
-            className="w-full max-w-md rounded-[2rem] outline-none bg-surface ring-1 ring-border p-6 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35)]"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            onClick={(e) => e.stopPropagation()}
+            data-no-swipe
+            className="fixed inset-0 z-[60] flex items-end lg:items-center justify-center bg-black/40 backdrop-blur-sm px-4 pb-8 lg:pb-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => settle(false)}
           >
-            <div
-              className={
-                "h-12 w-12 rounded-2xl flex items-center justify-center mb-3 " +
-                (state.tone === "danger"
-                  ? "bg-danger/10 text-danger ring-1 ring-danger/25"
-                  : "bg-accent-soft text-primary ring-1 ring-primary/20")
-              }
+            <motion.div
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={state.title}
+              tabIndex={-1}
+              className="w-full max-w-md rounded-[2rem] outline-none bg-surface ring-1 ring-border p-6 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.35)]"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <AlertTriangle size={22} strokeWidth={1.8} />
-            </div>
-
-            <p className="text-lg text-text mb-1">{state.title}</p>
-            {state.description && (
-              <p className="text-sm text-text-muted mb-5">{state.description}</p>
-            )}
-
-            <div className="flex gap-2">
-              <Button variant="ghost" className="flex-1" onClick={() => settle(false)}>
-                {state.cancelLabel ?? "Cancelar"}
-              </Button>
-              <Button
-                variant="primary"
-                className={state.tone === "danger" ? "flex-1 !bg-danger-fill hover:!bg-danger-fill/90" : "flex-1"}
-                onClick={() => settle(true)}
+              <div
+                className={
+                  "h-12 w-12 rounded-2xl flex items-center justify-center mb-3 " +
+                  (state.tone === "danger"
+                    ? "bg-danger/10 text-danger ring-1 ring-danger/25"
+                    : "bg-accent-soft text-primary ring-1 ring-primary/20")
+                }
               >
-                {state.confirmLabel ?? "Confirmar"}
-              </Button>
-            </div>
+                <AlertTriangle size={22} strokeWidth={1.8} />
+              </div>
+
+              <p className="text-lg text-text mb-1">{state.title}</p>
+              {state.description && (
+                <p className="text-sm text-text-muted mb-5">{state.description}</p>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="ghost" className="flex-1" onClick={() => settle(false)}>
+                  {state.cancelLabel ?? "Cancelar"}
+                </Button>
+                <Button
+                  variant="primary"
+                  className={
+                    state.tone === "danger"
+                      ? "flex-1 !bg-danger-fill hover:!bg-danger-fill/90"
+                      : "flex-1"
+                  }
+                  onClick={() => settle(true)}
+                >
+                  {state.confirmLabel ?? "Confirmar"}
+                </Button>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </Portal>
   );
 
   return { confirm, dialog };

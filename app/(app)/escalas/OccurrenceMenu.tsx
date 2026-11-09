@@ -10,6 +10,8 @@ export function OccurrenceMenu(props: {
   onCopy: () => void;
   onAddExtra: () => void;
   onRetime: () => void;
+  remindLabel?: string;
+  onRemind?: () => void;
   publishLabel: string;
   onTogglePublish: () => void;
   onRepeat?: () => void;
@@ -71,6 +73,19 @@ export function OccurrenceMenu(props: {
           >
             Mudar horário
           </button>
+          {props.remindLabel && props.onRemind && (
+            <button
+              type="button"
+              disabled={props.disabled}
+              onClick={() => {
+                setOpen(false);
+                props.onRemind?.();
+              }}
+              className="w-full min-h-11 text-left px-4 py-3 text-sm text-text hover:bg-surface-2 disabled:opacity-40"
+            >
+              {props.remindLabel}
+            </button>
+          )}
           <button
             type="button"
             disabled={props.disabled}

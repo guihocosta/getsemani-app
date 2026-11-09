@@ -40,8 +40,8 @@ export function AddExtraSlotSheet(props: {
   }
 
   return (
-    <Sheet open={props.open} onClose={props.onClose} title="Adicionar Vaga Extra">
-      <div className="p-4">
+    <Sheet open={props.open} onClose={props.onClose} title="Adicionar vaga extra">
+      <div>
         {loading ? (
           <div className="flex justify-center p-6">
             <Loader2 className="animate-spin text-primary" size={24} />

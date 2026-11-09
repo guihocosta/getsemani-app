@@ -17,6 +17,7 @@ export type MonthOccurrenceItem = {
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  startsAt: string; // ISO UTC
   time: string; // HH:mm (APP_TZ)
   title: string;
   when: string;
@@ -71,6 +72,7 @@ export async function listMonthOccurrences(
     published: o.published,
     repertoireEnabled: o.schedule.ministry.repertoireEnabled,
     dayKey: dateKey(o.date),
+    startsAt: o.date.toISOString(),
     time: fmtTime(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,

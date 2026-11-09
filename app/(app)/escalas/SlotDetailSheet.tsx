@@ -24,6 +24,9 @@ export function SlotDetailSheet(props: {
   onDeactivate: () => void;
   canMarkAttendance: boolean;
   onToggleAttendance: () => void;
+  canRemind: boolean;
+  onRemind: () => void;
+  remindNote: string | null;
 }) {
   const [picking, setPicking] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
@@ -218,6 +221,22 @@ export function SlotDetailSheet(props: {
                 >
                   {slot.checkedIn ? "Desmarcar presença" : "Marcar presente"}
                 </Button>
+              )}
+              {props.canRemind && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={props.pending}
+                  onClick={props.onRemind}
+                  className="w-full min-h-11 py-2 text-sm"
+                >
+                  Lembrar confirmação
+                </Button>
+              )}
+              {props.remindNote && (
+                <p role="status" className="text-xs text-text-muted px-1 pt-1">
+                  {props.remindNote}
+                </p>
               )}
               <div className="flex items-center gap-4">
                 <button

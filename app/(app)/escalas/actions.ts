@@ -11,6 +11,8 @@ import { linkGuestAllocation } from "@/modules/scheduling/services/linkGuestAllo
 import { linkAllGuestAllocations } from "@/modules/scheduling/services/linkAllGuestAllocations";
 import { setSlotActive } from "@/modules/scheduling/services/setSlotActive";
 import { setAttendance } from "@/modules/scheduling/services/setAttendance";
+import { remindPending } from "@/modules/scheduling/services/remindPending";
+import type { RemindCounts } from "@/modules/scheduling/domain/remind";
 import { setOccurrencePublished } from "@/modules/scheduling/services/publishOccurrence";
 import { suggestAllocations } from "@/modules/scheduling/services/suggestAllocations";
 import type { SuggestActionResult } from "@/modules/scheduling/domain/suggest";
@@ -196,6 +198,20 @@ export async function setAttendanceAction(
     return { ok: true, allocation: { status: allocation.status, checkedIn: allocation.checkedInAt !== null } };
   } catch (e) {
     return handleActionError("escalas.setAttendance", e, { allocationId, present });
+  }
+}
+
+// Lider lembra por push quem nao confirmou: todos os pendentes da data, ou so
+// a alocacao pedida. Nada de dominio muda, entao nao ha revalidatePath.
+export async function remindPendingAction(
+  occurrenceId: string,
+  allocationId?: string,
+): Promise<({ ok: true } & RemindCounts) | { ok: false; code: ActionCode; ref: string }> {
+  try {
+    const counts = await remindPending({ occurrenceId, allocationId });
+    return { ok: true, ...counts };
+  } catch (e) {
+    return handleActionError("escalas.remindPending", e, { occurrenceId, allocationId });
   }
 }
 

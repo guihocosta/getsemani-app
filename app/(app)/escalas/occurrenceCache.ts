@@ -22,6 +22,7 @@ export type Item = {
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  startsAt: string; // ISO UTC
   time: string; // HH:mm
   title: string;
   when: string;

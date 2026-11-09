@@ -10,6 +10,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
     rotationCycle: null,
     published: true,
     repertoireEnabled: false,
+    startsAt: "2026-10-18T21:00:00.000Z",
     time: "19:00",
     dayKey: "2026-07-27",
     title: "Culto",

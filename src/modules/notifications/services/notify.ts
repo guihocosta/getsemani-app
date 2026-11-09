@@ -15,6 +15,21 @@ export async function wasNotified(dedupeKey: string): Promise<boolean> {
   }
 }
 
+// Verdadeiro se o usuario tem ao menos um device que recebe push.
+export async function hasPushDevice(userId: string): Promise<boolean> {
+  return (await prisma.pushSubscription.count({ where: { userId } })) > 0;
+}
+
+// Instante da ultima notificacao cuja chave comeca com o prefixo, ou null.
+export async function lastNotificationAt(dedupePrefix: string): Promise<Date | null> {
+  const last = await prisma.notification.findFirst({
+    where: { dedupeKey: { startsWith: dedupePrefix } },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+  return last?.createdAt ?? null;
+}
+
 // Envia push para todos os devices do usuario, idempotente por dedupeKey.
 // Nunca lanca: quem chama (alocar, aprovar, pedir troca...) nao pode ser
 // derrubado por uma falha de notificacao — so loga e devolve "failed".
