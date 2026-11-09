@@ -252,6 +252,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: AC 6 notFound (app)
 - last seen: 2026-11-04T01:01:47Z
 
+### L-041 - A rule the server enforces and the client re-derives to show or hide a control must live in one pure domain function both call, with its own unit test; inline UI copies survive mutation
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: lembrete-confirmacao
+- evidence: OccurrenceRow.tsx remindTargets (scheduling)
+- last seen: 2026-11-09T19:29:09Z
+
+### L-042 - A helper that is only ever mocked in service tests needs its own test of the query it builds (filter, order), or a wrong order passes everywhere
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `notifications` · harmful: 0
+- features: lembrete-confirmacao
+- evidence: notify.ts lastNotificationAt orderBy (notifications)
+- last seen: 2026-11-09T19:29:10Z
+
+### L-043 - A bulk action whose target list is computed on the server must handle the list being empty by the time the request arrives (stale screen), not return an all-zero success
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scheduling` · harmful: 0
+- features: lembrete-confirmacao
+- evidence: remindPending empty set (scheduling)
+- last seen: 2026-11-09T19:29:10Z
+
+### L-044 - When a send helper collapses race-lost and real errors into one result, split them (P2002 -> duplicate) before counting outcomes for the user
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `notifications` · harmful: 0
+- features: lembrete-confirmacao
+- evidence: C14 failed counted as recentes (notifications)
+- last seen: 2026-11-09T19:29:10Z
+
+### L-045 - A fixed-position overlay rendered inside an animated (transformed) route wrapper gets that wrapper as containing block; render modals through a portal to document.body
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `ui` · harmful: 0
+- features: lembrete-confirmacao
+- evidence: lembrete.spec.ts fecha de tres jeitos (ui)
+- last seen: 2026-11-09T19:29:10Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

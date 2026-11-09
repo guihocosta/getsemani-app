@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 41,
+  "next_id": 46,
   "lessons": [
     {
       "id": "L-001",
@@ -726,6 +726,96 @@
       ],
       "created": "2026-11-04T01:01:47Z",
       "last_seen": "2026-11-04T01:01:47Z"
+    },
+    {
+      "id": "L-041",
+      "key": "surviving_mutant::a rule the server enforces and the client re derives to show or hide a control must live in one pure domain function both call with its own unit test inline ui copies survive mutation",
+      "text": "A rule the server enforces and the client re-derives to show or hide a control must live in one pure domain function both call, with its own unit test; inline UI copies survive mutation",
+      "signal": "surviving_mutant",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "lembrete-confirmacao"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "OccurrenceRow.tsx remindTargets (scheduling)"
+      ],
+      "created": "2026-11-09T19:29:09Z",
+      "last_seen": "2026-11-09T19:29:09Z"
+    },
+    {
+      "id": "L-042",
+      "key": "surviving_mutant::a helper that is only ever mocked in service tests needs its own test of the query it builds filter order or a wrong order passes everywhere",
+      "text": "A helper that is only ever mocked in service tests needs its own test of the query it builds (filter, order), or a wrong order passes everywhere",
+      "signal": "surviving_mutant",
+      "scope": "notifications",
+      "status": "candidate",
+      "features": [
+        "lembrete-confirmacao"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "notify.ts lastNotificationAt orderBy (notifications)"
+      ],
+      "created": "2026-11-09T19:29:10Z",
+      "last_seen": "2026-11-09T19:29:10Z"
+    },
+    {
+      "id": "L-043",
+      "key": "ac_gap::a bulk action whose target list is computed on the server must handle the list being empty by the time the request arrives stale screen not return an all zero success",
+      "text": "A bulk action whose target list is computed on the server must handle the list being empty by the time the request arrives (stale screen), not return an all-zero success",
+      "signal": "ac_gap",
+      "scope": "scheduling",
+      "status": "candidate",
+      "features": [
+        "lembrete-confirmacao"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "remindPending empty set (scheduling)"
+      ],
+      "created": "2026-11-09T19:29:10Z",
+      "last_seen": "2026-11-09T19:29:10Z"
+    },
+    {
+      "id": "L-044",
+      "key": "spec_precision_gap::when a send helper collapses race lost and real errors into one result split them p2002 duplicate before counting outcomes for the user",
+      "text": "When a send helper collapses race-lost and real errors into one result, split them (P2002 -> duplicate) before counting outcomes for the user",
+      "signal": "spec_precision_gap",
+      "scope": "notifications",
+      "status": "candidate",
+      "features": [
+        "lembrete-confirmacao"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C14 failed counted as recentes (notifications)"
+      ],
+      "created": "2026-11-09T19:29:10Z",
+      "last_seen": "2026-11-09T19:29:10Z"
+    },
+    {
+      "id": "L-045",
+      "key": "ac_gap::a fixed position overlay rendered inside an animated transformed route wrapper gets that wrapper as containing block render modals through a portal to document body",
+      "text": "A fixed-position overlay rendered inside an animated (transformed) route wrapper gets that wrapper as containing block; render modals through a portal to document.body",
+      "signal": "ac_gap",
+      "scope": "ui",
+      "status": "candidate",
+      "features": [
+        "lembrete-confirmacao"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "lembrete.spec.ts fecha de tres jeitos (ui)"
+      ],
+      "created": "2026-11-09T19:29:10Z",
+      "last_seen": "2026-11-09T19:29:10Z"
     }
   ]
 }
