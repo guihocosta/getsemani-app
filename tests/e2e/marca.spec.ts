@@ -225,7 +225,7 @@ test.describe("simbolo no menu", () => {
       test(`simbolo no menu ${theme}`, async ({ page }) => {
         await page.goto("/");
         const menu = page.getByRole("navigation", { name: "Menu lateral" });
-        await expect(menu.getByText("Getsêmani")).toBeVisible();
+        await expect(menu.getByRole("img", { name: "Getsêmani" })).toBeVisible();
         await simboloCorreto(menu.locator("img:visible"), arquivo);
       });
     });

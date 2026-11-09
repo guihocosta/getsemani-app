@@ -34,10 +34,9 @@ export function AppShell({
         aria-label="Menu lateral"
         className="hidden lg:flex fixed inset-y-0 left-0 z-20 w-60 flex-col gap-1 overflow-y-auto border-r border-border bg-surface px-3 py-6"
       >
-        <p className="flex items-center gap-2 font-title text-xl text-text px-3 mb-4">
-          <Simbolo className="h-7" />
-          Getsêmani
-        </p>
+        <div className="px-3 mb-4">
+          <Simbolo alt="Getsêmani" className="h-8" />
+        </div>
         {items.map(({ href, label, Icon }) => {
           const active = href === activeItem;
           return (

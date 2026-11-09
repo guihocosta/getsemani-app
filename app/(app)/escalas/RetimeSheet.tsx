@@ -43,7 +43,7 @@ export function RetimeSheet(props: {
 
   return (
     <Sheet open={props.open} onClose={close} title="Mudar horário">
-      <form key={formKey} onSubmit={save} className="flex flex-col gap-4 p-4">
+      <form key={formKey} onSubmit={save} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="eyebrow">Hora</span>
           <input type="time" name="time" defaultValue={props.time} required className="field" />

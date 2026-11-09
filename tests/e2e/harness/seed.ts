@@ -72,11 +72,12 @@ export async function seed(stack: Stack) {
 
   // Id fixo: sem orderBy, a ordem das vagas na tela segue o roleId.
   let ministerios = 0;
-  async function ministerio(name: string, repertoireEnabled: boolean, roles: string[]) {
+  async function ministerio(name: string, repertoireEnabled: boolean, roles: string[], color?: string) {
     ministerios++;
     const m = await prisma.ministry.create({
       data: {
         name,
+        color,
         repertoireEnabled,
         roles: {
           create: roles.map((r, i) => ({
@@ -103,13 +104,15 @@ export async function seed(stack: Stack) {
   async function data(
     m: Awaited<ReturnType<typeof ministerio>>,
     day: string,
-    alocados: (null | { userId: string; status?: AllocationStatus })[],
+    alocados: (null | { userId: string; status?: AllocationStatus } | { guestName: string })[],
   ) {
     const occurrence = await prisma.occurrence.create({ data: { scheduleId: m.scheduleId, date: at(day) } });
     for (const [i, role] of m.roles.entries()) {
       const slot = await prisma.slot.create({ data: { occurrenceId: occurrence.id, roleId: role.id } });
       const a = alocados[i];
-      if (a) {
+      if (a && "guestName" in a) {
+        await prisma.allocation.create({ data: { slotId: slot.id, guestName: a.guestName, source: "LEADER" } });
+      } else if (a) {
         await prisma.allocation.create({
           data: { slotId: slot.id, userId: a.userId, source: "LEADER", status: a.status ?? "CONFIRMED" },
         });
@@ -121,7 +124,8 @@ export async function seed(stack: Stack) {
   const midia = await ministerio("Mídia", false, ["Projeção", "Som"]);
   const recepcao = await ministerio("Recepção", false, ["Porta"]);
   const apoio = await ministerio("Apoio", false, ["Café", "Limpeza", "Portaria"]);
-  const intercessao = await ministerio("Intercessão", false, ["Oração"]);
+  // Cor salva: os cartoes de umCard mostram a borda nessa cor.
+  const intercessao = await ministerio("Intercessão", false, ["Oração"], "#e0605a");
   const zeladoria = await ministerio("Zeladoria", false, ["Chaves", "Luzes", "Som"]);
 
   await prisma.membership.createMany({
@@ -145,7 +149,14 @@ export async function seed(stack: Stack) {
   await data(louvor, "2026-10-15", [{ userId: ids.lider }, { userId: p1 }, null, { userId: ids.lider }]);
   await data(louvor, "2026-10-18", [{ userId: ids.lider, status: "PENDING" }, null, { userId: p2 }, { userId: p3 }]);
   await data(louvor, "2026-10-25", [{ userId: ids.lider, status: "PENDING" }, { userId: p4 }, { userId: p5 }, null]);
-  await data(louvor, "2026-11-01", [{ userId: ids.lider, status: "PENDING" }, null, null, null]);
+  // Teclado com pessoa sem conta: a pagina da data mostra "sem conta".
+  await data(louvor, "2026-11-01", [{ userId: ids.lider, status: "PENDING" }, { guestName: "Zé Visitante" }, null, null]);
+  // Proxima e Depois da lider, com repertorio: fora de outubro, para nao mexer no panorama.
+  await data(louvor, "2026-11-08", [{ userId: ids.lider }, null, null, null]);
+  await data(louvor, "2026-11-15", [{ userId: ids.lider }, null, null, null]);
+  await prisma.announcement.create({
+    data: { ministryId: louvor.id, authorId: ids.lider, title: "Ensaio sábado", body: "Às 16h.", pinned: true },
+  });
 
   // Midia: 10 datas no mes e um nome longo, para a tabela precisar rolar.
   for (let dia = 1; dia <= 10; dia++) {

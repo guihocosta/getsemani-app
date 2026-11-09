@@ -21,6 +21,7 @@ export type ActionCode =
   | "INVALID_NAME"
   | "INVALID_BIRTH_DATE"
   | "ATTENDANCE_NOT_ALLOWED"
+  | "NOT_REMINDABLE"
   | "UNKNOWN";
 
 export const MENSAGENS: Record<ActionCode, string> = {
@@ -44,6 +45,7 @@ export const MENSAGENS: Record<ActionCode, string> = {
   INVALID_NAME: "Nome inválido",
   INVALID_BIRTH_DATE: "Data de nascimento inválida",
   ATTENDANCE_NOT_ALLOWED: "Só dá pra marcar presença de quem tem conta, em dia que já começou.",
+  NOT_REMINDABLE: "Essa escala não pode ser lembrada agora.",
   UNKNOWN: "Não deu para completar agora. Tente de novo.",
 };
 

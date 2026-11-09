@@ -46,3 +46,27 @@ describe("getMySchedule", () => {
     expect(item.repertoireEnabled).toBe(true);
   });
 });
+
+describe("getMySchedule: cor", () => {
+  it("cor do ministerio: valida passa, nula vira a cor da marca", async () => {
+    const alloc = (id: string, color: string | null) => ({
+      id,
+      status: "CONFIRMED",
+      checkedInAt: null,
+      swapRequest: null,
+      slot: {
+        occurrenceId: `o-${id}`,
+        role: { name: "Som" },
+        occurrence: {
+          date: new Date("2026-10-11T22:00:00Z"),
+          schedule: { ministry: { name: "Louvor", color, repertoireEnabled: false } },
+        },
+      },
+    });
+    vi.mocked(prisma.allocation.findMany).mockResolvedValue([alloc("a1", "#e0605a"), alloc("a2", null)] as never);
+
+    const items = await getMySchedule("u1", new Date("2026-10-02T03:00:00Z"));
+
+    expect(items.map((i) => i.ministryColor)).toEqual(["#e0605a", "#2a78cd"]);
+  });
+});

@@ -18,6 +18,7 @@ import {
   repeatScheduleAction,
   suggestAllocationsAction,
   setOccurrencePublishedAction,
+  remindPendingAction,
   type AllocationCandidate,
 } from "./actions";
 import { OccurrenceMenu } from "./OccurrenceMenu";
@@ -29,6 +30,13 @@ import { MENSAGENS } from "@/lib/actionError";
 import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
 import { publishMenuItem } from "@/modules/scheduling/domain/publish";
+import {
+  remindTargetsForDate,
+  remindMenuLabel,
+  remindConfirmTitle,
+  remindSummary,
+  remindOutcomeLabel,
+} from "@/modules/scheduling/domain/remind";
 import { suggestOutcome, suggestConfirmText } from "@/modules/scheduling/domain/suggest";
 import { attendancePatch, type Slot, type SlotPatch } from "./occurrenceCache";
 
@@ -54,11 +62,13 @@ export function OccurrenceRow(props: {
   published: boolean;
   repertoireEnabled: boolean;
   title: string;
+  ministryColor: string;
   when: string;
   time: string;
   slots: Slot[];
   canManage: boolean;
   dayKey: string;
+  startsAt: string;
   todayKey: string;
   onChanged: () => void;
   onAllocated: (slotId: string, patch: SlotPatch) => void;
@@ -72,6 +82,7 @@ export function OccurrenceRow(props: {
   const [retimeOpen, setRetimeOpen] = useState(false);
   const [copyNote, setCopyNote] = useState(false);
   const [repeatNote, setRepeatNote] = useState<{ message: string; isError: boolean } | null>(null);
+  const [remindNote, setRemindNote] = useState<string | null>(null);
   const { confirm, dialog } = useConfirm();
 
   // Candidatos (carga + indisponibilidade) sao os mesmos pra todas as vagas
@@ -117,6 +128,7 @@ export function OccurrenceRow(props: {
   function openSheet(slotId: string) {
     setActiveSlotId(slotId);
     setNote(null);
+    setRemindNote(null);
     ensureCandidates();
   }
 
@@ -298,6 +310,39 @@ export function OccurrenceRow(props: {
 
   const publishItem = publishMenuItem(props.published);
 
+  // Quem ainda nao confirmou e pode ser lembrado por push (mesma regra do servidor).
+  const remindTargets = remindTargetsForDate(
+    { published: props.published, startsAt: props.startsAt, slots: props.slots },
+    new Date(),
+  );
+  const canRemindActive = !!activeSlot?.allocationId && remindTargets.includes(activeSlot.allocationId);
+
+  async function remindAll() {
+    const ok = await confirm({
+      title: remindConfirmTitle(remindTargets.length),
+      description: "Cada pessoa recebe uma notificação pedindo para confirmar a escala.",
+      confirmLabel: "Lembrar",
+    });
+    if (!ok) return;
+    setRepeatNote(null);
+    start(async () => {
+      const res = await remindPendingAction(props.occurrenceId);
+      setRepeatNote(
+        res.ok
+          ? { message: remindSummary(res), isError: false }
+          : { message: `${MENSAGENS[res.code]} · cód. ${res.ref}`, isError: true },
+      );
+    });
+  }
+
+  function remindOne(allocationId: string) {
+    setRemindNote(null);
+    start(async () => {
+      const res = await remindPendingAction(props.occurrenceId, allocationId);
+      setRemindNote(res.ok ? remindOutcomeLabel(res) : `${MENSAGENS[res.code]} · cód. ${res.ref}`);
+    });
+  }
+
   async function togglePublish() {
     if (publishItem.confirm) {
       const ok = await confirm({
@@ -380,6 +425,9 @@ export function OccurrenceRow(props: {
           canMarkAttendance({ dayKey: props.dayKey, todayKey: props.todayKey, isGuest: activeSlot.isGuest })
         }
         onToggleAttendance={() => activeSlot && toggleAttendance(activeSlot)}
+        canRemind={canRemindActive}
+        onRemind={() => activeSlot?.allocationId && remindOne(activeSlot.allocationId)}
+        remindNote={remindNote}
       />
       <AddExtraSlotSheet
         open={addExtraOpen}
@@ -394,7 +442,7 @@ export function OccurrenceRow(props: {
         time={props.time}
         onRetimed={() => props.onChanged()}
       />
-      <Card>
+      <Card data-testid="cartao-data" className="border-l-4" style={{ borderLeftColor: props.ministryColor }}>
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-sm text-text flex items-center gap-1.5 flex-wrap">
@@ -414,6 +462,8 @@ export function OccurrenceRow(props: {
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
               onRetime={() => setRetimeOpen(true)}
+              remindLabel={remindMenuLabel(remindTargets.length)}
+              onRemind={remindAll}
               publishLabel={publishItem.label}
               onTogglePublish={togglePublish}
               onRepeat={repeatSchedule}

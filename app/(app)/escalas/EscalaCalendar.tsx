@@ -246,11 +246,13 @@ export function EscalaCalendar({
                   published={o.published}
                   repertoireEnabled={o.repertoireEnabled}
                   title={o.title}
+                  ministryColor={o.ministryColor}
                   when={o.when}
                   time={o.time}
                   slots={o.slots}
                   canManage={manageableMinistryIds.includes(o.ministryId)}
                   dayKey={o.dayKey}
+                  startsAt={o.startsAt}
                   todayKey={todayKey}
                   onChanged={refreshCurrentMonth}
                   onAllocated={(slotId: string, patch: SlotPatch) => patchSlot(o.occurrenceId, slotId, patch)}

@@ -21,12 +21,12 @@ describe("navItems", () => {
     [
       "lider",
       { isAdmin: false, isLeader: true, hasRepertoire: true },
-      [...BASE_INICIO, "Repertório", "Aniversariantes", "Gestão", "Perfil"],
+      [...BASE_INICIO, "Repertório", "Aniversariantes", "Gestão", "Visão geral", "Perfil"],
     ],
     [
       "admin sem ministerio",
       { isAdmin: true, isLeader: false, hasRepertoire: false },
-      [...BASE_INICIO, "Aniversariantes", "Gestão", "Perfil"],
+      [...BASE_INICIO, "Aniversariantes", "Gestão", "Visão geral", "Perfil"],
     ],
   ])("itens por permissao: %s", (_nome, flags, esperado) => {
     expect(labels(flags)).toEqual(esperado);
@@ -63,7 +63,8 @@ describe("activeHref", () => {
     ["/repertorio/escala/abc", "/repertorio"],
     ["/indisponibilidade", "/indisponibilidade"],
     ["/", "/"],
-    ["/admin/visao-geral", "/admin"],
+    ["/admin/visao-geral", "/admin/visao-geral"],
+    ["/admin/pessoas", "/admin"],
   ])("item ativo em %s", (pathname, esperado) => {
     expect(activeHref(pathname, hrefs)).toBe(esperado);
   });

@@ -1,0 +1,23 @@
+[
+  {
+    "file": "src/modules/scheduling/services/getOccurrenceTeam.ts",
+    "old": ".sort((a, b) => a.role.name.localeCompare(b.role.name, \"pt-BR\"))",
+    "new": ".sort((a, b) => (a.role.name < b.role.name ? -1 : 1))",
+    "proof": "npx vitest run tests/unit/occurrenceTeam.test.ts -t \"vagas da data\"",
+    "label": "ordem das funcoes pt-BR -> ordem de code point"
+  },
+  {
+    "file": "app/(app)/escalas/data/[occurrenceId]/page.tsx",
+    "old": "{s.isGuest && <Badge tone=\"info\" className=\"text-[10px]\">sem conta</Badge>}",
+    "new": "{false && <Badge tone=\"info\" className=\"text-[10px]\">sem conta</Badge>}",
+    "proof": "npx playwright test tests/e2e/ajustes.spec.ts -g \"sem conta na data\"",
+    "label": "pagina da data nao mostra 'sem conta'"
+  },
+  {
+    "file": "app/(app)/escalas/data/[occurrenceId]/page.tsx",
+    "old": "<Link href=\"/\" className",
+    "new": "<Link href=\"/escalas\" className",
+    "proof": "npx playwright test tests/e2e/ajustes.spec.ts -g \"voltar ao inicio\"",
+    "label": "Inicio da pagina da data -> /escalas"
+  }
+]

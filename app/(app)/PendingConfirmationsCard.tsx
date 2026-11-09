@@ -6,6 +6,7 @@ import { Badge } from "@/ui/Badge";
 import { Button } from "@/ui/Button";
 import { useConfirm } from "@/ui/ConfirmDialog";
 import { CancelSwapButton } from "./CancelSwapButton";
+import { OccurrenceLinks } from "./OccurrenceLinks";
 import { confirmAllocationAction, declineAllocationAction } from "./respondAllocationActions";
 import { fmtDate, fmtTime } from "@/lib/time";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
@@ -60,7 +61,11 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
       >
         {items.map((item) => (
           <div key={item.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2">
-            <Card data-testid="card-escala" className="flex flex-col border-primary/20 bg-primary/5">
+            <Card
+              data-testid="card-escala"
+              className="flex flex-col border-primary/20 border-l-4 bg-primary/5"
+              style={{ borderLeftColor: item.ministryColor }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{item.ministry}</p>
@@ -78,6 +83,10 @@ export function PendingConfirmationsCard({ items }: { items: UpcomingItem[] }) {
                   <p className="text-sm text-text-muted mt-1">{fmtDate(item.date)}</p>
                 </div>
                 <p className="font-title text-3xl text-primary">{fmtTime(item.date)}</p>
+              </div>
+
+              <div className="mt-3">
+                <OccurrenceLinks occurrenceId={item.occurrenceId} repertoireEnabled={item.repertoireEnabled} />
               </div>
 
               {item.hasSwapOpen && item.swapRequestId && (

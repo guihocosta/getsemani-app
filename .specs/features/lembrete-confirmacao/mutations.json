@@ -1,0 +1,23 @@
+[
+  {
+    "file": "src/modules/scheduling/domain/remind.ts",
+    "old": "canRemindOccurrence({ published: p.published, status: \"ACTIVE\", date: new Date(p.startsAt) }, now)",
+    "new": "canRemindOccurrence({ published: true, status: \"ACTIVE\", date: new Date(p.startsAt) }, now)",
+    "proof": "npx vitest run tests/unit/remind.test.ts -t \"alvos da data na tela\"",
+    "label": "menu da data em rascunho passa a oferecer Lembrar pendentes (AC 2)"
+  },
+  {
+    "file": "src/modules/notifications/services/notify.ts",
+    "old": "orderBy: { createdAt: \"desc\" },",
+    "new": "orderBy: { createdAt: \"asc\" },",
+    "proof": "npx vitest run tests/unit/lastNotificationAt.test.ts -t \"ultimo pelo prefixo\"",
+    "label": "limite de 1 hora le o lembrete manual mais antigo em vez do ultimo (AC 10)"
+  },
+  {
+    "file": "app/(app)/escalas/OccurrenceRow.tsx",
+    "old": "!!activeSlot?.allocationId && remindTargets.includes(activeSlot.allocationId);",
+    "new": "!!activeSlot?.allocationId && activeSlot.allocatedStatus === \"PENDING\";",
+    "proof": "npx playwright test tests/e2e/lembrete.spec.ts -g \"convidado sem lembrete\"",
+    "label": "modal da vaga mostra Lembrar confirmacao para convidado, rascunho ou data passada (AC 8)"
+  }
+]

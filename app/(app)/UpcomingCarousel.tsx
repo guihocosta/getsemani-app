@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Card } from "@/ui/Card";
 import { AllocationActions } from "./AllocationActions";
+import { OccurrenceLinks } from "./OccurrenceLinks";
 import { fmtDate, fmtTime } from "@/lib/time";
 import type { UpcomingItem } from "@/modules/scheduling/services/getMySchedule";
 
@@ -30,7 +31,11 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
       >
         {items.map((it) => (
           <div key={it.allocationId} className="w-full shrink-0 snap-center lg:only:col-span-2">
-            <Card data-testid="card-escala" className="flex flex-col">
+            <Card
+              data-testid="card-escala"
+              className="flex flex-col border-l-4"
+              style={{ borderLeftColor: it.ministryColor }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="eyebrow text-primary">{it.ministry}</p>
@@ -39,8 +44,8 @@ export function UpcomingCarousel({ items }: { items: UpcomingItem[]; todayKey?: 
                 </div>
                 <p className="font-title text-2xl text-primary">{fmtTime(it.date)}</p>
               </div>
-              <div className="flex items-center justify-between border-t border-border pt-3 mt-3">
-                <div />
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 mt-3">
+                <OccurrenceLinks occurrenceId={it.occurrenceId} repertoireEnabled={it.repertoireEnabled} />
                 <AllocationActions
                   allocationId={it.allocationId}
                   status={it.status}

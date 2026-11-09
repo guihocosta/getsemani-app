@@ -17,10 +17,12 @@ export type Item = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  ministryColor: string;
   rotationCycle: number | null;
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  startsAt: string; // ISO UTC
   time: string; // HH:mm
   title: string;
   when: string;

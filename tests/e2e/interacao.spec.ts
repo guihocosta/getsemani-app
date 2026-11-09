@@ -164,7 +164,7 @@ test("dialogo centralizado: sheet", async ({ page }) => {
   expect(Math.abs(c.x - 640)).toBeLessThanOrEqual(2);
   expect(Math.abs(c.y - 400)).toBeLessThanOrEqual(2);
   const fechar = dialogo.getByRole("button", { name: "Fechar" });
-  await expect(fechar.getByText("Fechar")).toBeVisible();
+  await expect(fechar).toBeVisible();
   await fechar.click();
   await expect(dialogo).toBeHidden();
 });

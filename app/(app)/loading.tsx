@@ -1,8 +1,10 @@
+import { Skeleton } from "@/ui/Skeleton";
+
 // Skeleton exibido instantaneamente ao navegar, enquanto o server renderiza a pagina.
 // Faz a troca de tela parecer imediata mesmo com a latencia do banco.
 export default function Loading() {
   return (
-    <div className="animate-pulse">
+    <Skeleton testId="esqueleto-geral">
       <div className="mb-6 h-8 w-40 rounded-lg bg-surface-2" />
       <div className="mb-3 h-4 w-28 rounded bg-surface-2" />
       <div className="flex flex-col gap-3">
@@ -14,6 +16,6 @@ export default function Loading() {
           </div>
         ))}
       </div>
-    </div>
+    </Skeleton>
   );
 }

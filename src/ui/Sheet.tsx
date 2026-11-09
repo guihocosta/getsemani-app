@@ -15,12 +15,7 @@ export function Sheet({
   children: ReactNode;
 }) {
   return (
-    <BottomSheet open={open} onClose={onClose} label={title}>
-      {title && (
-        <div className="pb-3 border-b border-border mb-3">
-          <h2 className="text-lg font-semibold text-text">{title}</h2>
-        </div>
-      )}
+    <BottomSheet open={open} onClose={onClose} label={title} title={title}>
       {children}
     </BottomSheet>
   );

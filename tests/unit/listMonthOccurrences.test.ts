@@ -19,6 +19,18 @@ function row(id: string, published: boolean, repertoireEnabled = false) {
 }
 
 describe("listMonthOccurrences", () => {
+  it("cor do ministerio: valida passa, nula vira a cor da marca", async () => {
+    const comCor = (id: string, color: string | null) => {
+      const r = row(id, true);
+      return { ...r, schedule: { ...r.schedule, ministry: { ...r.schedule.ministry, color } } };
+    };
+    vi.mocked(prisma.occurrence.findMany).mockResolvedValue([comCor("o1", "#e0605a"), comCor("o2", null)] as never);
+
+    const items = await listMonthOccurrences(["m1"], 2026, 10, []);
+
+    expect(items.map((i) => i.ministryColor)).toEqual(["#e0605a", "#2a78cd"]);
+  });
+
   it("rascunho so para gerenciaveis e item carrega published", async () => {
     vi.mocked(prisma.occurrence.findMany).mockResolvedValue([row("o1", true), row("o2", false)] as never);
 

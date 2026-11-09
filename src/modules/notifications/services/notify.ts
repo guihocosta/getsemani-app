@@ -15,6 +15,21 @@ export async function wasNotified(dedupeKey: string): Promise<boolean> {
   }
 }
 
+// Verdadeiro se o usuario tem ao menos um device que recebe push.
+export async function hasPushDevice(userId: string): Promise<boolean> {
+  return (await prisma.pushSubscription.count({ where: { userId } })) > 0;
+}
+
+// Instante da ultima notificacao cuja chave comeca com o prefixo, ou null.
+export async function lastNotificationAt(dedupePrefix: string): Promise<Date | null> {
+  const last = await prisma.notification.findFirst({
+    where: { dedupeKey: { startsWith: dedupePrefix } },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+  return last?.createdAt ?? null;
+}
+
 // Envia push para todos os devices do usuario, idempotente por dedupeKey.
 // Nunca lanca: quem chama (alocar, aprovar, pedir troca...) nao pode ser
 // derrubado por uma falha de notificacao — so loga e devolve "failed".
@@ -67,6 +82,9 @@ export async function notifyUser(params: {
     });
     return "sent";
   } catch (err) {
+    // Outra chamada criou a mesma chave entre o findUnique e o create: e
+    // duplicata, nao falha (o unique de dedupeKey segura a corrida).
+    if ((err as { code?: unknown })?.code === "P2002") return "duplicate";
     logError("notify.notifyUser", err, { userId: params.userId, dedupeKey: params.dedupeKey });
     return "failed";
   }

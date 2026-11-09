@@ -1,6 +1,7 @@
 import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtTime, dateKey, APP_TZ } from "@/lib/time";
+import { ministryColor } from "@/modules/ministries/domain/color";
 import type { AllocationStatus } from "@prisma/client";
 
 function pad(n: number): string {
@@ -11,10 +12,12 @@ export type MonthOccurrenceItem = {
   occurrenceId: string;
   scheduleId: string;
   ministryId: string;
+  ministryColor: string;
   rotationCycle: number | null;
   published: boolean;
   repertoireEnabled: boolean;
   dayKey: string; // yyyy-MM-dd
+  startsAt: string; // ISO UTC
   time: string; // HH:mm (APP_TZ)
   title: string;
   when: string;
@@ -64,10 +67,12 @@ export async function listMonthOccurrences(
     occurrenceId: o.id,
     scheduleId: o.scheduleId,
     ministryId: o.schedule.ministryId,
+    ministryColor: ministryColor(o.schedule.ministry.color),
     rotationCycle: o.schedule.rotationCycle,
     published: o.published,
     repertoireEnabled: o.schedule.ministry.repertoireEnabled,
     dayKey: dateKey(o.date),
+    startsAt: o.date.toISOString(),
     time: fmtTime(o.date),
     title: `${o.schedule.ministry.name} · ${o.schedule.title}`,
     when: `${fmtDate(o.date)} · ${fmtTime(o.date)}`,
