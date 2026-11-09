@@ -82,6 +82,9 @@ export async function notifyUser(params: {
     });
     return "sent";
   } catch (err) {
+    // Outra chamada criou a mesma chave entre o findUnique e o create: e
+    // duplicata, nao falha (o unique de dedupeKey segura a corrida).
+    if ((err as { code?: unknown })?.code === "P2002") return "duplicate";
     logError("notify.notifyUser", err, { userId: params.userId, dedupeKey: params.dedupeKey });
     return "failed";
   }

@@ -7,7 +7,7 @@ import type { AllocationStatus, OccurrenceStatus } from "@prisma/client";
 
 export const REMINDER_COOLDOWN_MS = 60 * 60 * 1000;
 
-export type RemindCounts = { enviados: number; recentes: number; semDispositivo: number };
+export type RemindCounts = { enviados: number; recentes: number; semDispositivo: number; falhas: number };
 
 export function manualReminderPrefix(allocationId: string): string {
   return `lembrete-manual:${allocationId}:`;
@@ -88,11 +88,13 @@ export function remindSummary(c: RemindCounts): string {
     partes.push(`${c.recentes} já ${c.recentes === 1 ? "lembrada" : "lembradas"} na última hora`);
   }
   if (c.semDispositivo > 0) partes.push(`${c.semDispositivo} sem notificações ativadas`);
+  if (c.falhas > 0) partes.push(`${c.falhas} ${c.falhas === 1 ? "não enviada" : "não enviadas"}, tente de novo`);
   return partes.join(" · ");
 }
 
 export function remindOutcomeLabel(c: RemindCounts): string {
   if (c.enviados > 0) return "Lembrete enviado";
   if (c.recentes > 0) return "Já lembrado na última hora";
+  if (c.falhas > 0) return "Não deu para enviar, tente de novo";
   return "Sem notificações ativadas";
 }

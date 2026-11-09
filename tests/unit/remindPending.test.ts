@@ -77,7 +77,7 @@ describe("remindPending", () => {
       url: "/",
       occurrenceId: "o1",
     });
-    expect(res).toEqual({ enviados: 1, recentes: 0, semDispositivo: 0 });
+    expect(res).toEqual({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 });
   });
 
   it("lembra uma pessoa", async () => {
@@ -87,7 +87,7 @@ describe("remindPending", () => {
 
     expect(notifyUser).toHaveBeenCalledTimes(1);
     expect(vi.mocked(notifyUser).mock.calls[0][0].userId).toBe("u-caio");
-    expect(res).toEqual({ enviados: 1, recentes: 0, semDispositivo: 0 });
+    expect(res).toEqual({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 });
   });
 
   it("ja lembrado na ultima hora", async () => {
@@ -98,7 +98,7 @@ describe("remindPending", () => {
 
     expect(lastNotificationAt).toHaveBeenCalledWith("lembrete-manual:a-ana:");
     expect(notifyUser).not.toHaveBeenCalled();
-    expect(res).toEqual({ enviados: 0, recentes: 1, semDispositivo: 0 });
+    expect(res).toEqual({ enviados: 0, recentes: 1, semDispositivo: 0, falhas: 0 });
 
     // So o lembrete do cron existe: a busca pelo prefixo manual nao acha nada.
     vi.mocked(lastNotificationAt).mockResolvedValue(null);
@@ -116,7 +116,7 @@ describe("remindPending", () => {
     expect(hasPushDevice).toHaveBeenCalledWith("u-ana");
     expect(notifyUser).not.toHaveBeenCalled();
     expect(prisma.notification.create).not.toHaveBeenCalled();
-    expect(res).toEqual({ enviados: 0, recentes: 0, semDispositivo: 1 });
+    expect(res).toEqual({ enviados: 0, recentes: 0, semDispositivo: 1, falhas: 0 });
   });
 
   it("sem permissao", async () => {
@@ -165,13 +165,14 @@ describe("remindPending", () => {
     ] as never);
     vi.mocked(sendPush).mockResolvedValue(true as never);
     const params = { userId: "u-ana", type: "REMINDER" as const, dedupeKey: "k", title: "t", body: "b" };
-    await Promise.all([real.notifyUser(params), real.notifyUser(params)]);
+    const saidas = await Promise.all([real.notifyUser(params), real.notifyUser(params)]);
     expect(sendPush).toHaveBeenCalledTimes(1);
+    expect(saidas.sort()).toEqual(["duplicate", "sent"]);
 
-    // Parte 2: o pedido que perde a corrida conta como recente, nunca como enviado.
+    // Parte 2: quem perde a corrida conta como recente; erro de banco, como falha.
     vi.mocked(prisma.occurrence.findUnique).mockResolvedValue(ocorrencia([ANA, CAIO]) as never);
     vi.mocked(notifyUser).mockResolvedValueOnce("duplicate").mockResolvedValueOnce("failed");
     const res = await remindPending({ occurrenceId: "o1" }, AGORA);
-    expect(res).toEqual({ enviados: 0, recentes: 2, semDispositivo: 0 });
+    expect(res).toEqual({ enviados: 0, recentes: 1, semDispositivo: 0, falhas: 1 });
   });
 });

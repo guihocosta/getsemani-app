@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/lembrete-confirmacao/plan.md`
 
-28 checks in 6 slices · 1 one-way door · 0 open
+29 checks in 6 slices · 1 one-way door · 0 open
 
 ## Checks
 
@@ -53,7 +53,7 @@ Proof: `npx vitest run tests/unit/remindPending.test.ts -t "ja lembrado na ultim
 **C13** - [x] `manualReminderKey("a1", t)` devolve `lembrete-manual:a1:<floor(t / 3600000)>`, igual para 10:00:00 e 10:59:59 e diferente para 11:00:00 (AC 11, door 1)
 Proof: `npx vitest run tests/unit/remind.test.ts -t "chave da janela"`
 
-**C14** - [x] Duas chamadas de `notifyUser` com a mesma chave em paralelo, a segunda com `notification.create` rejeitando `P2002`, disparam `sendPush` uma vez só; `remindPending` conta o `"duplicate"`/`"failed"` dessa corrida em `recentes`, nunca em `enviados` (AC 11)
+**C14** - [x] Duas chamadas de `notifyUser` com a mesma chave em paralelo, a segunda com `notification.create` rejeitando `P2002`, disparam `sendPush` uma vez só e devolvem `"sent"` e `"duplicate"`; `remindPending` conta `"duplicate"` em `recentes` e `"failed"` (erro de banco) em `falhas`, nunca em `enviados` (AC 11)
 Proof: `npx vitest run tests/unit/remindPending.test.ts -t "corrida envia uma vez"`
 
 **C15** - [x] `remindPending` para quem não tem `PushSubscription` não chama `notifyUser`, não grava `Notification` e conta `semDispositivo: 1` (AC 12)
@@ -104,6 +104,9 @@ Proof: `npx vitest run tests/unit/remindPending.test.ts -t "lista vazia nao lemb
 **C28** - [x] `lastNotificationAt("lembrete-manual:a1:")` busca com `dedupeKey startsWith` o prefixo e `orderBy createdAt desc`, devolve o `createdAt` achado ou `null` (AC 10)
 Proof: `npx vitest run tests/unit/lastNotificationAt.test.ts -t "ultimo pelo prefixo"`
 
+**C29** - [x] `remindSummary` com 1 enviada e 2 falhas devolve "Lembrete enviado para 1 pessoa · 2 não enviadas, tente de novo", com 1 falha só "1 não enviada, tente de novo"; `remindOutcomeLabel` com 1 falha devolve "Não deu para enviar, tente de novo" (AC 5, AC 9)
+Proof: `npx vitest run tests/unit/remind.test.ts -t "falha de envio"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -134,7 +137,7 @@ Proof: `npx vitest run tests/unit/lastNotificationAt.test.ts -t "ultimo pelo pre
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** achado 5 do Verifier (falha de banco contada como "já lembrada"): usuário escolheu "Contar como falha (Recomendado)" - P2002 na corrida vira `"duplicate"`, erro de banco vira contador `falhas` com "não enviada(s), tente de novo"; C14 reescrito, C29 novo
 - **Dispatched:** Verifier em `f331fbf` (sem screens: nenhum critério cita captura)
 - **Boundary:** C1-C24 fechados no commit da feature
 - **Abandoned:** fechar pelos três jeitos na mesma página: com `page.clock.setFixedTime` do harness, a animação de saída do framer trava na segunda abertura (sem relógio fixo passa); cada jeito ganhou página nova. Achado real no caminho: em 1280 px o fundo do modal ficava preso dentro da transição de rota (ancestral com `transform` vira containing block de `fixed`) e o menu lateral ficava descoberto e clicável; `src/ui/Portal.tsx` leva `BottomSheet` e `ConfirmDialog` para `document.body` (C21 "fora" prova). Outros defeitos corrigidos ao fotografar: padding duplo (`p-4` dentro do `px-4` do painel) em vaga extra e mudar horário; título "Adicionar Vaga Extra" em Title Case virou "Adicionar vaga extra". Asserções antigas que provavam o texto "Fechar" (`interacao.spec.ts`) e o nome ao lado do símbolo (`marca.spec.ts`) mudaram junto com AC 15 e AC 18.

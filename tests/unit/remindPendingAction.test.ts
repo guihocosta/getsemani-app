@@ -11,8 +11,8 @@ import { MENSAGENS } from "@/lib/actionError";
 
 describe("remindPendingAction", () => {
   it("traduz erros", async () => {
-    vi.mocked(remindPending).mockResolvedValueOnce({ enviados: 1, recentes: 0, semDispositivo: 0 });
-    expect(await remindPendingAction("o1")).toEqual({ ok: true, enviados: 1, recentes: 0, semDispositivo: 0 });
+    vi.mocked(remindPending).mockResolvedValueOnce({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 });
+    expect(await remindPendingAction("o1")).toEqual({ ok: true, enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 });
 
     vi.mocked(remindPending).mockRejectedValueOnce(new Error("NOT_REMINDABLE"));
     expect(await remindPendingAction("o1", "a1")).toEqual({ ok: false, code: "NOT_REMINDABLE", ref: "REF123" });

@@ -42,12 +42,12 @@ describe("canRemindOccurrence", () => {
 
 describe("textos", () => {
   it("texto do resumo", () => {
-    expect(remindSummary({ enviados: 1, recentes: 0, semDispositivo: 0 })).toBe("Lembrete enviado para 1 pessoa");
-    expect(remindSummary({ enviados: 2, recentes: 1, semDispositivo: 3 })).toBe(
+    expect(remindSummary({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 })).toBe("Lembrete enviado para 1 pessoa");
+    expect(remindSummary({ enviados: 2, recentes: 1, semDispositivo: 3, falhas: 0 })).toBe(
       "Lembrete enviado para 2 pessoas · 1 já lembrada na última hora · 3 sem notificações ativadas",
     );
-    expect(remindSummary({ enviados: 0, recentes: 2, semDispositivo: 0 })).toBe("2 já lembradas na última hora");
-    expect(remindSummary({ enviados: 0, recentes: 0, semDispositivo: 1 })).toBe("1 sem notificações ativadas");
+    expect(remindSummary({ enviados: 0, recentes: 2, semDispositivo: 0, falhas: 0 })).toBe("2 já lembradas na última hora");
+    expect(remindSummary({ enviados: 0, recentes: 0, semDispositivo: 1, falhas: 0 })).toBe("1 sem notificações ativadas");
   });
 
   it("titulo da confirmacao", () => {
@@ -55,10 +55,22 @@ describe("textos", () => {
     expect(remindConfirmTitle(1)).toBe("Lembrar 1 pessoa que não confirmou?");
   });
 
+  it("falha de envio", () => {
+    expect(remindSummary({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 2 })).toBe(
+      "Lembrete enviado para 1 pessoa · 2 não enviadas, tente de novo",
+    );
+    expect(remindSummary({ enviados: 0, recentes: 0, semDispositivo: 0, falhas: 1 })).toBe(
+      "1 não enviada, tente de novo",
+    );
+    expect(remindOutcomeLabel({ enviados: 0, recentes: 0, semDispositivo: 0, falhas: 1 })).toBe(
+      "Não deu para enviar, tente de novo",
+    );
+  });
+
   it("desfecho individual", () => {
-    expect(remindOutcomeLabel({ enviados: 1, recentes: 0, semDispositivo: 0 })).toBe("Lembrete enviado");
-    expect(remindOutcomeLabel({ enviados: 0, recentes: 1, semDispositivo: 0 })).toBe("Já lembrado na última hora");
-    expect(remindOutcomeLabel({ enviados: 0, recentes: 0, semDispositivo: 1 })).toBe("Sem notificações ativadas");
+    expect(remindOutcomeLabel({ enviados: 1, recentes: 0, semDispositivo: 0, falhas: 0 })).toBe("Lembrete enviado");
+    expect(remindOutcomeLabel({ enviados: 0, recentes: 1, semDispositivo: 0, falhas: 0 })).toBe("Já lembrado na última hora");
+    expect(remindOutcomeLabel({ enviados: 0, recentes: 0, semDispositivo: 1, falhas: 0 })).toBe("Sem notificações ativadas");
   });
 });
 

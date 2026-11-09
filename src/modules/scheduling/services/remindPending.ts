@@ -43,7 +43,7 @@ export async function remindPending(
   // Lista vazia: alguem confirmou depois que a tela carregou.
   if (alvos.length === 0) throw new NotRemindable();
 
-  const counts: RemindCounts = { enviados: 0, recentes: 0, semDispositivo: 0 };
+  const counts: RemindCounts = { enviados: 0, recentes: 0, semDispositivo: 0, falhas: 0 };
   for (const a of alvos) {
     if (!(await hasPushDevice(a.userId))) {
       counts.semDispositivo++;
@@ -70,9 +70,10 @@ export async function remindPending(
       url: "/",
       occurrenceId: occ.id,
     });
-    // "duplicate"/"failed" aqui e o pedido que perdeu a corrida pela chave da hora.
+    // "duplicate" e o pedido que perdeu a corrida pela chave da hora.
     if (result === "sent") counts.enviados++;
-    else counts.recentes++;
+    else if (result === "duplicate") counts.recentes++;
+    else counts.falhas++;
   }
   return counts;
 }

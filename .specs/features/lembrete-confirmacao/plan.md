@@ -135,6 +135,7 @@ O líder lembra um escalado específico pelo modal da vaga.
 | quem pode lembrar | líder do ministério da data ou admin (`requireLeaderOf`) | mesma regra de alocar e marcar presença | n |
 | lembrete do cron conta para o limite | não: só lembrete manual conta | o líder decide reforçar mesmo depois do automático | n |
 | confirmação antes de lembrar todos | sim, com `ConfirmDialog`; individual sem confirmação | envio em massa é externo e não se desfaz | n |
+| erro de banco ao registrar o lembrete | conta em `falhas` e a tela diz "N não enviada(s), tente de novo"; corrida pela chave conta em `recentes` | usuário escolheu "Contar como falha (Recomendado)" após o Verifier | y |
 | outros defeitos visuais nos modais | ao fotografar cada modal no build, corrigir desalinhamentos evidentes do mesmo tipo e listar em `checks.md` | usuário disse "alguns modais", só nomeou um | n |
 
 **Open questions:** none - all resolved or logged above.
