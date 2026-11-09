@@ -78,3 +78,30 @@ describe("limite", () => {
     expect(manualReminderKey("a1", onze)).not.toBe(manualReminderKey("a1", dez));
   });
 });
+
+describe("regra da tela", () => {
+  it("alvos da data na tela", async () => {
+    const { remindTargetsForDate, remindMenuLabel } = await import("@/modules/scheduling/domain/remind");
+    const vaga = (id: string, userId: string | null, status: AllocationStatus | null, active = true) => ({
+      active,
+      allocationId: id,
+      allocatedUserId: userId,
+      allocatedStatus: status,
+    });
+    const slots = [
+      vaga("a1", "u1", "PENDING"),
+      vaga("a2", "u2", "PENDING"),
+      vaga("a3", "u3", "PENDING"),
+      vaga("a4", "u4", "CONFIRMED"),
+      vaga("a5", null, "PENDING"),
+      vaga("a6", "u6", "PENDING", false),
+      { active: true, allocationId: null, allocatedUserId: null, allocatedStatus: null },
+    ];
+    const futuro = new Date(AGORA.getTime() + 1).toISOString();
+    expect(remindTargetsForDate({ published: true, startsAt: futuro, slots }, AGORA)).toEqual(["a1", "a2", "a3"]);
+    expect(remindMenuLabel(3)).toBe("Lembrar pendentes (3)");
+    expect(remindMenuLabel(0)).toBeUndefined();
+    expect(remindTargetsForDate({ published: false, startsAt: futuro, slots }, AGORA)).toEqual([]);
+    expect(remindTargetsForDate({ published: true, startsAt: AGORA.toISOString(), slots }, AGORA)).toEqual([]);
+  });
+});

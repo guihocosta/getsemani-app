@@ -4,7 +4,7 @@ Mutations: 3
 Build: `npm run typecheck`; `npm run lint`
 Plan: `.specs/features/lembrete-confirmacao/plan.md`
 
-24 checks in 5 slices · 1 one-way door · 0 open
+28 checks in 6 slices · 1 one-way door · 0 open
 
 ## Checks
 
@@ -90,6 +90,20 @@ Proof: walk - abrir "Adicionar vaga extra" e "Mudar horário" no menu de uma dat
 **C24** - [x] Em 1280 px, o menu lateral tem a imagem com nome acessível "Getsêmani" e nenhum texto "Getsêmani" visível (AC 18)
 Proof: `npx playwright test tests/e2e/lembrete.spec.ts -g "so o simbolo"`
 
+### S6 - Achados do Verifier
+
+**C25** - [x] `remindTargetsForDate` com 3 escalados com conta em `PENDING`, 1 `CONFIRMED`, 1 convidado, 1 vaga desativada `PENDING` e 1 vaga vazia, numa data publicada que começa 1 ms depois de agora, devolve as 3 alocações pendentes; `remindMenuLabel(3)` é "Lembrar pendentes (3)" e `remindMenuLabel(0)` não dá item; a mesma data em rascunho ou começando agora devolve nada (AC 1, AC 2, AC 7, AC 8)
+Proof: `npx vitest run tests/unit/remind.test.ts -t "alvos da data na tela"`
+
+**C26** - [x] No modal do convidado Zé Visitante (sem conta, `PENDING`) em Louvor 01/11, "Lembrar confirmação" não aparece (AC 8)
+Proof: `npx playwright test tests/e2e/lembrete.spec.ts -g "convidado sem lembrete"`
+
+**C27** - [x] `remindPending` sem `allocationId` numa data publicada e futura em que ninguém está `PENDING` (alguém confirmou depois de a tela carregar) lança `NOT_REMINDABLE` e não chama `notifyUser` (AC 14)
+Proof: `npx vitest run tests/unit/remindPending.test.ts -t "lista vazia nao lembra"`
+
+**C28** - [x] `lastNotificationAt("lembrete-manual:a1:")` busca com `dedupeKey startsWith` o prefixo e `orderBy createdAt desc`, devolve o `createdAt` achado ou `null` (AC 10)
+Proof: `npx vitest run tests/unit/lastNotificationAt.test.ts -t "ultimo pelo prefixo"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -121,7 +135,7 @@ Proof: `npx playwright test tests/e2e/lembrete.spec.ts -g "so o simbolo"`
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none
+- **Dispatched:** Verifier em `f331fbf` (sem screens: nenhum critério cita captura)
 - **Boundary:** C1-C24 fechados no commit da feature
 - **Abandoned:** fechar pelos três jeitos na mesma página: com `page.clock.setFixedTime` do harness, a animação de saída do framer trava na segunda abertura (sem relógio fixo passa); cada jeito ganhou página nova. Achado real no caminho: em 1280 px o fundo do modal ficava preso dentro da transição de rota (ancestral com `transform` vira containing block de `fixed`) e o menu lateral ficava descoberto e clicável; `src/ui/Portal.tsx` leva `BottomSheet` e `ConfirmDialog` para `document.body` (C21 "fora" prova). Outros defeitos corrigidos ao fotografar: padding duplo (`p-4` dentro do `px-4` do painel) em vaga extra e mudar horário; título "Adicionar Vaga Extra" em Title Case virou "Adicionar vaga extra". Asserções antigas que provavam o texto "Fechar" (`interacao.spec.ts`) e o nome ao lado do símbolo (`marca.spec.ts`) mudaram junto com AC 15 e AC 18.
 - **Walked:** líder, tema escuro, `/escalas?mes=2026-10` → 18/10 → Louvor: modal da vaga (Lia, "Lembrar confirmação") em 390 e 1280; menu "Mais ações" com "Lembrar pendentes (1)" em 390; "Adicionar vaga extra" em 390 e "Mudar horário" em 1280 - X à direita do cabeçalho, título à esquerda, sem padding duplo. Popup de instalar não abre no Chrome desktop do harness (só plataforma móvel); usa o mesmo `BottomSheet`. Fora do escopo: `shell.spec.ts` "cada item abre a rota" já falhava antes (espera 10 links, menu tem 11 desde "Visão geral").

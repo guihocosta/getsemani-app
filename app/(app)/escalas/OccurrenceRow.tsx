@@ -31,8 +31,8 @@ import { markCapable } from "@/modules/scheduling/domain/candidateList";
 import { slotAttendanceMark, canMarkAttendance } from "@/modules/scheduling/domain/attendance";
 import { publishMenuItem } from "@/modules/scheduling/domain/publish";
 import {
-  remindableAllocations,
-  canRemindOccurrence,
+  remindTargetsForDate,
+  remindMenuLabel,
   remindConfirmTitle,
   remindSummary,
   remindOutcomeLabel,
@@ -311,22 +311,11 @@ export function OccurrenceRow(props: {
   const publishItem = publishMenuItem(props.published);
 
   // Quem ainda nao confirmou e pode ser lembrado por push (mesma regra do servidor).
-  const remindTargets = canRemindOccurrence(
-    { published: props.published, status: "ACTIVE", date: new Date(props.startsAt) },
+  const remindTargets = remindTargetsForDate(
+    { published: props.published, startsAt: props.startsAt, slots: props.slots },
     new Date(),
-  )
-    ? remindableAllocations(
-        props.slots.map((s) => ({
-          active: s.active,
-          allocation:
-            s.allocationId && s.allocatedStatus
-              ? { id: s.allocationId, userId: s.allocatedUserId, status: s.allocatedStatus }
-              : null,
-        })),
-      )
-    : [];
-  const canRemindActive =
-    !!activeSlot?.allocationId && remindTargets.some((a) => a.id === activeSlot.allocationId);
+  );
+  const canRemindActive = !!activeSlot?.allocationId && remindTargets.includes(activeSlot.allocationId);
 
   async function remindAll() {
     const ok = await confirm({
@@ -473,7 +462,7 @@ export function OccurrenceRow(props: {
               onCopy={copyWhatsAppText}
               onAddExtra={() => setAddExtraOpen(true)}
               onRetime={() => setRetimeOpen(true)}
-              remindLabel={remindTargets.length > 0 ? `Lembrar pendentes (${remindTargets.length})` : undefined}
+              remindLabel={remindMenuLabel(remindTargets.length)}
               onRemind={remindAll}
               publishLabel={publishItem.label}
               onTogglePublish={togglePublish}

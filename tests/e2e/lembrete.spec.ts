@@ -60,6 +60,19 @@ test.describe("celular", () => {
   });
 });
 
+test.describe("convidado", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("convidado sem lembrete", async ({ page }) => {
+    // Ze Visitante (sem conta, status PENDING) no Teclado de 01/11.
+    const c = await cartao(page, "1 de novembro", "2026-11");
+    await c.getByRole("button", { name: /Zé Visitante/ }).click();
+    const dialogo = page.getByRole("dialog", { name: "Detalhes" });
+    await expect(dialogo.getByText("Zé Visitante")).toBeVisible();
+    await expect(dialogo.getByRole("button", { name: "Lembrar confirmação" })).toHaveCount(0);
+  });
+});
+
 for (const largura of [390, 1280]) {
   test.describe(`modal em ${largura}`, () => {
     test.use({ viewport: { width: largura, height: largura === 390 ? 844 : 800 } });

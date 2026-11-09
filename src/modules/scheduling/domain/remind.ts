@@ -42,6 +42,37 @@ export function remindableAllocations<A extends RemindableAllocation>(
   );
 }
 
+export type RemindSlotView = {
+  active: boolean;
+  allocationId: string | null;
+  allocatedUserId: string | null;
+  allocatedStatus: AllocationStatus | null;
+};
+
+// Mesma regra do servidor, sobre as vagas que a tela ja tem: ids das alocacoes
+// que o menu da data e o modal da vaga oferecem para lembrar.
+export function remindTargetsForDate(
+  p: { published: boolean; startsAt: string; slots: RemindSlotView[] },
+  now: Date,
+): string[] {
+  if (!canRemindOccurrence({ published: p.published, status: "ACTIVE", date: new Date(p.startsAt) }, now)) {
+    return [];
+  }
+  return remindableAllocations(
+    p.slots.map((s) => ({
+      active: s.active,
+      allocation:
+        s.allocationId && s.allocatedStatus
+          ? { id: s.allocationId, userId: s.allocatedUserId, status: s.allocatedStatus }
+          : null,
+    })),
+  ).map((a) => a.id);
+}
+
+export function remindMenuLabel(n: number): string | undefined {
+  return n > 0 ? `Lembrar pendentes (${n})` : undefined;
+}
+
 function pessoas(n: number): string {
   return n === 1 ? "1 pessoa" : `${n} pessoas`;
 }

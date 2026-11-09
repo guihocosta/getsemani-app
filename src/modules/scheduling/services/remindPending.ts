@@ -39,10 +39,9 @@ export async function remindPending(
     occ.slots.flatMap((s) => (s.allocation ? [[s.allocation.id, s.role.name] as const] : [])),
   );
   let alvos = remindableAllocations(occ.slots);
-  if (params.allocationId) {
-    alvos = alvos.filter((a) => a.id === params.allocationId);
-    if (alvos.length === 0) throw new NotRemindable();
-  }
+  if (params.allocationId) alvos = alvos.filter((a) => a.id === params.allocationId);
+  // Lista vazia: alguem confirmou depois que a tela carregou.
+  if (alvos.length === 0) throw new NotRemindable();
 
   const counts: RemindCounts = { enviados: 0, recentes: 0, semDispositivo: 0 };
   for (const a of alvos) {

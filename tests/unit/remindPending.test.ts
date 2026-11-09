@@ -144,6 +144,13 @@ describe("remindPending", () => {
     expect(notifyUser).not.toHaveBeenCalled();
   });
 
+  it("lista vazia nao lembra", async () => {
+    // Todos confirmaram depois que a tela carregou.
+    vi.mocked(prisma.occurrence.findUnique).mockResolvedValue(ocorrencia([BIA]) as never);
+    await expect(remindPending({ occurrenceId: "o1" }, AGORA)).rejects.toThrow("NOT_REMINDABLE");
+    expect(notifyUser).not.toHaveBeenCalled();
+  });
+
   it("corrida envia uma vez", async () => {
     // Parte 1: notifyUser de verdade, duas chamadas com a mesma chave ao mesmo tempo.
     const real = await vi.importActual<typeof import("@/modules/notifications/services/notify")>(
